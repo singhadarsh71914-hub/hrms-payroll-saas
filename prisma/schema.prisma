@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Company {
+  id                   String            @id @default(uuid())
+  name                 String
+  trade_name           String?
+  pan                  String?
+  tan                  String?
+  pf_registration_no   String?
+  esi_registration_no  String?
+  pt_registration_no   String?
+  address              String?
+  city                 String?
+  state                String?
+  pincode              String?
+  logo_url             String?
+  financial_year_start Int               @default(4)
+  created_at           DateTime          @default(now())
+  updated_at           DateTime          @updatedAt
+  departments          Department[]
+  designations         Designation[]
+  employees            Employee[]
+  payroll_runs         PayrollRun[]
+  salary_components    SalaryComponent[]
+  salary_structures    SalaryStructure[]
+  users                User[]
+}
+
+model Department {
+  id               String     @id @default(uuid())
+  company_id       String
+  name             String
+  code             String
+  head_employee_id String?
+  is_active        Boolean    @default(true)
+  company          Company    @relation(fields: [company_id], references: [id])
+  head_employee    Employee?  @relation("DepartmentHead", fields: [head_employee_id], references: [id])
+  employees        Employee[] @relation("EmployeeDepartment")
+}
+
+model Designation {
+  id         String     @id @default(uuid())
+  company_id String
+  name       String
+  level      Int
+  is_active  Boolean    @default(true)
+  company    Company    @relation(fields: [company_id], references: [id])
+  employees  Employee[]
+}
+
+model Employee {
+  id                      String             @id @default(uuid())
+  company_id              String
+  employee_code           String
+  first_name              String
+  last_name               String
+  display_name            String?
+  gender                  Gender?
+  date_of_birth           DateTime?
+  date_of_joining         DateTime
+  date_of_leaving         DateTime?
+  employment_status       EmploymentStatus   @default(ACTIVE)
+  employment_type         EmploymentType     @default(FULL_TIME)
+  department_id           String?
+  designation_id          String?
+  reporting_manager_id    String?
+  work_location           String?
+  work_email              String             @unique
+  personal_email          String?
+  phone                   String?
+  emergency_contact_name  String?
+  emergency_contact_phone String?
+  pan_number              String?
+  aadhaar_number          String?
+  uan_number              String?
+  esic_ip_number          String?
+  bank_name               String?
+  bank_account_number     String?
+  bank_ifsc               String?
+  probation_end_date      DateTime?
+  notice_period_days      Int                @default(30)
+  avatar_url              String?
+  user_id                 String?            @unique
+  created_at              DateTime           @default(now())
+  updated_at              DateTime           @updatedAt
+  attendance              Attendance[]
+  headed_departments      Department[]       @relation("DepartmentHead")
+  company                 Company            @relation(fields: [company_id], references: [id])
+  department              Department?        @relation("EmployeeDepartment", fields: [department_id], references: [id])
+  designation             Designation?       @relation(fields: [designation_id], references: [id])
+  reporting_manager       Employee?          @relation("ReportingManager", fields: [reporting_manager_id], references: [id])
+  subordinates            Employee[]         @relation("ReportingManager")
+  user                    User?              @relation(fields: [user_id], references: [id])
+  documents               EmployeeDocument[]
+  salaries                EmployeeSalary[]
+  leave_requests          LeaveRequest[]
+  payslips                Payslip[]
+
+  @@unique([company_id, employee_code])
+}
+
+model EmployeeDocument {
+  id            String       @id @default(uuid())
+  employee_id   String
+  document_type DocumentType
+  document_name String
+  file_url      String
+  uploaded_at   DateTime     @default(now())
+  employee      Employee     @relation(fields: [employee_id], references: [id])
+}
+
+model SalaryComponent {
+  id                   String                     @id @default(uuid())
+  company_id           String
+  name                 String
+  code                 String
+  type                 ComponentType
+  category             ComponentCategory
+  is_taxable           Boolean                    @default(true)
+  is_statutory         Boolean                    @default(false)
+  is_active            Boolean                    @default(true)
+  payslip_line_items   PayslipLineItem[]
+  company              Company                    @relation(fields: [company_id], references: [id])
+  structure_components SalaryStructureComponent[]
+
+  @@unique([company_id, code])
+}
+
+model SalaryStructure {
+  id         String                     @id @default(uuid())
+  company_id String
+  name       String
+  is_active  Boolean                    @default(true)
+  salaries   EmployeeSalary[]
+  company    Company                    @relation(fields: [company_id], references: [id])
+  components SalaryStructureComponent[]
+}
+
+model SalaryStructureComponent {
+  id                  String          @id @default(uuid())
+  salary_structure_id String
+  salary_component_id String
+  calculation_type    CalculationType
+  value               Decimal
+  sequence            Int
+  salary_component    SalaryComponent @relation(fields: [salary_component_id], references: [id])
+  salary_structure    SalaryStructure @relation(fields: [salary_structure_id], references: [id])
+}
+
+model EmployeeSalary {
+  id                  String          @id @default(uuid())
+  employee_id         String
+  salary_structure_id String
+  effective_from      DateTime
+  effective_to        DateTime?
+  ctc_annual          Decimal
+  ctc_monthly         Decimal
+  created_by          String?
+  created_at          DateTime        @default(now())
+  employee            Employee        @relation(fields: [employee_id], references: [id])
+  salary_structure    SalaryStructure @relation(fields: [salary_structure_id], references: [id])
+}
+
+model PayrollRun {
+  id               String        @id @default(uuid())
+  company_id       String
+  month            Int
+  year             Int
+  run_date         DateTime
+  status           PayrollStatus @default(DRAFT)
+  total_employees  Int
+  total_gross      Decimal
+  total_deductions Decimal
+  total_net        Decimal
+  approved_by      String?
+  approved_at      DateTime?
+  created_by       String?
+  company          Company       @relation(fields: [company_id], references: [id])
+  payslips         Payslip[]
+}
+
+model Payslip {
+  id               String            @id @default(uuid())
+  payroll_run_id   String
+  employee_id      String
+  month            Int
+  year             Int
+  working_days     Int
+  paid_days        Decimal
+  lop_days         Decimal
+  gross_salary     Decimal
+  total_deductions Decimal
+  net_salary       Decimal
+  pf_employee      Decimal
+  pf_employer      Decimal
+  esi_employee     Decimal
+  esi_employer     Decimal
+  professional_tax Decimal
+  tds              Decimal
+  status           PayslipStatus     @default(DRAFT)
+  slip_url         String?
+  employee         Employee          @relation(fields: [employee_id], references: [id])
+  payroll_run      PayrollRun        @relation(fields: [payroll_run_id], references: [id])
+  line_items       PayslipLineItem[]
+}
+
+model PayslipLineItem {
+  id                  String          @id @default(uuid())
+  payslip_id          String
+  salary_component_id String
+  component_name      String
+  component_type      ComponentType
+  amount              Decimal
+  payslip             Payslip         @relation(fields: [payslip_id], references: [id])
+  salary_component    SalaryComponent @relation(fields: [salary_component_id], references: [id])
+}
+
+model Attendance {
+  id          String           @id @default(uuid())
+  employee_id String
+  date        DateTime
+  check_in    DateTime?
+  check_out   DateTime?
+  status      AttendanceStatus @default(PRESENT)
+  remarks     String?
+  employee    Employee         @relation(fields: [employee_id], references: [id])
+
+  @@unique([employee_id, date])
+}
+
+model LeaveRequest {
+  id          String      @id @default(uuid())
+  employee_id String
+  leave_type  String
+  start_date  DateTime
+  end_date    DateTime
+  total_days  Decimal
+  reason      String?
+  status      LeaveStatus @default(PENDING)
+  approved_by String?
+  approved_at DateTime?
+  employee    Employee    @relation(fields: [employee_id], references: [id])
+}
+
+model User {
+  id            String    @id @default(uuid())
+  company_id    String?
+  email         String    @unique
+  password_hash String
+  role          UserRole  @default(EMPLOYEE)
+  is_active     Boolean   @default(true)
+  last_login    DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  employee      Employee?
+  company       Company?  @relation(fields: [company_id], references: [id])
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  PROBATION
+  NOTICE_PERIOD
+  RESIGNED
+  TERMINATED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum DocumentType {
+  OFFER_LETTER
+  ID_PROOF
+  ADDRESS_PROOF
+  PF_FORM
+  FORM16
+  OTHER
+}
+
+enum ComponentType {
+  EARNING
+  DEDUCTION
+  REIMBURSEMENT
+}
+
+enum ComponentCategory {
+  FIXED
+  VARIABLE
+  STATUTORY
+}
+
+enum CalculationType {
+  FLAT_AMOUNT
+  PERCENTAGE_OF_BASIC
+  PERCENTAGE_OF_CTC
+  FORMULA
+}
+
+enum PayrollStatus {
+  DRAFT
+  PROCESSED
+  APPROVED
+  PAID
+}
+
+enum PayslipStatus {
+  DRAFT
+  FINALIZED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  ON_LEAVE
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum UserRole {
+  ADMIN
+  HR
+  MANAGER
+  EMPLOYEE
+}

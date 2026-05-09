@@ -1,0 +1,8 @@
+# Local Development
+node_modules/
+.env
+*.log
+.vscode/
+.gemini/
+
+/generated/prisma

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRMS API Tester</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 2rem; max-width: 1000px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .card { background: var(--card); padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        h2 { margin-top: 0; color: var(--primary); font-size: 1.25rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; }
+        input, select { width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        button { background: var(--primary); color: white; border: none; padding: 0.6rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 600; width: 100%; }
+        button:hover { opacity: 0.9; }
+        pre { background: #1e293b; color: #f8fafc; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; max-height: 400px; }
+        .status { font-weight: bold; margin-bottom: 0.5rem; }
+        .token-info { font-size: 0.75rem; word-break: break-all; color: #64748b; background: #f1f5f9; padding: 0.5rem; border-radius: 4px; margin-top: 1rem; }
+        .btn-list { background: #64748b; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 HRMS API Dashboard</h1>
+    <p>Use this page to test your local API running on <code>http://localhost:3000</code></p>
+
+    <div class="grid">
+        <!-- AUTH SECTION -->
+        <div>
+            <div class="card">
+                <h2>1. Register Company</h2>
+                <div class="form-group">
+                    <label>Company Name</label>
+                    <input type="text" id="reg-company" placeholder="My AI Corp">
+                </div>
+                <div class="form-group">
+                    <label>Admin Email</label>
+                    <input type="email" id="reg-email" placeholder="admin@test.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-pass" value="password123">
+                </div>
+                <button onclick="apiCall('auth/register', 'POST', {
+                    company_name: document.getElementById('reg-company').value,
+                    email: document.getElementById('reg-email').value,
+                    password: document.getElementById('reg-pass').value
+                })">Register</button>
+            </div>
+
+            <div class="card">
+                <h2>2. Login</h2>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" placeholder="admin@test.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-pass" value="password123">
+                </div>
+                <button onclick="login()">Login & Save Token</button>
+                <div id="token-display" class="token-info">No token saved</div>
+            </div>
+        </div>
+
+        <!-- ACTIONS SECTION -->
+        <div>
+            <div class="card">
+                <h2>3. Employee Management</h2>
+                <button onclick="apiCall('employees', 'GET')">List All Employees</button>
+                
+                <div style="margin-top: 1.5rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                    <h3>Add Employee</h3>
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" id="emp-first" placeholder="John">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" id="emp-last" placeholder="Doe">
+                    </div>
+                    <div class="form-group">
+                        <label>Work Email</label>
+                        <input type="email" id="emp-email" placeholder="john@company.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Employee Code</label>
+                        <input type="text" id="emp-code" placeholder="EMP001">
+                    </div>
+                    <button class="btn-list" onclick="apiCall('employees', 'POST', {
+                        first_name: document.getElementById('emp-first').value,
+                        last_name: document.getElementById('emp-last').value,
+                        work_email: document.getElementById('emp-email').value,
+                        employee_code: document.getElementById('emp-code').value,
+                        date_of_joining: new Date().toISOString()
+                    })">Create Employee</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>4. Organization</h2>
+                <button onclick="apiCall('org/departments', 'GET')">List Departments</button>
+                <button class="btn-list" onclick="apiCall('org/designations', 'GET')">List Designations</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESPONSE OUTPUT -->
+    <div class="card">
+        <h2>API Response</h2>
+        <div id="res-status" class="status">Waiting for request...</div>
+        <pre id="res-body">{}</pre>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let TOKEN = localStorage.getItem('hrms_token') || '';
+
+        if (TOKEN) {
+            document.getElementById('token-display').innerText = 'Token Loaded: ' + TOKEN.substring(0, 30) + '...';
+        }
+
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-pass').value;
+
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            if (data.token) {
+                TOKEN = data.token;
+                localStorage.setItem('hrms_token', TOKEN);
+                document.getElementById('token-display').innerText = 'Token Saved: ' + TOKEN.substring(0, 30) + '...';
+            }
+            updateResponse(res.status, data);
+        }
+
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const headers = { 'Content-Type': 'application/json' };
+            if (TOKEN) headers['Authorization'] = `Bearer ${TOKEN}`;
+
+            const options = { method, headers };
+            if (body) options.body = JSON.stringify(body);
+
+            try {
+                const res = await fetch(`${API_BASE}/${endpoint}`, options);
+                const data = await res.json();
+                updateResponse(res.status, data);
+            } catch (err) {
+                updateResponse('ERROR', { message: err.message });
+            }
+        }
+
+        function updateResponse(status, body) {
+            const statusEl = document.getElementById('res-status');
+            statusEl.innerText = `Status: ${status}`;
+            statusEl.style.color = status >= 200 && status < 300 ? '#10b981' : '#ef4444';
+            document.getElementById('res-body').innerText = JSON.stringify(body, null, 2);
+        }
+    </script>
+</body>
+</html>
