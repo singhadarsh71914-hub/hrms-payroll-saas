@@ -26,6 +26,7 @@ model Company {
   departments          Department[]
   designations         Designation[]
   employees            Employee[]
+  holidays             Holiday[]
   payroll_runs         PayrollRun[]
   salary_components    SalaryComponent[]
   salary_structures    SalaryStructure[]
@@ -100,6 +101,7 @@ model Employee {
   documents               EmployeeDocument[]
   salaries                EmployeeSalary[]
   leave_requests          LeaveRequest[]
+  leave_balances          LeaveBalance[]
   payslips                Payslip[]
 
   @@unique([company_id, employee_code])
@@ -161,6 +163,7 @@ model EmployeeSalary {
   effective_to        DateTime?
   ctc_annual          Decimal
   ctc_monthly         Decimal
+  revision_reason     String?
   created_by          String?
   created_at          DateTime        @default(now())
   employee            Employee        @relation(fields: [employee_id], references: [id])
@@ -248,6 +251,19 @@ model LeaveRequest {
   employee    Employee    @relation(fields: [employee_id], references: [id])
 }
 
+model LeaveBalance {
+  id           String   @id @default(uuid())
+  employee_id  String
+  leave_type   String
+  total_days   Decimal
+  used_days    Decimal  @default(0)
+  balance_days Decimal
+  year         Int
+  employee     Employee @relation(fields: [employee_id], references: [id])
+
+  @@unique([employee_id, leave_type, year])
+}
+
 model User {
   id            String    @id @default(uuid())
   company_id    String?
@@ -260,6 +276,23 @@ model User {
   updated_at    DateTime  @updatedAt
   employee      Employee?
   company       Company?  @relation(fields: [company_id], references: [id])
+}
+
+model Holiday {
+  id         String      @id @default(uuid())
+  company_id String
+  name       String
+  date       DateTime
+  type       HolidayType @default(NATIONAL)
+  company    Company     @relation(fields: [company_id], references: [id])
+
+  @@unique([company_id, date])
+}
+
+enum HolidayType {
+  NATIONAL
+  REGIONAL
+  COMPANY
 }
 
 enum Gender {

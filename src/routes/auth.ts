@@ -79,7 +79,7 @@ router.post(
 
       const user = await prisma.user.findUnique({
         where: { email: String(email) },
-        include: { company: true },
+        include: { company: true, employee: true },
       });
 
       if (!user || !(await bcrypt.compare(password, user.password_hash))) {
@@ -87,7 +87,13 @@ router.post(
       }
 
       const token = jwt.sign(
-        { id: user.id, role: user.role, company_id: user.company_id },
+        { 
+          id: user.id, 
+          role: user.role, 
+          company_id: user.company_id,
+          email: user.email,
+          employee_id: user.employee?.id 
+        },
         JWT_SECRET,
         { expiresIn: '24h' }
       );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Users, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, CreditCard, Calendar, Clock, Palmtree } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
@@ -28,6 +28,22 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <NavLink to="/employees" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             <Users size={20} />
             Employees
+          </NavLink>
+          <NavLink to="/attendance" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <Clock size={20} />
+            Attendance
+          </NavLink>
+          <NavLink to="/payroll" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <CreditCard size={20} />
+            Payroll
+          </NavLink>
+          <NavLink to="/leave" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <Calendar size={20} />
+            Leave
+          </NavLink>
+          <NavLink to="/holidays" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <Palmtree size={20} />
+            Holidays
           </NavLink>
         </nav>
 

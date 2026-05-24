@@ -1,18 +1,20 @@
-import { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import jwt from 'jsonwebtoken';
 import { AppError } from './error.ts';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
-export interface AuthRequest extends Request {
+export interface AuthRequest extends express.Request {
   user?: {
     id: string;
     role: string;
     company_id: string | null;
+    email?: string;
+    employee_id?: string;
   };
 }
 
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticate = (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
@@ -29,7 +31,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 };
 
 export const authorize = (...roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return next(new AppError('Unauthorized access', 403));
     }
