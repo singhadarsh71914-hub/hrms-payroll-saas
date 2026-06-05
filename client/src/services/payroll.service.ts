@@ -27,6 +27,9 @@ export interface Payslip {
     first_name: string;
     last_name: string;
     employee_code: string;
+    department?: {
+      name: string;
+    };
   };
 }
 

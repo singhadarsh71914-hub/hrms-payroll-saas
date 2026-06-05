@@ -31,6 +31,9 @@ model Company {
   salary_components    SalaryComponent[]
   salary_structures    SalaryStructure[]
   users                User[]
+  announcements        Announcement[]
+  performance_reviews  PerformanceReview[]
+  documents            EmployeeDocument[]
 }
 
 model Department {
@@ -103,17 +106,78 @@ model Employee {
   leave_requests          LeaveRequest[]
   leave_balances          LeaveBalance[]
   payslips                Payslip[]
+  loans                   Loan[]
+  performance_reviews     PerformanceReview[]
+  reimbursements          Reimbursement[]
 
   @@unique([company_id, employee_code])
 }
 
+model Loan {
+  id               String          @id @default(uuid())
+  employee_id      String
+  loan_type        LoanType
+  principal_amount Decimal
+  interest_rate    Decimal
+  tenure_months    Int
+  emi_amount       Decimal
+  start_date       DateTime
+  status           LoanStatus      @default(PENDING)
+  reason           String?
+  remarks          String?
+  approved_by      String?
+  approval_date    DateTime?
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
+  employee         Employee        @relation(fields: [employee_id], references: [id])
+  repayments       LoanRepayment[]
+}
+
+model LoanRepayment {
+  id                  String          @id @default(uuid())
+  loan_id             String
+  month               Int
+  year                Int
+  emi_amount          Decimal
+  principal_component Decimal
+  interest_component  Decimal
+  balance_remaining   Decimal
+  status              RepaymentStatus @default(PENDING)
+  payroll_run_id      String?
+  loan                Loan            @relation(fields: [loan_id], references: [id])
+}
+
+enum LoanType {
+  PERSONAL
+  MEDICAL
+  EMERGENCY
+  EDUCATION
+  HOME
+}
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  ACTIVE
+  CLOSED
+  REJECTED
+}
+
+enum RepaymentStatus {
+  PENDING
+  DEDUCTED
+}
+
 model EmployeeDocument {
   id            String       @id @default(uuid())
+  company_id    String
   employee_id   String
   document_type DocumentType
   document_name String
   file_url      String
   uploaded_at   DateTime     @default(now())
+  
+  company       Company      @relation(fields: [company_id], references: [id])
   employee      Employee     @relation(fields: [employee_id], references: [id])
 }
 
@@ -375,4 +439,74 @@ enum UserRole {
   HR
   MANAGER
   EMPLOYEE
+}
+
+model Announcement {
+  id         String   @id @default(uuid())
+  company_id String
+  title      String
+  content    String
+  priority   AnnouncementPriority @default(NORMAL)
+  created_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  company    Company  @relation(fields: [company_id], references: [id])
+}
+
+enum AnnouncementPriority {
+  NORMAL
+  IMPORTANT
+  URGENT
+}
+
+model PerformanceReview {
+  id                String   @id @default(uuid())
+  company_id        String
+  employee_id       String
+  cycle_name        String
+  review_period     String
+  goals_rating      Int      @default(3)
+  skills_rating     Int      @default(3)
+  attitude_rating   Int      @default(3)
+  leadership_rating Int      @default(3)
+  overall_score     Float    @default(3)
+  badge             String   @default("Average")
+  remarks           String?
+  reviewed_by       String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  
+  company           Company  @relation(fields: [company_id], references: [id])
+  employee          Employee @relation(fields: [employee_id], references: [id])
+}
+
+model Reimbursement {
+  id              String   @id @default(uuid())
+  employee_id     String
+  type            ReimbursementType
+  amount          Decimal
+  description     String?
+  status          ReimbursementStatus @default(PENDING)
+  remarks         String?
+  approved_by     String?
+  approved_at     DateTime?
+  payroll_run_id  String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  employee        Employee @relation(fields: [employee_id], references: [id])
+}
+
+enum ReimbursementType {
+  TRAVEL
+  FOOD
+  MEDICAL
+  INTERNET
+  OTHER
+}
+
+enum ReimbursementStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSED
 }

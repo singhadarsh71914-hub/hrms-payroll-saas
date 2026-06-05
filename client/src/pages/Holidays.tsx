@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { holidayService } from '../services/holiday.service';
 import { Palmtree, Plus, Trash2, Calendar, MapPin, Building2, Download } from 'lucide-react';
 
 const Holidays: React.FC = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [holidays, setHolidays] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -43,30 +45,30 @@ const Holidays: React.FC = () => {
       setFormData({ name: '', date: '', type: 'NATIONAL' });
       fetchData();
     } catch (err) {
-      alert('Failed to add holiday');
+      showToast('Failed to add holiday', 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this holiday?')) return;
     try {
       await holidayService.deleteHoliday(id);
       fetchData();
+      showToast('Holiday deleted successfully', 'success');
     } catch (err) {
-      alert('Failed to delete holiday');
+      showToast('Failed to delete holiday', 'error');
     }
   };
 
   const handleSeed = async () => {
-    if (!window.confirm(`Seed all Indian National Holidays for ${selectedYear}?`)) return;
     setLoading(true);
     try {
       await holidayService.seedHolidays(selectedYear);
       fetchData();
+      showToast('Holidays seeded successfully', 'success');
     } catch (err) {
-      alert('Failed to seed holidays');
+      showToast('Failed to seed holidays', 'error');
     } finally {
       setLoading(false);
     }

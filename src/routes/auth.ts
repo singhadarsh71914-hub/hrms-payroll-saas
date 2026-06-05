@@ -113,4 +113,46 @@ router.post(
   }
 );
 
+// SET PASSWORD (via welcome token)
+router.post(
+  '/set-password',
+  [
+    body('token').notEmpty(),
+    body('password').isLength({ min: 6 }),
+  ],
+  async (req: any, res: any, next: any) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return next(new AppError('Validation failed', 400));
+
+    try {
+      const { token, password } = req.body;
+
+      let decoded: any;
+      try {
+        decoded = jwt.verify(token, JWT_SECRET);
+      } catch (err) {
+        return next(new AppError('Invalid or expired token', 400));
+      }
+
+      if (decoded.type !== 'SET_PASSWORD') {
+        return next(new AppError('Invalid token type', 400));
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      await prisma.user.update({
+        where: { id: decoded.userId },
+        data: {
+          password_hash: hashedPassword,
+          is_active: true,
+        },
+      });
+
+      res.json({ message: 'Password set successfully. You can now login.' });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 export default router;

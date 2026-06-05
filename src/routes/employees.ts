@@ -1,10 +1,14 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma.ts';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
 import { AppError } from '../middleware/error.ts';
+import { sendEmail } from '../lib/email.ts';
 
 const router = Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 // Apply authentication to all routes
 router.use(authenticate);
@@ -39,18 +43,69 @@ router.post(
 
     try {
       const { department_id, designation_id, reporting_manager_id, ...rest } = req.body;
-      const employee = await prisma.employee.create({
-        data: {
-          ...rest,
-          department_id: department_id || null,
-          designation_id: designation_id || null,
-          reporting_manager_id: reporting_manager_id || null,
-          company_id: req.user?.company_id as string,
-          date_of_joining: new Date(req.body.date_of_joining),
-          date_of_birth: req.body.date_of_birth ? new Date(req.body.date_of_birth) : null,
-        },
+      
+      const result = await prisma.$transaction(async (tx) => {
+        // 1. Create Employee
+        const employee = await tx.employee.create({
+          data: {
+            ...rest,
+            department_id: department_id || null,
+            designation_id: designation_id || null,
+            reporting_manager_id: reporting_manager_id || null,
+            company_id: req.user?.company_id as string,
+            date_of_joining: new Date(req.body.date_of_joining),
+            date_of_birth: req.body.date_of_birth ? new Date(req.body.date_of_birth) : null,
+          },
+        });
+
+        // 2. Create User for Employee
+        // Generate a random temp password (it will be reset via token)
+        const tempPassword = Math.random().toString(36).slice(-10);
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+        const user = await tx.user.create({
+          data: {
+            email: rest.work_email,
+            password_hash: hashedPassword,
+            role: 'EMPLOYEE',
+            company_id: req.user?.company_id as string,
+          }
+        });
+
+        // 3. Link User back to Employee
+        const updatedEmployee = await tx.employee.update({
+          where: { id: employee.id },
+          data: { user_id: user.id }
+        });
+
+        return { employee: updatedEmployee, user };
       });
-      res.status(201).json(employee);
+
+      // 4. Generate Welcome Token (valid for 48 hours)
+      const welcomeToken = jwt.sign(
+        { userId: result.user.id, type: 'SET_PASSWORD' },
+        JWT_SECRET,
+        { expiresIn: '48h' }
+      );
+
+      // 5. Send Welcome Email
+      const setPasswordUrl = `http://localhost:5173/set-password?token=${welcomeToken}`;
+      
+      sendEmail(
+        result.employee.work_email,
+        'Welcome to the Team!',
+        `
+          <h1>Welcome, ${result.employee.first_name}!</h1>
+          <p>You have been added to the HRMS portal.</p>
+          <p>Please set your password by clicking the link below:</p>
+          <a href="${setPasswordUrl}" style="padding: 10px 20px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">Set Password</a>
+          <p>Alternatively, copy and paste this link into your browser:</p>
+          <p>${setPasswordUrl}</p>
+          <p>This link will expire in 48 hours.</p>
+        `
+      ).catch(err => console.error('Failed to send welcome email:', err));
+
+      res.status(201).json(result.employee);
     } catch (err) {
       next(err);
     }
