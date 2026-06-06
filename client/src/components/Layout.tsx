@@ -4,9 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { 
   LayoutDashboard, Users, LogOut, CreditCard, Calendar, Clock, 
   Palmtree, IndianRupee, FileText, Menu,
-  Award, Wallet, Receipt, Bell, ChevronRight, Key, Search
+  Award, Wallet, Receipt, Bell, ChevronRight, Key
 } from 'lucide-react';
 import api from '../services/api';
+import { GlobalSearch } from './GlobalSearch';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
@@ -186,14 +187,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                HRMS <span style={{ color: 'var(--text-muted)' }}>/</span> <span style={{ color: 'var(--primary)' }}>{getPageTitle()}</span>
              </span>
              
-             {/* Global Search */}
-             <div style={{ position: 'relative', maxWidth: '400px', flex: 1, marginLeft: '24px' }}>
-               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-               <input 
-                 type="text" 
-                 placeholder="Quick search..." 
-                 style={{ width: '100%', padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: '13px', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
-               />
+             {/* Navbar center — search */}
+             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
+               <GlobalSearch />
              </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

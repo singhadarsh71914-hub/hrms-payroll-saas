@@ -18,6 +18,7 @@ import announcementRoutes from './routes/announcement.ts';
 import performanceRoutes from './routes/performance.ts';
 import reimbursementRoutes from './routes/reimbursement.ts';
 import documentRoutes from './routes/document.ts';
+import searchRoutes from './routes/search.ts';
 import { errorHandler } from './middleware/error.ts';
 
 import path from 'path';
@@ -57,6 +58,7 @@ app.use('/api/announcements', announcementRoutes);
 app.use('/api/performance', performanceRoutes);
 app.use('/api/reimbursements', reimbursementRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/search', searchRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to HRMS & Payroll API' });

@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeList from './pages/EmployeeList';
 import EmployeeForm from './pages/EmployeeForm';
+import EmployeeDetails from './pages/EmployeeDetails';
 import Payroll from './pages/Payroll';
 import Leave from './pages/Leave';
 import EmployeeLeaves from './pages/EmployeeLeaves';
@@ -50,6 +51,7 @@ function App() {
                 <Route path="/employees" element={<Layout><EmployeeList /></Layout>} />
                 <Route path="/employees/add" element={<Layout><EmployeeForm /></Layout>} />
                 <Route path="/employees/edit/:id" element={<Layout><EmployeeForm /></Layout>} />
+                <Route path="/employees/:id" element={<Layout><EmployeeDetails /></Layout>} />
                 <Route path="/attendance" element={<Layout><Attendance /></Layout>} />
                 <Route path="/payroll" element={<Layout><Payroll /></Layout>} />
                 <Route path="/loans" element={<Layout><LoanManagement /></Layout>} />
