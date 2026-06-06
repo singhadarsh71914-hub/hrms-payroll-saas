@@ -75,12 +75,19 @@ model Employee {
   designation_id          String?
   reporting_manager_id    String?
   work_location           String?
+  address_line1           String?
+  address_line2           String?
+  city                    String?
+  state                   String?
+  pincode                 String?
+  country                 String?
   work_email              String             @unique
   personal_email          String?
   phone                   String?
   emergency_contact_name  String?
-  emergency_contact_phone String?
-  pan_number              String?
+  emergency_contact_phone      String?
+  emergency_contact_relationship String?
+  pan_number                   String?
   aadhaar_number          String?
   uan_number              String?
   esic_ip_number          String?

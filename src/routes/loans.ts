@@ -8,7 +8,7 @@ const router = Router();
 
 router.use(authenticate);
 
-// APPLY LOAN (Employee)
+// APPLY LOAN (Employee or HR/Admin on behalf)
 router.post(
   '/apply',
   [
@@ -21,26 +21,25 @@ router.post(
   async (req: AuthRequest, res: any, next: any) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('Loan Application Validation Errors:', errors.array());
       return next(new AppError('Validation failed', 400));
     }
 
-    if (!req.user?.employee_id) {
-      console.log('Loan Application Error: User has no employee_id in token. User Info:', req.user);
-      return next(new AppError('Employee profile not found', 403));
+    // Determine target employee ID
+    let targetEmployeeId = req.user?.employee_id;
+    const isHR = req.user?.role === 'HR' || req.user?.role === 'ADMIN';
+
+    if (isHR && req.body.employeeId) {
+      targetEmployeeId = req.body.employeeId;
+    }
+
+    if (!targetEmployeeId) {
+      return next(new AppError('Employee profile not found or employeeId not provided', 403));
     }
 
     try {
-      console.log(`Processing loan application for employee: ${req.user.employee_id}`);
-      console.log('Request Body:', req.body);
-      
-      const loan = await LoanService.applyLoan(req.user.employee_id, req.body);
-      
-      console.log('Loan created successfully:', loan.id);
+      const loan = await LoanService.applyLoan(targetEmployeeId, req.body);
       res.status(201).json(loan);
     } catch (err: any) {
-      console.error('CRITICAL ERROR in POST /api/loans/apply:');
-      console.error(err);
       next(err);
     }
   }

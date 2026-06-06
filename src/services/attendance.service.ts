@@ -7,9 +7,14 @@ export class AttendanceService {
     date: string;
     status: AttendanceStatus;
     remarks?: string;
+    checkIn?: string;
+    checkOut?: string;
   }) {
     const attendanceDate = new Date(data.date);
     attendanceDate.setHours(0, 0, 0, 0);
+
+    const checkInDate = data.checkIn ? new Date(data.checkIn) : null;
+    const checkOutDate = data.checkOut ? new Date(data.checkOut) : null;
 
     return prisma.attendance.upsert({
       where: {
@@ -21,12 +26,16 @@ export class AttendanceService {
       update: {
         status: data.status,
         remarks: data.remarks,
+        check_in: checkInDate,
+        check_out: checkOutDate,
       },
       create: {
         employee_id: data.employeeId,
         date: attendanceDate,
         status: data.status,
         remarks: data.remarks,
+        check_in: checkInDate,
+        check_out: checkOutDate,
       },
     });
   }
@@ -105,6 +114,24 @@ export class AttendanceService {
         employee_code: emp.employee_code,
         ...counts
       };
+    });
+  }
+
+  static async getEmployeeAttendance(employeeId: string, month?: number, year?: number) {
+    const where: any = { employee_id: employeeId };
+    
+    if (month && year) {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+      where.date = {
+        gte: startDate,
+        lte: endDate,
+      };
+    }
+
+    return prisma.attendance.findMany({
+      where,
+      orderBy: { date: 'desc' }
     });
   }
 }
