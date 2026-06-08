@@ -13,6 +13,7 @@ import {
   getEmployeeDocuments, 
   getEmployeeLoans,
   deleteEmployeeDocument,
+  downloadEmployeeDocument,
   uploadEmployeeDocument,
   markEmployeeAttendance,
   applyEmployeeLeave,
@@ -566,6 +567,42 @@ const DocumentsTab = ({ data, employeeId, onRefresh }: any) => {
     }
   };
 
+  const handleDownload = async (doc: any) => {
+    try {
+      const response = await downloadEmployeeDocument(doc.id);
+      
+      const blob = new Blob([response.data], { 
+        type: response.headers['content-type'] 
+      });
+
+      let finalFileName = doc.document_name;
+      const contentDisposition = response.headers['content-disposition'];
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
+        if (filenameMatch && filenameMatch[1]) {
+          finalFileName = filenameMatch[1];
+        }
+      } else {
+        const ext = doc.file_url.split('.').pop();
+        if (ext && !finalFileName.toLowerCase().endsWith(`.${ext.toLowerCase()}`)) {
+          finalFileName = `${finalFileName}.${ext}`;
+        }
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', finalFileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to download document');
+    }
+  };
+
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fileInputRef.current?.files?.[0]) return alert('Please select a file');
@@ -612,9 +649,9 @@ const DocumentsTab = ({ data, employeeId, onRefresh }: any) => {
                 <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem' }}>{doc.document_type} • {new Date(doc.uploaded_at).toLocaleDateString()}</div>
               </div>
               <div style={{ display: 'flex', gap: '0.4rem' }}>
-                <a href={doc.file_url} target="_blank" rel="noreferrer" style={{ color: '#94a3b8', padding: '4px' }} title="Download">
+                <button onClick={() => handleDownload(doc)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }} title="Download">
                   <Download size={16} />
-                </a>
+                </button>
                 <button onClick={() => handleDelete(doc.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }} title="Delete">
                   <Trash2 size={16} />
                 </button>

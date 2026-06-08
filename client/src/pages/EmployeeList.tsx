@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { getEmployees, deleteEmployee } from '../services/employee.service';
-import { Plus, Edit2, Trash2, Search, TrendingUp, X, User } from 'lucide-react';
+import { getEmployees, deleteEmployee, restoreEmployee } from '../services/employee.service';
+import { Plus, Edit2, Trash2, Search, TrendingUp, X, User, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { salaryService } from '../services/salary.service';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const EmployeeList: React.FC = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [includeInactive, setIncludeInactive] = useState(false);
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [revisionHistory, setRevisionHistory] = useState<any[]>([]);
@@ -24,7 +27,7 @@ const EmployeeList: React.FC = () => {
 
   const fetchEmployees = async () => {
     try {
-      const data = await getEmployees();
+      const data = await getEmployees(includeInactive);
       setEmployees(data);
     } catch (err) {
       console.error('Failed to fetch employees', err);
@@ -35,15 +38,25 @@ const EmployeeList: React.FC = () => {
 
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [includeInactive]);
 
   const handleDelete = async (id: string) => {
     try {
       await deleteEmployee(id);
-      showToast('Employee deleted successfully', 'success');
+      showToast('Employee deactivated successfully', 'success');
       fetchEmployees();
     } catch (err) {
-      showToast('Failed to delete employee', 'error');
+      showToast('Failed to deactivate employee', 'error');
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      await restoreEmployee(id);
+      showToast('Employee restored successfully', 'success');
+      fetchEmployees();
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Failed to restore employee', 'error');
     }
   };
 
@@ -104,15 +117,28 @@ const EmployeeList: React.FC = () => {
       </div>
 
       <div className="premium-card">
-        <div style={{ marginBottom: '2rem', position: 'relative', maxWidth: '400px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input 
-            type="text" 
-            placeholder="Search by name, email or employee ID..." 
-            style={{ width: '100%', paddingLeft: '3rem' }}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input 
+              type="text" 
+              placeholder="Search by name, email or employee ID..." 
+              style={{ width: '100%', paddingLeft: '3rem' }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          {user?.role === 'ADMIN' && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-main)', fontWeight: '600' }}>
+              <input 
+                type="checkbox" 
+                checked={includeInactive}
+                onChange={(e) => setIncludeInactive(e.target.checked)}
+                style={{ width: '1.2rem', height: '1.2rem' }}
+              />
+              Show Inactive
+            </label>
+          )}
         </div>
 
         <div className="table-container" style={{ border: 'none', boxShadow: 'none' }}>
@@ -129,7 +155,7 @@ const EmployeeList: React.FC = () => {
             </thead>
             <tbody>
               {filteredEmployees.map(emp => (
-                <tr key={emp.id}>
+                <tr key={emp.id} style={{ opacity: emp.is_active ? 1 : 0.6 }}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       <div style={{ 
@@ -146,7 +172,10 @@ const EmployeeList: React.FC = () => {
                         {emp.first_name[0]}{emp.last_name[0]}
                       </div>
                       <div>
-                        <div style={{ fontWeight: '700', color: 'var(--text-main)' }}>{emp.first_name} {emp.last_name}</div>
+                        <div style={{ fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {emp.first_name} {emp.last_name}
+                          {!emp.is_active && <span className="badge badge-danger" style={{ fontSize: '0.65rem', padding: '0.15rem 0.4rem' }}>INACTIVE</span>}
+                        </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>{emp.employee_code}</div>
                       </div>
                     </div>
@@ -169,9 +198,17 @@ const EmployeeList: React.FC = () => {
                       <button onClick={() => navigate(`/employees/edit/${emp.id}`)} className="btn btn-secondary" style={{ padding: '0.4rem', borderRadius: '6px' }} title="Edit">
                         <Edit2 size={16} />
                       </button>
-                      <button onClick={() => handleDelete(emp.id)} className="btn btn-secondary" style={{ padding: '0.4rem', borderRadius: '6px' }} title="Delete">
-                        <Trash2 size={16} color="var(--danger)" />
-                      </button>
+                      {emp.is_active ? (
+                        <button onClick={() => handleDelete(emp.id)} className="btn btn-secondary" style={{ padding: '0.4rem', borderRadius: '6px' }} title="Deactivate">
+                          <Trash2 size={16} color="var(--danger)" />
+                        </button>
+                      ) : (
+                        user?.role === 'ADMIN' && (
+                          <button onClick={() => handleRestore(emp.id)} className="btn btn-secondary" style={{ padding: '0.4rem', borderRadius: '6px' }} title="Restore">
+                            <RotateCcw size={16} color="var(--success)" />
+                          </button>
+                        )
+                      )}
                     </div>
                   </td>
                 </tr>

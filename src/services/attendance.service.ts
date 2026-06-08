@@ -47,6 +47,7 @@ export class AttendanceService {
     const employees = await prisma.employee.findMany({
       where: { 
         company_id: companyId,
+        is_active: true,
         employment_status: { in: ['ACTIVE', 'PROBATION', 'NOTICE_PERIOD'] }
       },
       select: {
@@ -76,6 +77,7 @@ export class AttendanceService {
     const employees = await prisma.employee.findMany({
       where: { 
         company_id: companyId,
+        is_active: true,
         employment_status: { in: ['ACTIVE', 'PROBATION', 'NOTICE_PERIOD'] }
       },
       select: {

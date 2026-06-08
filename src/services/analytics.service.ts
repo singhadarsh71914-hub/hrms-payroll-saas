@@ -29,7 +29,7 @@ export class AnalyticsService {
     const firstDayThisMonth = new Date(currentYear, currentMonth - 1, 1);
     
     const activeEmployees = await prisma.employee.count({
-      where: { company_id: companyId, employment_status: 'ACTIVE' }
+      where: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }
     });
 
     const newHires = await prisma.employee.count({

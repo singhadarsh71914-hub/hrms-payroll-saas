@@ -6,6 +6,7 @@ import prisma from '../lib/prisma.ts';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
 import { AppError } from '../middleware/error.ts';
 import { sendEmail } from '../lib/email.ts';
+import { AttendanceService } from '../services/attendance.service.ts';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
@@ -16,8 +17,15 @@ router.use(authenticate);
 // GET ALL EMPLOYEES
 router.get('/', async (req: AuthRequest, res: any, next: any) => {
   try {
+    const includeInactive = req.query.include_inactive === 'true' && req.user?.role === 'ADMIN';
+    const whereClause: any = { company_id: req.user?.company_id as string };
+    
+    if (!includeInactive) {
+      whereClause.is_active = true;
+    }
+
     const employees = await prisma.employee.findMany({
-      where: { company_id: req.user?.company_id as string },
+      where: whereClause,
       include: { department: true, designation: true },
     });
     res.json(employees);
@@ -329,20 +337,61 @@ router.put('/:id', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, 
   }
 });
 
-// DELETE
+// DELETE (Soft Delete)
 router.delete('/:id', authorize('ADMIN'), async (req: AuthRequest, res: any, next: any) => {
   try {
-    const result = await prisma.employee.deleteMany({
+    const existing = await prisma.employee.findFirst({
       where: {
         id: req.params.id as string,
         company_id: req.user?.company_id as string,
-      },
+      }
     });
-    if (result.count === 0) return next(new AppError('Employee not found or unauthorized', 404));
-    res.json({ message: 'Employee deleted successfully' });
+
+    if (!existing) return next(new AppError('Employee not found or unauthorized', 404));
+
+    await prisma.employee.update({
+      where: { id: req.params.id as string },
+      data: {
+        is_active: false,
+        deleted_at: new Date()
+      }
+    });
+    res.json({ message: 'Employee deactivated successfully' });
   } catch (err) {
     next(err);
   }
 });
+
+// RESTORE
+router.post('/:id/restore', authorize('ADMIN'), async (req: AuthRequest, res: any, next: any) => {
+  console.log('RESTORE HANDLER EXECUTED', req.params.id);
+  try {
+    const existing = await prisma.employee.findFirst({
+      where: {
+        id: req.params.id as string,
+        company_id: req.user?.company_id as string,
+      }
+    });
+
+    if (!existing) return next(new AppError('Employee not found or unauthorized', 404));
+
+    const updated = await prisma.employee.update({
+      where: { id: req.params.id as string },
+      data: {
+        is_active: true,
+        deleted_at: null
+      }
+    });
+    res.json({ message: 'Employee restored successfully', employee: updated });
+  } catch (err: any) {
+    if (err.code === 'P2002') {
+      return next(new AppError('Cannot restore: employee code or email conflict', 400));
+    }
+    next(err);
+  }
+});
+
+console.log('EMPLOYEE ROUTES LOADED');
+console.log('RESTORE ROUTE REGISTERED');
 
 export default router;

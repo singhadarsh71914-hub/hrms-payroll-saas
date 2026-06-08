@@ -11,10 +11,9 @@ export const getMyPayslips = async () => {
 };
 
 export const downloadPayslip = async (payslipId: string) => {
-  const response = await api.get(`/self-service/payslips/${payslipId}/download`, {
+  return api.get(`/self-service/payslips/${payslipId}/download`, {
     responseType: 'blob',
   });
-  return response.data;
 };
 
 export const getMyLeaves = async () => {

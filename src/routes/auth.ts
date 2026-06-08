@@ -86,6 +86,14 @@ router.post(
         return next(new AppError('Invalid credentials', 401));
       }
 
+      if (!user.is_active) {
+        return next(new AppError('User account is inactive', 403));
+      }
+
+      if (user.employee && !user.employee.is_active) {
+        return next(new AppError('Employee account is inactive', 403));
+      }
+
       const token = jwt.sign(
         { 
           id: user.id, 

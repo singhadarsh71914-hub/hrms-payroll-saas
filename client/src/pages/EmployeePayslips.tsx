@@ -23,11 +23,24 @@ const EmployeePayslips = () => {
 
   const handleDownload = async (payslipId: string, month: number, year: number) => {
     try {
-      const blob = await downloadPayslip(payslipId);
-      const url = window.URL.createObjectURL(new Blob([blob]));
+      const response = await downloadPayslip(payslipId);
+      const blob = new Blob([response.data], { 
+        type: response.headers['content-type'] || 'application/pdf' 
+      });
+
+      let filename = `payslip_${month}_${year}.pdf`;
+      const contentDisposition = response.headers['content-disposition'];
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `payslip_${month}_${year}.pdf`);
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);

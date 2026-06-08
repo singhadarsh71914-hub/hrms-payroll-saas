@@ -98,6 +98,8 @@ model Employee {
   notice_period_days      Int                @default(30)
   avatar_url              String?
   user_id                 String?            @unique
+  is_active               Boolean            @default(true)
+  deleted_at              DateTime?
   created_at              DateTime           @default(now())
   updated_at              DateTime           @updatedAt
   attendance              Attendance[]

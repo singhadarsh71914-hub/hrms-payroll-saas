@@ -1,7 +1,7 @@
 import api from './api';
 
-export const getEmployees = async () => {
-  const response = await api.get('/employees');
+export const getEmployees = async (includeInactive: boolean = false) => {
+  const response = await api.get('/employees', { params: { include_inactive: includeInactive } });
   return response.data;
 };
 
@@ -22,6 +22,11 @@ export const updateEmployee = async (id: string, employeeData: any) => {
 
 export const deleteEmployee = async (id: string) => {
   const response = await api.delete(`/employees/${id}`);
+  return response.data;
+};
+
+export const restoreEmployee = async (id: string) => {
+  const response = await api.post(`/employees/${id}/restore`);
   return response.data;
 };
 
@@ -55,9 +60,15 @@ export const deleteEmployeeDocument = async (id: string) => {
   return response.data;
 };
 
+export const downloadEmployeeDocument = async (id: string) => {
+  return api.get(`/documents/${id}/download`, {
+    responseType: 'blob'
+  });
+};
+
 export const uploadEmployeeDocument = async (employeeId: string, formData: FormData) => {
   formData.append('employee_id', employeeId);
-  const response = await api.post('/documents/upload', formData, {
+  const response = await api.post('/documents', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
   return response.data;

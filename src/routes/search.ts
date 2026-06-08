@@ -44,6 +44,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
     const matchingEmployees = await prisma.employee.findMany({
       where: {
         company_id,
+        is_active: true,
         OR: nameMatchConditions
       },
       select: { id: true }
@@ -60,6 +61,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
       employees = await prisma.employee.findMany({
         where: {
           company_id,
+          is_active: true,
           employment_status: 'ACTIVE',
           OR: [
             ...nameMatchConditions,

@@ -30,9 +30,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  exposedHeaders: ['Content-Disposition']
+}));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Logger
 app.use((req, res, next) => {
@@ -67,8 +68,19 @@ app.get('/', (req, res) => {
 // Error Handling
 app.use(errorHandler);
 
+import expressListEndpoints from 'express-list-endpoints';
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  
+  console.log('--- REGISTERED ROUTES ---');
+  const endpoints = expressListEndpoints(app);
+  endpoints.forEach(route => {
+    route.methods.forEach(method => {
+      console.log(`${method} ${route.path}`);
+    });
+  });
+  console.log('-------------------------');
 });
 
 export default app;

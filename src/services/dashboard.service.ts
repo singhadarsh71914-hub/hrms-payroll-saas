@@ -15,7 +15,7 @@ export class DashboardService {
     ] = await Promise.all([
       // Total active employees
       prisma.employee.count({
-        where: { company_id: companyId, employment_status: 'ACTIVE' }
+        where: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }
       }),
       // Pending leave requests
       prisma.leaveRequest.count({

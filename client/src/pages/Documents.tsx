@@ -106,17 +106,55 @@ const Documents = () => {
     }
   };
 
-  const handleDownload = (fileUrl: string, fileName: string) => {
-    if (!fileUrl) {
-      return showToast("File URL not found", 'error');
+  const handleDownload = async (doc: any) => {
+    const docId = doc.id;
+    const documentName = doc.document_name;
+    console.log('Downloading document:', docId, documentName);
+    const downloadUrl = `documents/${docId}/download`;
+    
+    if (!docId) {
+      return showToast("Document ID not found", 'error');
     }
-    const link = document.createElement('a');
-    link.href = `http://localhost:3000${fileUrl}`;
-    link.download = fileName;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    
+    try {
+      showToast("Preparing download...", 'info');
+      const response = await api.get(downloadUrl, {
+        responseType: 'blob'
+      });
+      
+      // Fix: Create blob with correct MIME type from server
+      const blob = new Blob([response.data], { 
+        type: response.headers['content-type'] 
+      });
+      
+      // Fix: Extract filename from Content-Disposition header if available
+      let finalFileName = documentName;
+      const contentDisposition = response.headers['content-disposition'];
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
+        if (filenameMatch && filenameMatch[1]) {
+          finalFileName = filenameMatch[1];
+        }
+      } else {
+        // Fallback: Use file_url extension if header is missing
+        const ext = doc.file_url.split('.').pop();
+        if (ext && !finalFileName.toLowerCase().endsWith(`.${ext.toLowerCase()}`)) {
+          finalFileName = `${finalFileName}.${ext}`;
+        }
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', finalFileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed', err);
+      showToast("Failed to download document", 'error');
+    }
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -247,7 +285,7 @@ const Documents = () => {
                     {getFileIcon(doc.document_name)}
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => handleDownload(doc.file_url, doc.document_name)} style={{ padding: '0.5rem', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: 'none', cursor: 'pointer' }} title="Download">
+                    <button onClick={() => handleDownload(doc)} style={{ padding: '0.5rem', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: 'none', cursor: 'pointer' }} title="Download">
                       <Download size={18} />
                     </button>
                     {isHR && (

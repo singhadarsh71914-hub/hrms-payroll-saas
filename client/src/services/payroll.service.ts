@@ -47,9 +47,8 @@ export const payrollService = {
     return response.data;
   },
   downloadPayslip: async (runId: string, employeeId: string) => {
-    const response = await api.get(`/payroll/${runId}/payslip/${employeeId}`, {
+    return api.get(`/payroll/${runId}/payslip/${employeeId}`, {
       responseType: 'blob',
     });
-    return response.data;
   },
 };
