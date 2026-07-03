@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
 import prisma from '../lib/prisma.ts';
+import { validate } from '../middleware/validate.ts';
+import { createReimbursementSchema, updateReimbursementStatusSchema } from '../schemas/reimbursement.schema.ts';
 
 const router = Router();
 router.use(authenticate);
@@ -20,7 +22,7 @@ router.get('/my', async (req: AuthRequest, res: any, next: any) => {
 });
 
 // Apply for reimbursement
-router.post('/', async (req: AuthRequest, res: any, next: any) => {
+router.post('/', validate(createReimbursementSchema), async (req: AuthRequest, res: any, next: any) => {
   console.log('POST /api/reimbursements');
   try {
     const employee = await prisma.employee.findUnique({ where: { user_id: req.user!.id } });
@@ -56,11 +58,12 @@ router.get('/', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, nex
 });
 
 // Process reimbursement
-router.put('/:id/status', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, next: any) => {
+router.put('/:id/status', authorize('ADMIN', 'HR'), validate(updateReimbursementStatusSchema), async (req: AuthRequest, res: any, next: any) => {
   console.log(`PUT /api/reimbursements/${req.params.id}/status`);
   try {
     const { status, remarks } = req.body;
     const claim = await prisma.reimbursement.update({
+      // @ts-ignore
       where: { id: req.params.id },
       data: { status, remarks, approved_by: req.user!.id, approved_at: new Date() }
     });

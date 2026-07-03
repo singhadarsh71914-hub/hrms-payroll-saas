@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import prisma from '../lib/prisma.ts';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
+import { validate } from '../middleware/validate.ts';
+import { createDepartmentSchema, createDesignationSchema } from '../schemas/org.schema.ts';
 
 const router = Router();
 router.use(authenticate);
@@ -13,7 +15,7 @@ router.get('/departments', async (req: AuthRequest, res) => {
   res.json(departments);
 });
 
-router.post('/departments', authorize('ADMIN', 'HR'), async (req: AuthRequest, res) => {
+router.post('/departments', authorize('ADMIN', 'HR'), validate(createDepartmentSchema), async (req: AuthRequest, res) => {
   const dept = await prisma.department.create({
     data: { ...req.body, company_id: req.user?.company_id as string },
   });
@@ -28,7 +30,7 @@ router.get('/designations', async (req: AuthRequest, res) => {
   res.json(designations);
 });
 
-router.post('/designations', authorize('ADMIN', 'HR'), async (req: AuthRequest, res) => {
+router.post('/designations', authorize('ADMIN', 'HR'), validate(createDesignationSchema), async (req: AuthRequest, res) => {
   const desig = await prisma.designation.create({
     data: { ...req.body, company_id: req.user?.company_id as string },
   });

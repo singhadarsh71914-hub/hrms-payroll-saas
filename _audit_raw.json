@@ -1,0 +1,653 @@
+[
+  {
+    "label": "Dashboard: overview stats",
+    "method": "GET",
+    "url": "/api/analytics/overview",
+    "status": 200,
+    "ok": true,
+    "data": {
+      "activeEmployees": 0,
+      "newHires": 0,
+      "exits": 0,
+      "currentPayrollCost": 0,
+      "payrollChange": 0,
+      "pendingActions": 0,
+      "pendingLeaves": 0,
+      "pendingLoans": 0,
+      "attendanceRate": 0,
+      "attritionRate": 0,
+      "costPerEmployee": 0
+    }
+  },
+  {
+    "label": "Dashboard: headcount trend",
+    "method": "GET",
+    "url": "/api/analytics/headcount-trend",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/analytics/headcount-trend</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Dashboard: payroll trend",
+    "method": "GET",
+    "url": "/api/analytics/payroll-trend",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Dashboard: leave analytics",
+    "method": "GET",
+    "url": "/api/analytics/leave-analytics",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/analytics/leave-analytics</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Dashboard: department dist",
+    "method": "GET",
+    "url": "/api/analytics/department-distribution",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/analytics/department-distribution</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Dashboard: top earners",
+    "method": "GET",
+    "url": "/api/analytics/top-earners",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/analytics/top-earners</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Dashboard: attendance rate",
+    "method": "GET",
+    "url": "/api/analytics/attendance-rate",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/analytics/attendance-rate</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Dashboard: recent activity",
+    "method": "GET",
+    "url": "/api/dashboard/recent-activity",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/dashboard/recent-activity</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Employees: list",
+    "method": "GET",
+    "url": "/api/employees",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Employees: list paginated",
+    "method": "GET",
+    "url": "/api/employees?page=1&limit=10",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Employees: search",
+    "method": "GET",
+    "url": "/api/employees?search=test",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Employees: filter active",
+    "method": "GET",
+    "url": "/api/employees?status=active",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Employees: departments (org)",
+    "method": "GET",
+    "url": "/api/org/departments",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Employees: designations (org)",
+    "method": "GET",
+    "url": "/api/org/designations",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Attendance: list",
+    "method": "GET",
+    "url": "/api/attendance",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/attendance</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Attendance: list with month",
+    "method": "GET",
+    "url": "/api/attendance?month=2026-06",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/attendance</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Attendance: clock-in",
+    "method": "POST",
+    "url": "/api/attendance/clock-in",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/attendance/clock-in</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Attendance: clock-out",
+    "method": "POST",
+    "url": "/api/attendance/clock-out",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/attendance/clock-out</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Attendance: summary",
+    "method": "GET",
+    "url": "/api/attendance/summary",
+    "status": 500,
+    "ok": false,
+    "data": {
+      "status": "error",
+      "message": "\nInvalid `prisma.employee.findMany()` invocation in\nC:\\Users\\singh\\source\\repos\\my-ai-project\\src\\services\\attendance.service.ts:77:45\n\n  74 const startDate = new Date(year, month - 1, 1);\n  75 const endDate = new Date(year, month, 0, 23, 59, 59, 999);\n  76 \n→ 77 const employees = await prisma.employee.findMany({\n       where: {\n         company_id: \"c07aed79-f499-4c9c-9891-0e57ac892d48\",\n         is_active: true,\n         employment_status: {\n           in: [\n             \"ACTIVE\",\n             \"PROBATION\",\n             \"NOTICE_PERIOD\"\n           ]\n         }\n       },\n       select: {\n         id: true,\n         first_name: true,\n         last_name: true,\n         employee_code: true,\n         attendance: {\n           where: {\n             date: {\n               gte: new Date(\"Invalid Date\"),\n                    ~~~~~~~~~~~~~~~~~~~~~~~~\n               lte: new Date(\"Invalid Date\")\n             }\n           }\n         }\n       },\n       orderBy: {\n         employee_code: \"asc\"\n       }\n     })\n\nInvalid value for argument `gte`: Provided Date object is invalid. Expected Date."
+    }
+  },
+  {
+    "label": "Attendance: export",
+    "method": "GET",
+    "url": "/api/attendance/export?month=2026-06",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/attendance/export</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Leave: list all",
+    "method": "GET",
+    "url": "/api/leave",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/leave</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Leave: leave types",
+    "method": "GET",
+    "url": "/api/leave/types",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/leave/types</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Leave: balances",
+    "method": "GET",
+    "url": "/api/leave/balances",
+    "status": 404,
+    "ok": false,
+    "data": {
+      "status": "error",
+      "message": "Employee profile not found"
+    }
+  },
+  {
+    "label": "Leave: create request",
+    "method": "POST",
+    "url": "/api/leave",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/leave</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Leave: approve (bogus id)",
+    "method": "PUT",
+    "url": "/api/leave/bogus-id/approve",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot PUT /api/leave/bogus-id/approve</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Performance: list reviews",
+    "method": "GET",
+    "url": "/api/performance",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Performance: cycles",
+    "method": "GET",
+    "url": "/api/performance/cycles",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/performance/cycles</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Performance: create cycle",
+    "method": "POST",
+    "url": "/api/performance/cycles",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/performance/cycles</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Performance: analytics",
+    "method": "GET",
+    "url": "/api/performance/analytics",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/performance/analytics</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Payroll: list runs",
+    "method": "GET",
+    "url": "/api/payroll",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/payroll</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Payroll: list with month",
+    "method": "GET",
+    "url": "/api/payroll?month=2026-06",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/payroll</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Payroll: run payroll",
+    "method": "POST",
+    "url": "/api/payroll/run",
+    "status": 400,
+    "ok": false,
+    "data": {
+      "status": "error",
+      "message": "body.month: Invalid input: expected number, received string, body.year: Invalid input: expected number, received undefined"
+    }
+  },
+  {
+    "label": "Payroll: salary structures",
+    "method": "GET",
+    "url": "/api/salary/structures",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/salary/structures</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Payroll: payslip download (bogus)",
+    "method": "GET",
+    "url": "/api/payroll/bogus-id/payslip",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/payroll/bogus-id/payslip</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Payroll: export",
+    "method": "GET",
+    "url": "/api/payroll/export?month=2026-06",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/payroll/export</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Loans: list all",
+    "method": "GET",
+    "url": "/api/loans",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Loans: list paginated",
+    "method": "GET",
+    "url": "/api/loans?page=1&limit=10",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Loans: create (bogus emp)",
+    "method": "POST",
+    "url": "/api/loans",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/loans</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Loans: approve (bogus)",
+    "method": "PUT",
+    "url": "/api/loans/bogus-id/approve",
+    "status": 400,
+    "ok": false,
+    "data": {
+      "status": "error",
+      "message": "params.id: Invalid UUID"
+    }
+  },
+  {
+    "label": "Reimbursements: list",
+    "method": "GET",
+    "url": "/api/reimbursements",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Reimbursements: create",
+    "method": "POST",
+    "url": "/api/reimbursements",
+    "status": 400,
+    "ok": false,
+    "data": {
+      "status": "error",
+      "message": "body.type: Invalid option: expected one of \"TRAVEL\"|\"FOOD\"|\"MEDICAL\"|\"INTERNET\"|\"OTHER\""
+    }
+  },
+  {
+    "label": "Reimbursements: approve bogus",
+    "method": "PUT",
+    "url": "/api/reimbursements/bogus/approve",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot PUT /api/reimbursements/bogus/approve</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Documents: list",
+    "method": "GET",
+    "url": "/api/documents",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Documents: types",
+    "method": "GET",
+    "url": "/api/documents/types",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/documents/types</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Documents: download bogus",
+    "method": "GET",
+    "url": "/api/documents/bogus-id/download",
+    "status": 404,
+    "ok": false,
+    "data": {
+      "error": "Document not found in database"
+    }
+  },
+  {
+    "label": "Tax: declarations list",
+    "method": "GET",
+    "url": "/api/tax/declarations",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/tax/declarations</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Tax: Form 16 list",
+    "method": "GET",
+    "url": "/api/tax/form16",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/tax/form16</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Tax: compute tax",
+    "method": "POST",
+    "url": "/api/tax/compute",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/tax/compute</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Tax: generate Form16 bogus",
+    "method": "GET",
+    "url": "/api/tax/form16/bogus-id/download",
+    "status": 400,
+    "ok": false,
+    "data": {
+      "status": "error",
+      "message": "Invalid financial year"
+    }
+  },
+  {
+    "label": "Holidays: list",
+    "method": "GET",
+    "url": "/api/holidays",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Holidays: create",
+    "method": "POST",
+    "url": "/api/holidays",
+    "status": 400,
+    "ok": false,
+    "data": {
+      "status": "error",
+      "message": "body.type: Invalid option: expected one of \"PUBLIC_HOLIDAY\"|\"OPTIONAL_HOLIDAY\""
+    }
+  },
+  {
+    "label": "Holidays: delete bogus",
+    "method": "DELETE",
+    "url": "/api/holidays/bogus-id",
+    "status": 500,
+    "ok": false,
+    "data": {
+      "status": "error",
+      "message": "\nInvalid `prisma.holiday.delete()` invocation in\nC:\\Users\\singh\\source\\repos\\my-ai-project\\src\\services\\holiday.service.ts:51:27\n\n  48 }\n  49 \n  50 static async deleteHoliday(id: string, companyId: string) {\n→ 51   return prisma.holiday.delete(\nAn operation failed because it depends on one or more records that were required but not found. No record was found for a delete."
+    }
+  },
+  {
+    "label": "Holidays: export",
+    "method": "GET",
+    "url": "/api/holidays/export",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/holidays/export</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Announcements: list",
+    "method": "GET",
+    "url": "/api/announcements",
+    "status": 200,
+    "ok": true,
+    "data": []
+  },
+  {
+    "label": "Announcements: create NORMAL",
+    "method": "POST",
+    "url": "/api/announcements",
+    "status": 200,
+    "ok": true,
+    "data": {
+      "id": "af850916-c4a5-4a84-9e40-ef9f790b00d5",
+      "company_id": "c07aed79-f499-4c9c-9891-0e57ac892d48",
+      "title": "Audit Test",
+      "content": "Content",
+      "priority": "NORMAL",
+      "created_by": "5b48eccc-534a-446a-8281-5d47c30954c2",
+      "created_at": "2026-06-18T11:47:16.687Z",
+      "updated_at": "2026-06-18T11:47:16.687Z"
+    }
+  },
+  {
+    "label": "Audit: list",
+    "method": "GET",
+    "url": "/api/audit-logs",
+    "status": 200,
+    "ok": true,
+    "data": {
+      "logs": [
+        {
+          "id": "902f0f10-d5ba-4f12-bdb7-bc89c3414bd8",
+          "company_id": "c07aed79-f499-4c9c-9891-0e57ac892d48",
+          "user_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "action": "LOGIN_SUCCESS",
+          "entity_type": "USER",
+          "entity_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "metadata": {},
+          "ip_address": "::1",
+          "created_at": "2026-06-18T11:47:16.441Z",
+          "user": {
+            "email": "verify_test_admin@hrms.local",
+            "role": "ADMIN"
+          }
+        },
+        {
+          "id": "b3909ec9-f014-4026-9816-ffc4a4210f3c",
+          "company_id": "c07aed79-f499-4c9c-9891-0e57ac892d48",
+          "user_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "action": "LOGIN_SUCCESS",
+          "entity_type": "USER",
+          "entity_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "metadata": {},
+          "ip_address": "::1",
+          "created_at": "2026-06-18T11:27:13.315Z",
+          "user": {
+            "email": "verify_test_admin@hrms.local",
+            "role": "ADMIN"
+          }
+        }
+      ],
+      "pagination": {
+        "total": 2,
+        "page": 1,
+        "limit": 20,
+        "totalPages": 1
+      }
+    }
+  },
+  {
+    "label": "Audit: paginated",
+    "method": "GET",
+    "url": "/api/audit-logs?page=1&limit=20",
+    "status": 200,
+    "ok": true,
+    "data": {
+      "logs": [
+        {
+          "id": "902f0f10-d5ba-4f12-bdb7-bc89c3414bd8",
+          "company_id": "c07aed79-f499-4c9c-9891-0e57ac892d48",
+          "user_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "action": "LOGIN_SUCCESS",
+          "entity_type": "USER",
+          "entity_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "metadata": {},
+          "ip_address": "::1",
+          "created_at": "2026-06-18T11:47:16.441Z",
+          "user": {
+            "email": "verify_test_admin@hrms.local",
+            "role": "ADMIN"
+          }
+        },
+        {
+          "id": "b3909ec9-f014-4026-9816-ffc4a4210f3c",
+          "company_id": "c07aed79-f499-4c9c-9891-0e57ac892d48",
+          "user_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "action": "LOGIN_SUCCESS",
+          "entity_type": "USER",
+          "entity_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "metadata": {},
+          "ip_address": "::1",
+          "created_at": "2026-06-18T11:27:13.315Z",
+          "user": {
+            "email": "verify_test_admin@hrms.local",
+            "role": "ADMIN"
+          }
+        }
+      ],
+      "pagination": {
+        "total": 2,
+        "page": 1,
+        "limit": 20,
+        "totalPages": 1
+      }
+    }
+  },
+  {
+    "label": "Audit: filter by action",
+    "method": "GET",
+    "url": "/api/audit-logs?action=LOGIN_SUCCESS",
+    "status": 200,
+    "ok": true,
+    "data": {
+      "logs": [
+        {
+          "id": "902f0f10-d5ba-4f12-bdb7-bc89c3414bd8",
+          "company_id": "c07aed79-f499-4c9c-9891-0e57ac892d48",
+          "user_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "action": "LOGIN_SUCCESS",
+          "entity_type": "USER",
+          "entity_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "metadata": {},
+          "ip_address": "::1",
+          "created_at": "2026-06-18T11:47:16.441Z",
+          "user": {
+            "email": "verify_test_admin@hrms.local",
+            "role": "ADMIN"
+          }
+        },
+        {
+          "id": "b3909ec9-f014-4026-9816-ffc4a4210f3c",
+          "company_id": "c07aed79-f499-4c9c-9891-0e57ac892d48",
+          "user_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "action": "LOGIN_SUCCESS",
+          "entity_type": "USER",
+          "entity_id": "5b48eccc-534a-446a-8281-5d47c30954c2",
+          "metadata": {},
+          "ip_address": "::1",
+          "created_at": "2026-06-18T11:27:13.315Z",
+          "user": {
+            "email": "verify_test_admin@hrms.local",
+            "role": "ADMIN"
+          }
+        }
+      ],
+      "pagination": {
+        "total": 2,
+        "page": 1,
+        "limit": 20,
+        "totalPages": 1
+      }
+    }
+  },
+  {
+    "label": "Audit: export",
+    "method": "GET",
+    "url": "/api/audit-logs/export",
+    "status": 404,
+    "ok": false,
+    "data": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/audit-logs/export</pre>\n</body>\n</html>\n"
+  },
+  {
+    "label": "Search: global",
+    "method": "GET",
+    "url": "/api/search?q=test",
+    "status": 200,
+    "ok": true,
+    "data": {
+      "results": {
+        "employees": [],
+        "leaves": [],
+        "payrolls": [],
+        "loans": []
+      }
+    }
+  }
+]

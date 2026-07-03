@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { getMyLeaves, applyLeave } from '../services/selfService.service';
-import { Plus } from 'lucide-react';
+import { Plus, CalendarX } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { Skeleton } from '../components/Skeleton';
 
 const EmployeeLeaves = () => {
+  const { showToast } = useToast();
   const [leaves, setLeaves] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     leaveType: 'ANNUAL',
@@ -11,7 +15,6 @@ const EmployeeLeaves = () => {
     endDate: '',
     reason: '',
   });
-  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchLeaves();
@@ -23,89 +26,113 @@ const EmployeeLeaves = () => {
       setLeaves(data);
     } catch (error) {
       console.error('Failed to fetch leaves', error);
+      showToast('Failed to load leaves', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     try {
       await applyLeave(formData);
+      showToast('Leave applied successfully', 'success');
       setShowModal(false);
-      fetchLeaves();
       setFormData({ leaveType: 'ANNUAL', startDate: '', endDate: '', reason: '' });
+      // Optimistic refresh
+      fetchLeaves();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to apply for leave');
+      showToast(err.response?.data?.message || 'Failed to apply for leave', 'error');
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'APPROVED': return '#16a34a';
-      case 'REJECTED': return '#dc2626';
-      case 'PENDING': return '#ca8a04';
-      default: return '#64748b';
+      case 'APPROVED': return 'var(--success)';
+      case 'REJECTED': return 'var(--danger)';
+      case 'PENDING': return 'var(--warning)';
+      default: return 'var(--text-muted)';
+    }
+  };
+
+  const getStatusBg = (status: string) => {
+    switch (status) {
+      case 'APPROVED': return 'rgba(16, 185, 129, 0.1)';
+      case 'REJECTED': return 'rgba(239, 68, 68, 0.1)';
+      case 'PENDING': return 'rgba(245, 158, 11, 0.1)';
+      default: return 'rgba(100, 116, 139, 0.1)';
     }
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold' }}>My Leaves</h1>
-        <button onClick={() => setShowModal(true)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Plus size={20} />
+    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '3rem' }}>
+      <div className="page-header">
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>My Leaves</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage your leave applications and history.</p>
+        </div>
+        <button data-testid="apply-leave-btn" onClick={() => setShowModal(true)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Plus size={18} />
           Apply for Leave
         </button>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Days</th>
-              <th>Reason</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaves.map((leave) => (
-              <tr key={leave.id}>
-                <td style={{ fontWeight: '500' }}>{leave.leave_type}</td>
-                <td>{new Date(leave.start_date).toLocaleDateString()}</td>
-                <td>{new Date(leave.end_date).toLocaleDateString()}</td>
-                <td>{Number(leave.total_days)}</td>
-                <td>{leave.reason}</td>
-                <td>
-                  <span style={{ 
-                    padding: '0.25rem 0.75rem', 
-                    borderRadius: '9999px', 
-                    fontSize: '0.75rem', 
-                    fontWeight: '600',
-                    backgroundColor: `${getStatusColor(leave.status)}20`,
-                    color: getStatusColor(leave.status)
-                  }}>
-                    {leave.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="premium-card" style={{ padding: 0, overflow: 'hidden' }}>
+        {loading ? (
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Skeleton height="40px" />
+            <Skeleton height="40px" />
+            <Skeleton height="40px" />
+          </div>
+        ) : leaves.length === 0 ? (
+          <div className="empty-state">
+            <CalendarX size={48} className="empty-state-icon" />
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No leave history found</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>You haven't applied for any leaves yet.</p>
+            <button onClick={() => setShowModal(true)} className="btn btn-primary">Apply Now</button>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="premium-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Days</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaves.map((leave) => (
+                  <tr key={leave.id}>
+                    <td style={{ fontWeight: 600 }}>{leave.leave_type}</td>
+                    <td>{new Date(leave.start_date).toLocaleDateString()}</td>
+                    <td>{new Date(leave.end_date).toLocaleDateString()}</td>
+                    <td>{Number(leave.total_days)}</td>
+                    <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{leave.reason || '-'}</td>
+                    <td>
+                      <span className="status-badge" style={{ backgroundColor: getStatusBg(leave.status), color: getStatusColor(leave.status) }}>
+                        {leave.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', maxWidth: '500px', width: '100%' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Apply for Leave</h2>
-            {error && <div style={{ color: '#dc2626', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</div>}
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '500px', padding: '32px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '24px' }}>Apply for Leave</h2>
             <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: '1rem' }}>
-                <label className="form-label">Leave Type</label>
+              <div className="form-group">
+                <label>Leave Type</label>
                 <select 
-                  className="form-input" 
                   value={formData.leaveType}
                   onChange={(e) => setFormData({ ...formData, leaveType: e.target.value })}
                 >
@@ -114,39 +141,37 @@ const EmployeeLeaves = () => {
                   <option value="CASUAL">Casual Leave</option>
                 </select>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                <div>
-                  <label className="form-label">Start Date</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Start Date</label>
                   <input 
                     type="date" 
-                    className="form-input" 
                     value={formData.startDate}
                     onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                     required
                   />
                 </div>
-                <div>
-                  <label className="form-label">End Date</label>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>End Date</label>
                   <input 
                     type="date" 
-                    className="form-input" 
                     value={formData.endDate}
                     onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                     required
                   />
                 </div>
               </div>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label className="form-label">Reason</label>
+              <div className="form-group">
+                <label>Reason</label>
                 <textarea 
-                  className="form-input" 
                   rows={3}
                   value={formData.reason}
                   onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                  placeholder="Optional details"
                 />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                <button type="button" onClick={() => setShowModal(false)} className="btn" style={{ border: '1px solid #e2e8f0' }}>Cancel</button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px' }}>
+                <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">Cancel</button>
                 <button type="submit" className="btn btn-primary">Submit Request</button>
               </div>
             </form>

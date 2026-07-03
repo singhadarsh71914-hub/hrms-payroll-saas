@@ -1,10 +1,11 @@
 import api from './api';
+import { setToken, setUserLocal, clearAuth, getUser } from '../utils/auth';
 
 export const login = async (credentials: any) => {
   const response = await api.post('/auth/login', credentials);
-  if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
+  if (response.data.accessToken) {
+    setToken(response.data.accessToken);
+    setUserLocal(response.data.user);
   }
   return response.data;
 };
@@ -14,12 +15,16 @@ export const register = async (userData: any) => {
   return response.data;
 };
 
-export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+export const logout = async () => {
+  clearAuth();
+  
+  try {
+    await api.post('/auth/logout');
+  } catch (err) {
+    console.error('Logout error', err);
+  }
 };
 
 export const getCurrentUser = () => {
-  const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+  return getUser();
 };

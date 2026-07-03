@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { leaveService, type LeaveBalance, type LeaveRequest } from '../services/leave.service';
 import { getEmployees } from '../services/employee.service';
 import { CheckCircle, XCircle, Clock, Plus, Info, Calendar, User, FileText, ChevronRight } from 'lucide-react';
+import { Skeleton } from '../components/Skeleton';
 
 const Leave: React.FC = () => {
   const { user } = useAuth();
@@ -84,7 +85,29 @@ const Leave: React.FC = () => {
     }
   };
 
-  if (loading) return <div style={{ padding: '2rem' }}>Loading leave ecosystem...</div>;
+  if (loading) return (
+    <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <div className="page-header">
+        <div>
+          <Skeleton width="300px" height="32px" />
+          <div style={{ marginTop: '0.5rem' }}><Skeleton width="400px" height="20px" /></div>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: isHR ? '1fr' : '1fr 400px', gap: '2.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          {!isHR && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+              <Skeleton height="150px" borderRadius="12px" />
+              <Skeleton height="150px" borderRadius="12px" />
+              <Skeleton height="150px" borderRadius="12px" />
+            </div>
+          )}
+          <Skeleton height="400px" borderRadius="12px" />
+        </div>
+        {!isHR && <Skeleton height="350px" borderRadius="12px" />}
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -221,9 +244,10 @@ const Leave: React.FC = () => {
                   {requests.length === 0 && (
                     <tr>
                       <td colSpan={isHR ? 6 : 5} style={{ padding: '4rem', textAlign: 'center' }}>
-                        <div style={{ color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                           <FileText size={48} opacity={0.1} />
-                           <span>No leave requests awaiting action.</span>
+                        <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
+                           <FileText size={48} className="empty-state-icon" />
+                           <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No requests found</h3>
+                           <p style={{ color: 'var(--text-secondary)' }}>No leave requests awaiting action.</p>
                         </div>
                       </td>
                     </tr>

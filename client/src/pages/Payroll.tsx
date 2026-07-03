@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { payrollService, type PayrollRun, type Payslip } from '../services/payroll.service';
-import { Play, FileText, ChevronRight, CheckCircle, Download, Search, Users, IndianRupee, Activity, Briefcase } from 'lucide-react';
+import { AlertTriangle, Play, FileText, ChevronRight, CheckCircle, Download, Search, Users, IndianRupee, Activity, Briefcase } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { Skeleton } from '../components/Skeleton';
+import { PayrollProgressModal } from '../components/payroll/PayrollProgressModal';
 
 const Payroll: React.FC = () => {
   const { showToast } = useToast();
@@ -9,7 +11,9 @@ const Payroll: React.FC = () => {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [payslips, setPayslips] = useState<Payslip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,6 +48,7 @@ const Payroll: React.FC = () => {
     setProcessing(true);
     try {
       const result = await payrollService.runPayroll(month, year);
+      setCurrentJobId(result.job_id || 'dummy-job');
       await fetchRuns();
       await fetchPayslips(result.id);
       showToast('Payroll processed successfully!', 'success');
@@ -58,13 +63,14 @@ const Payroll: React.FC = () => {
     if (!selectedRunId) return;
     try {
       const response = await payrollService.downloadPayslip(selectedRunId, employeeId);
+      const contentType = response.headers['content-type'];
       const blob = new Blob([response.data], { 
-        type: response.headers['content-type'] || 'application/pdf' 
+        type: typeof contentType === 'string' ? contentType : 'application/pdf' 
       });
 
       let filename = `payslip_${employeeId}.pdf`;
       const contentDisposition = response.headers['content-disposition'];
-      if (contentDisposition) {
+      if (typeof contentDisposition === 'string') {
         const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
         if (filenameMatch && filenameMatch[1]) {
           filename = filenameMatch[1];
@@ -93,7 +99,10 @@ const Payroll: React.FC = () => {
 
   // Derived Summary Stats
   const totalPayroll = payslips.reduce((acc, curr) => acc + Number(curr.net_salary), 0);
+  const totalGross = payslips.reduce((acc, curr) => acc + Number(curr.gross_salary), 0);
   const totalDeductions = payslips.reduce((acc, curr) => acc + Number(curr.total_deductions), 0);
+  const totalEmployerContribs = payslips.reduce((acc, curr) => acc + Number(curr.total_employer_contributions || 0), 0);
+  const totalCompanyCost = payslips.reduce((acc, curr) => acc + Number(curr.total_company_cost || 0), 0);
   const employeesPaid = payslips.length;
 
   // Derive unique departments dynamically from payslips for filter
@@ -106,7 +115,32 @@ const Payroll: React.FC = () => {
     return matchSearch && matchDept;
   });
 
-  if (loading) return <div style={{ padding: '2rem' }}>Loading payroll systems...</div>;
+  if (loading) return (
+    <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
+      <div className="page-header">
+        <div>
+           <Skeleton width="300px" height="32px" />
+           <div style={{ marginTop: '0.5rem' }}><Skeleton width="400px" height="20px" /></div>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <Skeleton height="350px" borderRadius="12px" />
+          <Skeleton height="300px" borderRadius="12px" />
+        </div>
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+            <Skeleton height="100px" borderRadius="12px" />
+            <Skeleton height="100px" borderRadius="12px" />
+            <Skeleton height="100px" borderRadius="12px" />
+            <Skeleton height="100px" borderRadius="12px" />
+            <Skeleton height="100px" borderRadius="12px" />
+          </div>
+          <Skeleton height="400px" borderRadius="12px" />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
@@ -147,6 +181,7 @@ const Payroll: React.FC = () => {
               </select>
             </div>
             <button 
+              data-testid="run-payroll-btn"
               className="btn btn-primary" 
               style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontWeight: '800', fontSize: '1rem' }}
               onClick={handleRunPayroll}
@@ -187,7 +222,11 @@ const Payroll: React.FC = () => {
                   <ChevronRight size={18} color={selectedRunId === run.id ? "var(--primary)" : "var(--text-muted)"} />
                 </div>
               ))}
-              {runs.length === 0 && (
+              {error ? (
+                <div style={{ color: 'var(--danger)', textAlign: 'center', padding: '3rem', fontSize: '0.875rem' }}>
+                  Failed to load batch history.
+                </div>
+              ) : runs.length === 0 && (
                 <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem', fontSize: '0.875rem' }}>
                   No batch history found.
                 </div>
@@ -202,27 +241,26 @@ const Payroll: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                
                {/* Summary Cards */}
-               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-                  <div className="premium-card" style={{ borderTop: '4px solid #3b82f6', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                     <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '1rem', borderRadius: '12px', color: '#3b82f6' }}><IndianRupee size={24} /></div>
-                     <div>
-                        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total Net Payout</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#3b82f6' }}>₹{totalPayroll.toLocaleString()}</div>
-                     </div>
+               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem' }}>
+                  <div className="premium-card" style={{ borderTop: '4px solid #10b981', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Gross Salary</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#10b981' }}>₹{totalGross.toLocaleString()}</div>
                   </div>
-                  <div className="premium-card" style={{ borderTop: '4px solid #ef4444', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                     <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1rem', borderRadius: '12px', color: '#ef4444' }}><Activity size={24} /></div>
-                     <div>
-                        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total Deductions</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#ef4444' }}>₹{totalDeductions.toLocaleString()}</div>
-                     </div>
+                  <div className="premium-card" style={{ borderTop: '4px solid #ef4444', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Emp Deductions</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#ef4444' }}>₹{totalDeductions.toLocaleString()}</div>
                   </div>
-                  <div className="premium-card" style={{ borderTop: '4px solid #10b981', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                     <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1rem', borderRadius: '12px', color: '#10b981' }}><Users size={24} /></div>
-                     <div>
-                        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Employees Paid</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#10b981' }}>{employeesPaid}</div>
-                     </div>
+                  <div className="premium-card" style={{ borderTop: '4px solid #3b82f6', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Net Salary</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#3b82f6' }}>₹{totalPayroll.toLocaleString()}</div>
+                  </div>
+                  <div className="premium-card" style={{ borderTop: '4px solid #f59e0b', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Employer Contrib</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#f59e0b' }}>₹{totalEmployerContribs.toLocaleString()}</div>
+                  </div>
+                  <div className="premium-card" style={{ borderTop: '4px solid #8b5cf6', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Company Cost</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#8b5cf6' }}>₹{totalCompanyCost.toLocaleString()}</div>
                   </div>
                </div>
 
@@ -232,7 +270,11 @@ const Payroll: React.FC = () => {
                      <h3 style={{ margin: 0, fontWeight: '800', fontSize: '1.25rem' }}>
                        Batch Results: {selectedRun ? `${months[selectedRun.month - 1]} ${selectedRun.year}` : ''}
                      </h3>
-                     <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CheckCircle size={14} /> PROCESSED</span>
+                     {selectedRun?.skipped_employees && selectedRun.skipped_employees > 0 ? (
+                         <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#b45309', background: '#fef3c7' }}><AlertTriangle size={14} /> Completed with {selectedRun.skipped_employees} employees skipped</span>
+                       ) : (
+                         <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CheckCircle size={14} /> Completed successfully</span>
+                       )}
                   </div>
                 </div>
 
@@ -310,8 +352,11 @@ const Payroll: React.FC = () => {
                       {filteredPayslips.length === 0 && (
                         <tr>
                           <td colSpan={6} style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-                             <FileText size={48} opacity={0.2} style={{ margin: '0 auto 1rem' }} />
-                             No records found matching your filters.
+                             <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
+                                <AlertTriangle size={48} className="empty-state-icon" style={{ color: '#b45309' }} />
+                                <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No salary components configured</h3>
+                                <p style={{ color: 'var(--text-secondary)' }}>Create or assign a salary structure before processing payroll.</p>
+                             </div>
                           </td>
                         </tr>
                       )}

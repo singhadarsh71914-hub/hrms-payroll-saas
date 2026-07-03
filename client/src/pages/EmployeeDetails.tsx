@@ -19,8 +19,10 @@ import {
   applyEmployeeLeave,
   applyEmployeeLoan
 } from '../services/employee.service';
+import { BonusesTab } from './BonusesTab';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
-type TabType = 'profile' | 'attendance' | 'leaves' | 'payroll' | 'documents' | 'loans';
+type TabType = 'profile' | 'attendance' | 'leaves' | 'payroll' | 'documents' | 'loans' | 'bonuses';
 
 const Modal = ({ isOpen, onClose, title, children }: any) => {
   if (!isOpen) return null;
@@ -78,7 +80,7 @@ const EmployeeDetails: React.FC = () => {
 
     try {
       setTabLoading(true);
-      let data;
+      let data: any;
       switch (tab) {
         case 'attendance': data = await getEmployeeAttendance(id); break;
         case 'leaves': data = await getEmployeeLeaves(id); break;
@@ -141,7 +143,7 @@ const EmployeeDetails: React.FC = () => {
       case 'profile': return <ProfileTab employee={employee} />;
       case 'attendance': return <AttendanceTab data={tabData.attendance} employeeId={id!} onRefresh={handleRefreshTab} />;
       case 'leaves': return <LeavesTab data={tabData.leaves} employeeId={id!} onRefresh={handleRefreshTab} />;
-      case 'payroll': return <PayrollTab data={tabData.payrolls} />;
+      case 'payroll': return <PayrollTab data={tabData.payrolls} employeeId={id!} />;
       case 'documents': return <DocumentsTab data={tabData.documents} employeeId={id!} onRefresh={handleRefreshTab} />;
       case 'loans': return <LoansTab data={tabData.loans} employeeId={id!} onRefresh={handleRefreshTab} />;
       default: return null;
@@ -506,23 +508,29 @@ const LeavesTab = ({ data, employeeId, onRefresh }: any) => {
 };
 
 // TAB: PAYROLL
-const PayrollTab = ({ data }: { data: any }) => {
+const PayrollTab = ({ data, employeeId }: { data: any, employeeId: string }) => {
   const hasData = data && data.length > 0;
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   return (
-    <div>
-      {!hasData ? (
-        <EmptyState label="No payroll records found" />
-      ) : (
-        <div className="premium-card" style={{ padding: 0, overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      
+      <BonusesTab employeeId={employeeId} />
+
+      <div>
+        <h3 style={{ color: '#f8fafc', fontSize: '1.1rem', fontWeight: '600', marginBottom: '1.5rem' }}>Payslips</h3>
+        {!hasData ? (
+          <EmptyState label="No payroll records found" />
+        ) : (
+          <div className="premium-card" style={{ padding: 0, overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid #1e293b', backgroundColor: 'rgba(15, 23, 42, 0.4)' }}>
                 <th style={{ padding: '1rem 1.5rem', color: '#94a3b8', fontSize: '0.85rem' }}>MONTH/YEAR</th>
                 <th style={{ padding: '1rem 1.5rem', color: '#94a3b8', fontSize: '0.85rem' }}>GROSS</th>
                 <th style={{ padding: '1rem 1.5rem', color: '#94a3b8', fontSize: '0.85rem' }}>DEDUCTIONS</th>
-                <th style={{ padding: '1rem 1.5rem', color: '#94a3b8', fontSize: '0.85rem' }}>NET SALARY</th>
+                <th style={{ padding: '1rem 1.5rem', color: '#94a3b8', fontSize: '0.85rem' }}>TAKE HOME</th>
+                <th style={{ padding: '1rem 1.5rem', color: '#94a3b8', fontSize: '0.85rem' }}>COMPANY COST</th>
                 <th style={{ padding: '1rem 1.5rem', color: '#94a3b8', fontSize: '0.85rem' }}>ACTION</th>
               </tr>
             </thead>
@@ -533,6 +541,7 @@ const PayrollTab = ({ data }: { data: any }) => {
                   <td style={{ padding: '1rem 1.5rem', color: '#cbd5e1' }}>₹{Number(p.gross_salary).toLocaleString()}</td>
                   <td style={{ padding: '1rem 1.5rem', color: '#ef4444' }}>₹{Number(p.total_deductions).toLocaleString()}</td>
                   <td style={{ padding: '1rem 1.5rem', color: '#10b981', fontWeight: '700' }}>₹{Number(p.net_salary).toLocaleString()}</td>
+                  <td style={{ padding: '1rem 1.5rem', color: '#8b5cf6', fontWeight: '700' }}>₹{Number(p.total_company_cost || 0).toLocaleString()}</td>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <button className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                       <Eye size={14} /> View
@@ -543,7 +552,8 @@ const PayrollTab = ({ data }: { data: any }) => {
             </tbody>
           </table>
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
@@ -555,15 +565,18 @@ const DocumentsTab = ({ data, employeeId, onRefresh }: any) => {
   const [docType, setDocType] = useState('OTHER');
   const [docName, setDocName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [confirmDeleteDocId, setConfirmDeleteDocId] = useState<string | null>(null);
 
-  const handleDelete = async (docId: string) => {
-    if (!window.confirm('Are you sure you want to delete this document?')) return;
+  const handleDelete = async () => {
+    if (!confirmDeleteDocId) return;
     try {
-      await deleteEmployeeDocument(docId);
+      await deleteEmployeeDocument(confirmDeleteDocId);
       onRefresh();
     } catch (err) {
       console.error(err);
       alert('Failed to delete document');
+    } finally {
+      setConfirmDeleteDocId(null);
     }
   };
 
@@ -571,13 +584,14 @@ const DocumentsTab = ({ data, employeeId, onRefresh }: any) => {
     try {
       const response = await downloadEmployeeDocument(doc.id);
       
+      const contentType = response.headers['content-type'];
       const blob = new Blob([response.data], { 
-        type: response.headers['content-type'] 
+        type: typeof contentType === 'string' ? contentType : undefined 
       });
 
       let finalFileName = doc.document_name;
       const contentDisposition = response.headers['content-disposition'];
-      if (contentDisposition) {
+      if (typeof contentDisposition === 'string') {
         const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
         if (filenameMatch && filenameMatch[1]) {
           finalFileName = filenameMatch[1];
@@ -652,7 +666,7 @@ const DocumentsTab = ({ data, employeeId, onRefresh }: any) => {
                 <button onClick={() => handleDownload(doc)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }} title="Download">
                   <Download size={16} />
                 </button>
-                <button onClick={() => handleDelete(doc.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }} title="Delete">
+                <button onClick={() => setConfirmDeleteDocId(doc.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }} title="Delete">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -660,6 +674,16 @@ const DocumentsTab = ({ data, employeeId, onRefresh }: any) => {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!confirmDeleteDocId}
+        title="Delete Document"
+        message="Are you sure you want to delete this document? This action cannot be undone."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDeleteDocId(null)}
+        confirmText="Delete"
+        isDestructive={true}
+      />
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Upload Document">
         <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -822,9 +846,10 @@ const StatCard = ({ label, value, color }: { label: string, value: string | numb
 );
 
 const EmptyState = ({ label, actionLabel, onAction }: { label: string, actionLabel?: string, onAction?: () => void }) => (
-  <div style={{ padding: '4rem 2rem', textAlign: 'center' }} className="premium-card">
-    <Info size={40} color="#475569" style={{ marginBottom: '1rem', margin: '0 auto' }} />
-    <p style={{ color: '#64748b', marginBottom: actionLabel ? '1.5rem' : 0 }}>{label}</p>
+  <div className="empty-state premium-card" style={{ padding: '4rem 2rem' }}>
+    <Info size={40} className="empty-state-icon" />
+    <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No Data Available</h3>
+    <p style={{ color: 'var(--text-secondary)', marginBottom: actionLabel ? '1.5rem' : 0 }}>{label}</p>
     {actionLabel && onAction && (
       <button className="btn btn-primary mx-auto" onClick={onAction}>
         <Plus size={18} /> {actionLabel}

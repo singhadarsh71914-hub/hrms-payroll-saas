@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.ts';
 import { Prisma } from '@prisma/client';
+import { NotificationService } from './notification.service.ts';
 
 const { Decimal } = Prisma;
 
@@ -49,6 +50,7 @@ export class LeaveService {
   }
 
   static async applyLeave(employeeId: string, data: { leaveType: string, startDate: string, endDate: string, reason?: string }) {
+    try {
     const start = new Date(data.startDate);
     const end = new Date(data.endDate);
     const diffTime = Math.abs(end.getTime() - start.getTime());
@@ -63,7 +65,7 @@ export class LeaveService {
       throw new Error(`Insufficient leave balance. Requested: ${diffDays}, Available: ${balance.balance_days}`);
     }
 
-    return prisma.leaveRequest.create({
+    const request = await prisma.leaveRequest.create({
       data: {
         employee_id: employeeId,
         leave_type: data.leaveType,
@@ -74,6 +76,41 @@ export class LeaveService {
         status: 'PENDING'
       }
     });
+
+    const emp = await prisma.employee.findUnique({ where: { id: employeeId }, include: { company: true } });
+    if (emp) {
+      if (emp.reporting_manager_id) {
+        const manager = await prisma.employee.findUnique({ where: { id: emp.reporting_manager_id } });
+        if (manager && manager.user_id) {
+          await NotificationService.createNotification({
+            company_id: emp.company_id,
+            user_id: manager.user_id,
+            type: 'LEAVE_APPLIED',
+            title: 'New Leave Request',
+            message: `${emp.first_name} ${emp.last_name} applied for ${diffDays} days of ${data.leaveType} leave.`,
+          });
+        }
+      }
+      const hrUsers = await prisma.user.findMany({
+        where: { company_id: emp.company_id, role: { in: ['HR', 'ADMIN'] } }
+      });
+      if (hrUsers.length > 0) {
+        await NotificationService.createBulkNotifications(
+          emp.company_id,
+          hrUsers.map(hr => ({
+            user_id: hr.id,
+            type: 'LEAVE_APPLIED',
+            title: 'New Leave Request',
+            message: `${emp.first_name} ${emp.last_name} applied for leave.`,
+          }))
+        );
+      }
+    }
+    return request;
+  } catch (error) {
+      console.error('APPLY_LEAVE_ERROR:', error);
+      throw error;
+    }
   }
 
   static async getLeaveRequests(companyId: string, employeeId?: string) {
@@ -108,7 +145,7 @@ export class LeaveService {
     if (!request) throw new Error('Leave request not found');
     if (request.status !== 'PENDING') throw new Error('Request already processed');
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const updatedRequest = await tx.leaveRequest.update({
         where: { id: requestId },
         data: {
@@ -143,5 +180,22 @@ export class LeaveService {
 
       return updatedRequest;
     });
+
+    const requestAfter = await prisma.leaveRequest.findUnique({
+      where: { id: requestId },
+      include: { employee: true }
+    });
+
+    if (requestAfter && requestAfter.employee && requestAfter.employee.user_id) {
+      await NotificationService.createNotification({
+        company_id: requestAfter.employee.company_id,
+        user_id: requestAfter.employee.user_id,
+        type: status === 'APPROVED' ? 'LEAVE_APPROVED' : 'LEAVE_REJECTED',
+        title: status === 'APPROVED' ? 'Leave Approved' : 'Leave Rejected',
+        message: `Your ${requestAfter.leave_type} leave request has been ${status.toLowerCase()}.`,
+      });
+    }
+
+    return requestAfter;
   }
 }

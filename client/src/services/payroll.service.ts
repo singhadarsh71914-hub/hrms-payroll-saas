@@ -7,6 +7,7 @@ export interface PayrollRun {
   run_date: string;
   status: string;
   total_employees: number;
+  skipped_employees: number;
   total_gross: number;
   total_deductions: number;
   total_net: number;
@@ -20,6 +21,8 @@ export interface Payslip {
   gross_salary: number;
   total_deductions: number;
   net_salary: number;
+  total_employer_contributions?: number;
+  total_company_cost?: number;
   pf_employee: number;
   esi_employee: number;
   tds: number;

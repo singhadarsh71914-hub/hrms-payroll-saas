@@ -138,8 +138,8 @@
             });
 
             const data = await res.json();
-            if (data.token) {
-                TOKEN = data.token;
+            if (data.accessToken) {
+                TOKEN = data.accessToken;
                 localStorage.setItem('hrms_token', TOKEN);
                 document.getElementById('token-display').innerText = 'Token Saved: ' + TOKEN.substring(0, 30) + '...';
             }

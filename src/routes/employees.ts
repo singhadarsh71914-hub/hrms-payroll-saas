@@ -1,5 +1,5 @@
+import { logError } from '../utils/logError.ts';
 import { Router } from 'express';
-import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma.ts';
@@ -7,15 +7,29 @@ import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
 import { AppError } from '../middleware/error.ts';
 import { sendEmail } from '../lib/email.ts';
 import { AttendanceService } from '../services/attendance.service.ts';
+import { AuditService, AuditAction } from '../services/audit.service.ts';
+import { validate } from '../middleware/validate.ts';
+import { createEmployeeSchema, updateEmployeeSchema } from '../schemas/employee.schema.ts';
+import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET environment variable is missing.");
+  process.exit(1);
+}
 
 // Apply authentication to all routes
 router.use(authenticate);
 
 // GET ALL EMPLOYEES
 router.get('/', async (req: AuthRequest, res: any, next: any) => {
+  console.log('=== EMPLOYEES REQUEST ===');
+  console.log('User:', req.user);
+  console.log('Company ID:', req.user?.company_id);
+  console.log('Query:', req.query);
+
   try {
     const includeInactive = req.query.include_inactive === 'true' && req.user?.role === 'ADMIN';
     const whereClause: any = { company_id: req.user?.company_id as string };
@@ -28,9 +42,12 @@ router.get('/', async (req: AuthRequest, res: any, next: any) => {
       where: whereClause,
       include: { department: true, designation: true },
     });
-    res.json(employees);
+    
+    console.log('Employee count:', employees.length);
+    return res.json(employees);
   } catch (err) {
-    next(err);
+    console.error('EMPLOYEE ROUTE ERROR:', err);
+    throw err;
   }
 });
 
@@ -38,54 +55,63 @@ router.get('/', async (req: AuthRequest, res: any, next: any) => {
 router.post(
   '/',
   authorize('ADMIN', 'HR'),
-  [
-    body('employee_code').notEmpty(),
-    body('first_name').notEmpty(),
-    body('last_name').notEmpty(),
-    body('work_email').isEmail(),
-    body('date_of_joining').isISO8601(),
-  ],
+  validate(createEmployeeSchema),
   async (req: AuthRequest, res: any, next: any) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return next(new AppError('Validation failed', 400));
-
     try {
-      const allowedFields = [
-        'employee_code', 'first_name', 'last_name', 'display_name', 'gender', 'date_of_birth',
-        'date_of_joining', 'date_of_leaving', 'employment_status', 'employment_type',
-        'department_id', 'designation_id', 'reporting_manager_id', 'work_location',
-        'address_line1', 'address_line2', 'city', 'state', 'pincode', 'country',
-        'work_email', 'personal_email', 'phone', 'emergency_contact_name',
-        'emergency_contact_phone', 'emergency_contact_relationship',
-        'pan_number', 'aadhaar_number', 'uan_number', 'esic_ip_number',
-        'bank_name', 'bank_account_number', 'bank_ifsc', 'probation_end_date',
-        'notice_period_days', 'avatar_url'
-      ];
+      const createData = { ...req.body };
 
-      const createData: any = {};
-      const unknownFields: string[] = [];
-
-      Object.keys(req.body).forEach(key => {
-        if (allowedFields.includes(key)) {
-          createData[key] = req.body[key];
-        } else {
-          unknownFields.push(key);
+      // Proactive duplicate checks
+      const existingEmployee = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { work_email: createData.work_email },
+            { employee_code: createData.employee_code }
+          ]
         }
       });
 
-      if (unknownFields.length > 0) {
-        return res.status(400).json({ 
-          message: 'Invalid employee profile field', 
-          details: `Unknown fields: ${unknownFields.join(', ')}` 
+      if (existingEmployee) {
+        if (existingEmployee.work_email === createData.work_email) {
+          return res.status(409).json({
+            status: 'error',
+            field: 'work_email',
+            message: 'An employee with this work email already exists.'
+          });
+        }
+        if (existingEmployee.employee_code === createData.employee_code) {
+          return res.status(409).json({
+            status: 'error',
+            field: 'employee_code',
+            message: 'Employee code already exists.'
+          });
+        }
+      }
+
+      const existingUser = await prisma.user.findUnique({
+        where: { email: createData.work_email }
+      });
+
+      if (existingUser) {
+        return res.status(409).json({
+          status: 'error',
+          field: 'work_email',
+          message: 'A user account with this email already exists.'
         });
       }
 
       // Type conversions
       if (createData.date_of_joining) createData.date_of_joining = new Date(createData.date_of_joining);
       if (createData.date_of_birth) createData.date_of_birth = new Date(createData.date_of_birth);
+      else delete createData.date_of_birth;
+      
       if (createData.date_of_leaving) createData.date_of_leaving = new Date(createData.date_of_leaving);
+      else delete createData.date_of_leaving;
+      
       if (createData.probation_end_date) createData.probation_end_date = new Date(createData.probation_end_date);
+      else delete createData.probation_end_date;
+      
       if (createData.notice_period_days) createData.notice_period_days = parseInt(createData.notice_period_days);
+      else delete createData.notice_period_days;
 
       // Handle relations
       if (!createData.department_id) delete createData.department_id;
@@ -148,9 +174,73 @@ router.post(
         `
       ).catch(err => console.error('Failed to send welcome email:', err));
 
+      await AuditService.log({
+        userId: req.user?.id,
+        companyId: req.user?.company_id as string,
+        action: AuditAction.EMPLOYEE_CREATE,
+        entityType: 'EMPLOYEE',
+        entityId: result.employee.id,
+        metadata: { employee_code: result.employee.employee_code, name: `${result.employee.first_name} ${result.employee.last_name}` },
+        ipAddress: req.ip,
+      });
+
       res.status(201).json(result.employee);
-    } catch (err) {
-      next(err);
+    } catch (error: any) {
+      console.error('\n===== EMPLOYEE CREATE ERROR =====');
+      console.error(error);
+
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const target = (error.meta as any)?.target as string[] | string | undefined;
+        
+        const targetStr = Array.isArray(target) ? target.join(',') : (target || '');
+
+        if (targetStr.includes('work_email')) {
+          return res.status(409).json({
+            status: 'error',
+            field: 'work_email',
+            message: 'An employee with this work email already exists.'
+          });
+        }
+
+        if (targetStr.includes('employee_code')) {
+          return res.status(409).json({
+            status: 'error',
+            field: 'employee_code',
+            message: 'Employee code already exists.'
+          });
+        }
+
+        return res.status(409).json({
+          status: 'error',
+          message: 'Duplicate data detected.'
+        });
+      }
+
+      if (error instanceof Error) {
+        console.error('MESSAGE:', error.message);
+        console.error('STACK:\n', error.stack);
+      }
+
+      if (error?.code) {
+        console.error('PRISMA CODE:', error.code);
+      }
+
+      if (error?.meta) {
+        console.error('PRISMA META:', error.meta);
+      }
+
+      console.error('REQUEST BODY:', req.body);
+      console.error('USER:', req.user);
+
+      return res.status(500).json({
+        status: 'error',
+        message: error instanceof Error
+          ? error.message
+          : 'Internal Server Error'
+      });
     }
   }
 );
@@ -178,10 +268,12 @@ router.get('/:id/attendance', async (req: AuthRequest, res: any, next: any) => {
     const { month, year } = req.query;
     // Security check: Verify employee belongs to the same company
     const employee = await prisma.employee.findFirst({
+      // @ts-ignore
       where: { id: req.params.id, company_id: req.user?.company_id as string }
     });
     if (!employee) return next(new AppError('Employee not found or unauthorized', 404));
 
+    // @ts-ignore
     const attendance = await AttendanceService.getEmployeeAttendance(
       req.params.id,
       month ? parseInt(month as string) : undefined,
@@ -190,9 +282,13 @@ router.get('/:id/attendance', async (req: AuthRequest, res: any, next: any) => {
     
     // Calculate stats
     const stats = {
+      // @ts-ignore
       PRESENT: attendance.filter(a => a.status === 'PRESENT').length,
+      // @ts-ignore
       ABSENT: attendance.filter(a => a.status === 'ABSENT').length,
+      // @ts-ignore
       HALF_DAY: attendance.filter(a => a.status === 'HALF_DAY').length,
+      // @ts-ignore
       ON_LEAVE: attendance.filter(a => a.status === 'ON_LEAVE').length,
       total: attendance.length
     };
@@ -208,7 +304,8 @@ router.get('/:id/leaves', async (req: AuthRequest, res: any, next: any) => {
   try {
     const leaves = await prisma.leaveRequest.findMany({
       where: { 
-        employee_id: req.params.id,
+        // @ts-ignore
+        employee_id: req.params.id as string,
         employee: { company_id: req.user?.company_id as string }
       },
       orderBy: { start_date: 'desc' }
@@ -224,7 +321,8 @@ router.get('/:id/payrolls', async (req: AuthRequest, res: any, next: any) => {
   try {
     const payrolls = await prisma.payslip.findMany({
       where: { 
-        employee_id: req.params.id,
+        // @ts-ignore
+        employee_id: req.params.id as string,
         employee: { company_id: req.user?.company_id as string }
       },
       orderBy: [{ year: 'desc' }, { month: 'desc' }]
@@ -240,7 +338,8 @@ router.get('/:id/documents', async (req: AuthRequest, res: any, next: any) => {
   try {
     const docs = await prisma.employeeDocument.findMany({
       where: { 
-        employee_id: req.params.id,
+        // @ts-ignore
+        employee_id: req.params.id as string,
         employee: { company_id: req.user?.company_id as string }
       },
       orderBy: { uploaded_at: 'desc' }
@@ -256,7 +355,8 @@ router.get('/:id/loans', async (req: AuthRequest, res: any, next: any) => {
   try {
     const loans = await prisma.loan.findMany({
       where: { 
-        employee_id: req.params.id,
+        // @ts-ignore
+        employee_id: req.params.id as string,
         employee: { company_id: req.user?.company_id as string }
       },
       include: { repayments: true },
@@ -269,37 +369,9 @@ router.get('/:id/loans', async (req: AuthRequest, res: any, next: any) => {
 });
 
 // UPDATE
-router.put('/:id', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, next: any) => {
+router.put('/:id', authorize('ADMIN', 'HR'), validate(updateEmployeeSchema), async (req: AuthRequest, res: any, next: any) => {
   try {
-    const allowedFields = [
-      'employee_code', 'first_name', 'last_name', 'display_name', 'gender', 'date_of_birth',
-      'date_of_joining', 'date_of_leaving', 'employment_status', 'employment_type',
-      'department_id', 'designation_id', 'reporting_manager_id', 'work_location',
-      'address_line1', 'address_line2', 'city', 'state', 'pincode', 'country',
-      'work_email', 'personal_email', 'phone', 'emergency_contact_name',
-      'emergency_contact_phone', 'emergency_contact_relationship',
-      'pan_number', 'aadhaar_number', 'uan_number', 'esic_ip_number',
-      'bank_name', 'bank_account_number', 'bank_ifsc', 'probation_end_date',
-      'notice_period_days', 'avatar_url'
-    ];
-
-    const updateData: any = {};
-    const unknownFields: string[] = [];
-
-    Object.keys(req.body).forEach(key => {
-      if (allowedFields.includes(key)) {
-        updateData[key] = req.body[key];
-      } else {
-        unknownFields.push(key);
-      }
-    });
-
-    if (unknownFields.length > 0) {
-      return res.status(400).json({ 
-        message: 'Invalid employee profile field', 
-        details: `Unknown fields: ${unknownFields.join(', ')}` 
-      });
-    }
+    const updateData = { ...req.body };
 
     // First verify ownership
     const existing = await prisma.employee.findFirst({
@@ -328,6 +400,16 @@ router.put('/:id', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, 
       data: updateData,
     });
     
+    await AuditService.log({
+      userId: req.user?.id,
+      companyId: req.user?.company_id as string,
+      action: AuditAction.EMPLOYEE_EDIT,
+      entityType: 'EMPLOYEE',
+      entityId: updated.id,
+      metadata: { employee_code: updated.employee_code, changes: Object.keys(updateData) },
+      ipAddress: req.ip,
+    });
+
     res.json({ message: 'Employee updated successfully', employee: updated });
   } catch (err: any) {
     if (err.code === 'P2002') {
@@ -356,6 +438,17 @@ router.delete('/:id', authorize('ADMIN'), async (req: AuthRequest, res: any, nex
         deleted_at: new Date()
       }
     });
+
+    await AuditService.log({
+      userId: req.user?.id,
+      companyId: req.user?.company_id as string,
+      action: AuditAction.EMPLOYEE_DEACTIVATE,
+      entityType: 'EMPLOYEE',
+      // @ts-ignore
+      entityId: req.params.id,
+      ipAddress: req.ip,
+    });
+
     res.json({ message: 'Employee deactivated successfully' });
   } catch (err) {
     next(err);
@@ -382,6 +475,55 @@ router.post('/:id/restore', authorize('ADMIN'), async (req: AuthRequest, res: an
         deleted_at: null
       }
     });
+
+    await AuditService.log({
+      userId: req.user?.id,
+      companyId: req.user?.company_id as string,
+      action: AuditAction.EMPLOYEE_RESTORE,
+      entityType: 'EMPLOYEE',
+      entityId: updated.id,
+      ipAddress: req.ip,
+    });
+
+    res.json({ message: 'Employee restored successfully', employee: updated });
+  } catch (err: any) {
+    if (err.code === 'P2002') {
+      return next(new AppError('Cannot restore: employee code or email conflict', 400));
+    }
+    next(err);
+  }
+});
+
+// RESTORE
+router.post('/:id/restore', authorize('ADMIN'), async (req: AuthRequest, res: any, next: any) => {
+  console.log('RESTORE HANDLER EXECUTED', req.params.id);
+  try {
+    const existing = await prisma.employee.findFirst({
+      where: {
+        id: req.params.id as string,
+        company_id: req.user?.company_id as string,
+      }
+    });
+
+    if (!existing) return next(new AppError('Employee not found or unauthorized', 404));
+
+    const updated = await prisma.employee.update({
+      where: { id: req.params.id as string },
+      data: {
+        is_active: true,
+        deleted_at: null
+      }
+    });
+
+    await AuditService.log({
+      userId: req.user?.id,
+      companyId: req.user?.company_id as string,
+      action: AuditAction.EMPLOYEE_RESTORE,
+      entityType: 'EMPLOYEE',
+      entityId: updated.id,
+      ipAddress: req.ip,
+    });
+
     res.json({ message: 'Employee restored successfully', employee: updated });
   } catch (err: any) {
     if (err.code === 'P2002') {
@@ -393,5 +535,120 @@ router.post('/:id/restore', authorize('ADMIN'), async (req: AuthRequest, res: an
 
 console.log('EMPLOYEE ROUTES LOADED');
 console.log('RESTORE ROUTE REGISTERED');
+
+// ==========================================
+// BONUSES & INCENTIVES
+// ==========================================
+
+router.get('/:id/bonuses', authenticate, authorize('ADMIN', 'HR', 'MANAGER'), async (req: AuthRequest, res: any) => {
+  try {
+    const bonuses = await prisma.employeeBonus.findMany({
+      where: { employee_id: req.params.id as string, is_active: true },
+      orderBy: { created_at: 'desc' }
+    });
+    res.json(bonuses);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/bonuses', authenticate, authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any) => {
+  try {
+    const { type, name, description, amount, taxable, recurring, start_date, end_date, effective_month, category, status } = req.body;
+    
+    if (Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Amount must be greater than 0' });
+    }
+
+    if (recurring && !start_date) {
+      return res.status(400).json({ error: 'Start date is required for recurring bonuses' });
+    }
+
+    const bonus = await prisma.employeeBonus.create({
+      data: {
+        employee_id: req.params.id as string,
+        company_id: req.user!.company_id as string,
+        type,
+        category: category || 'FIXED_BONUS',
+        status: status || 'APPROVED',
+        name,
+        description,
+        amount,
+        taxable: taxable ?? true,
+        recurring: recurring ?? false,
+        start_date: start_date ? new Date(start_date) : null,
+        end_date: end_date ? new Date(end_date) : null,
+        effective_month: effective_month || null,
+        created_by: req.user!.id
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        user_id: req.user!.id,
+        action: 'CREATE_BONUS',
+        entity_type: 'EmployeeBonus',
+        entity_id: bonus.id,
+        metadata: { employee_id: req.params.id as string, type, amount }
+      }
+    });
+
+    res.status(201).json(bonus);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/:id/bonuses/:bonusId', authenticate, authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any) => {
+  try {
+    const { type, name, description, amount, taxable, recurring, start_date, end_date, effective_month, category, status } = req.body;
+    
+    if (Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Amount must be greater than 0' });
+    }
+
+    const bonus = await prisma.employeeBonus.update({
+      where: { id: req.params.bonusId as string },
+      data: {
+        type,
+        category: category || 'FIXED_BONUS',
+        status: status || 'APPROVED',
+        name,
+        description,
+        amount,
+        taxable: taxable ?? true,
+        recurring: recurring ?? false,
+        start_date: start_date ? new Date(start_date) : null,
+        end_date: end_date ? new Date(end_date) : null,
+        effective_month: effective_month || null
+      }
+    });
+    res.json(bonus);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/:id/bonuses/:bonusId', authenticate, authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any) => {
+  try {
+    await prisma.employeeBonus.update({
+      where: { id: req.params.bonusId as string },
+      data: { is_active: false }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        user_id: req.user!.id,
+        action: 'ARCHIVE_BONUS',
+        entity_type: 'EmployeeBonus',
+        entity_id: req.params.bonusId as string
+      }
+    });
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default router;

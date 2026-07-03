@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
-  LayoutDashboard, Users, LogOut, CreditCard, Calendar, Clock, 
-  Palmtree, IndianRupee, FileText, Menu,
-  Award, Wallet, Receipt, Bell, ChevronRight, Key
+  LayoutDashboard, Users, LogOut, CreditCard, Calendar, Clock, Activity,
+  Palmtree, IndianRupee, FileText, Menu, Building2,
+  Award, Wallet, Receipt, Bell, ChevronRight, Key, MapPin, Shield
 } from 'lucide-react';
 import api from '../services/api';
 import { GlobalSearch } from './GlobalSearch';
+import { useNotification } from '../context/NotificationContext';
+import EmailVerificationBanner from './EmailVerificationBanner';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
@@ -21,6 +23,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Dropdown states
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  
+  const { notifications, unreadCount, markAllAsRead: handleMarkAllRead, markAsRead: handleMarkRead } = useNotification();
 
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -51,6 +55,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEscape);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
@@ -60,6 +65,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const formatRelativeTime = (dateString: string) => {
+    const diff = new Date().valueOf() - new Date(dateString).valueOf();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}d ago`;
+    return new Date(dateString).toLocaleDateString();
   };
 
   const NavGroup = ({ title, children }: { title: string, children: React.ReactNode }) => (
@@ -75,6 +92,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (path.includes('employee')) return 'Employees';
     if (path.includes('payroll')) return 'Payroll';
     if (path.includes('leave')) return 'Leave Management';
+    if (path.includes('attendance/intelligence')) return 'Command Center';
     if (path.includes('attendance')) return 'Attendance';
     if (path.includes('loan')) return 'Loans';
     if (path.includes('tax')) return 'Tax & Form 16';
@@ -125,8 +143,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </>
           ) : (
             <>
-              <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} style={{ marginBottom: '2rem' }}>
+              <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} style={{ marginBottom: '0.5rem' }}>
                 <LayoutDashboard size={18} /> {!collapsed && <span>Dashboard</span>}
+              </NavLink>
+              <NavLink to="/analytics" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} style={{ marginBottom: '2rem' }}>
+                <Activity size={18} /> {!collapsed && <span>Analytics</span>}
               </NavLink>
 
               <NavGroup title="HR Core">
@@ -135,6 +156,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </NavLink>
                 <NavLink to="/attendance" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <Clock size={18} /> {!collapsed && <span>Attendance</span>}
+                </NavLink>
+                <NavLink to="/attendance/intelligence" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <MapPin size={18} /> {!collapsed && <span>Command Center</span>}
                 </NavLink>
                 <NavLink to="/leave" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <Calendar size={18} /> {!collapsed && <span style={{ flex: 1 }}>Leave</span>}
@@ -148,6 +172,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <NavGroup title="Finance">
                 <NavLink to="/payroll" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <CreditCard size={18} /> {!collapsed && <span>Payroll</span>}
+                </NavLink>
+                <NavLink to="/salary-components" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <CreditCard size={18} /> {!collapsed && <span>Salary Components</span>}
+                </NavLink>
+                <NavLink to="/salary-structures" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <Building2 size={18} /> {!collapsed && <span>Salary Structures</span>}
                 </NavLink>
                 <NavLink to="/loans" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <Wallet size={18} /> {!collapsed && <span style={{ flex: 1 }}>Loans</span>}
@@ -171,6 +201,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <NavLink to="/announcements" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <Bell size={18} /> {!collapsed && <span>Announcements</span>}
                 </NavLink>
+                <NavLink to="/audit-logs" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <Clock size={18} /> {!collapsed && <span>Audit Logs</span>}
+                </NavLink>
+                <NavLink to="/statutory-config" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <Shield size={18} /> {!collapsed && <span>Statutory Config</span>}
+                </NavLink>
+                <NavLink to="/company-settings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <Building2 size={18} /> {!collapsed && <span>Company Settings</span>}
+                </NavLink>
               </NavGroup>
             </>
           )}
@@ -179,6 +218,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       
       {/* MAIN CONTENT AREA */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+        
+        <EmailVerificationBanner />
         
         {/* TOP NAVBAR */}
         <header className="top-navbar">
@@ -197,27 +238,47 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {/* NOTIFICATIONS */}
             <div ref={notifRef} style={{ position: 'relative' }}>
               <button 
+                data-testid="notification-bell"
                 onClick={() => setShowNotifications(!showNotifications)}
                 style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '8px', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-secondary)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
               >
                 <Bell size={18} />
-                <span style={{ position: 'absolute', top: '6px', right: '8px', width: '6px', height: '6px', background: 'var(--danger)', borderRadius: '50%' }} />
+                {unreadCount > 0 && (
+                  <span style={{ position: 'absolute', top: '6px', right: '8px', width: '8px', height: '8px', background: 'var(--danger)', borderRadius: '50%' }} />
+                )}
               </button>
               {showNotifications && (
-                <div className="dropdown-menu" style={{ position: 'absolute', top: '100%', right: 0, marginTop: '12px', width: '320px', zIndex: 200 }}>
+                <div className="dropdown-menu" style={{ position: 'absolute', top: '100%', right: 0, marginTop: '12px', width: '320px', zIndex: 200, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>
                    <div style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontWeight: 600, fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                     Notifications
-                     <span style={{ fontSize: '12px', color: 'var(--primary)', cursor: 'pointer' }}>Mark all read</span>
+                     Notifications {unreadCount > 0 && <span style={{ background: 'var(--primary)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '11px' }}>{unreadCount}</span>}
+                     {unreadCount > 0 && (
+                       <span data-testid="mark-all-read" onClick={handleMarkAllRead} style={{ fontSize: '12px', color: 'var(--primary)', cursor: 'pointer' }}>Mark all read</span>
+                     )}
                    </div>
                    <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
-                     <div className="dropdown-item" style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
-                       <div style={{ fontWeight: 500, fontSize: '13px' }}>Leave request from Adarsh Singh</div>
-                       <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>2 hours ago</div>
-                     </div>
-                     <div className="dropdown-item" style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
-                       <div style={{ fontWeight: 500, fontSize: '13px' }}>Payroll run completed successfully</div>
-                       <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Yesterday</div>
-                     </div>
+                     {notifications.length === 0 ? (
+                       <div className="empty-state" style={{ padding: '32px 16px', border: 'none', background: 'transparent' }}>
+                          <Bell size={32} className="empty-state-icon" style={{ opacity: 0.5, marginBottom: '12px' }} />
+                          <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px 0' }}>You're all caught up!</h4>
+                          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Notifications will appear here when there's an update.</p>
+                       </div>
+                     ) : (
+                       notifications.map((n) => (
+                         <div 
+                           key={n.id} 
+                           onClick={() => handleMarkRead(n.id, n.is_read)}
+                           className="dropdown-item" 
+                           style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer', background: n.is_read ? 'transparent' : 'rgba(var(--primary-rgb), 0.05)' }}
+                         >
+                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                             <div style={{ fontWeight: n.is_read ? 500 : 600, fontSize: '13px', color: n.is_read ? 'var(--text-primary)' : 'var(--primary)' }}>{n.title}</div>
+                             {!n.is_read && <span style={{ width: '6px', height: '6px', background: 'var(--primary)', borderRadius: '50%', marginTop: '6px' }} />}
+                           </div>
+                           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>{n.message}</div>
+                           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>{formatRelativeTime(n.created_at)}</div>
+                         </div>
+                       ))
+                     )}
                    </div>
                 </div>
               )}
@@ -228,6 +289,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {/* PROFILE */}
             <div ref={profileRef} style={{ position: 'relative' }}>
               <div 
+                data-testid="profile-dropdown"
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '4px 8px', borderRadius: '8px', transition: 'background 0.2s' }}
                 className="profile-trigger"
@@ -255,7 +317,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <button className="dropdown-item" style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'none', border: 'none', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', fontSize: '13px' }}>
                     Company Settings
                   </button>
-                  <button className="dropdown-item" onClick={handleLogout} style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--danger)', fontWeight: 500, fontSize: '13px' }}>
+                  <button className="dropdown-item" onClick={() => { throw new Error("Sentry Frontend Test"); }} style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'none', border: 'none', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', fontSize: '13px' }}>
+                    Test Sentry (Frontend)
+                  </button>
+                  <button className="dropdown-item" onClick={() => { api.get('/debug-sentry').catch(()=>console.log('Backend test sent')); }} style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'none', border: 'none', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', fontSize: '13px' }}>
+                    Test Sentry (Backend)
+                  </button>
+                  <button data-testid="logout-btn" className="dropdown-item" onClick={handleLogout} style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--danger)', fontWeight: 500, fontSize: '13px' }}>
                     <LogOut size={14} /> Logout
                   </button>
                 </div>
@@ -275,3 +343,4 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 export default Layout;
+

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
 import prisma from '../lib/prisma.ts';
+import { validate } from '../middleware/validate.ts';
+import { createPerformanceReviewSchema, updatePerformanceReviewSchema } from '../schemas/performance.schema.ts';
 
 const router = Router();
 router.use(authenticate);
@@ -35,7 +37,7 @@ router.get('/', authorize('ADMIN', 'HR', 'MANAGER'), async (req: AuthRequest, re
 });
 
 // Create performance review
-router.post('/', authorize('ADMIN', 'HR', 'MANAGER'), async (req: AuthRequest, res: any, next: any) => {
+router.post('/', authorize('ADMIN', 'HR', 'MANAGER'), validate(createPerformanceReviewSchema), async (req: AuthRequest, res: any, next: any) => {
   console.log('POST /api/performance');
   try {
     const { employee_id, cycle_name, review_period, goals_rating, skills_rating, attitude_rating, leadership_rating, remarks } = req.body;
@@ -69,11 +71,22 @@ router.post('/', authorize('ADMIN', 'HR', 'MANAGER'), async (req: AuthRequest, r
 });
 
 // Update performance review
-router.put('/:id', authorize('ADMIN', 'HR', 'MANAGER'), async (req: AuthRequest, res: any, next: any) => {
+router.put('/:id', authorize('ADMIN', 'HR', 'MANAGER'), validate(updatePerformanceReviewSchema), async (req: AuthRequest, res: any, next: any) => {
   console.log(`PUT /api/performance/${req.params.id}`);
   try {
     const { cycle_name, review_period, goals_rating, skills_rating, attitude_rating, leadership_rating, remarks } = req.body;
-    const overall_score = (goals_rating + skills_rating + attitude_rating + leadership_rating) / 4;
+    
+    // Fetch existing if partial update
+    // @ts-ignore
+    const existing = await prisma.performanceReview.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ error: 'Review not found' });
+
+    const updatedGoals = goals_rating ?? existing.goals_rating;
+    const updatedSkills = skills_rating ?? existing.skills_rating;
+    const updatedAttitude = attitude_rating ?? existing.attitude_rating;
+    const updatedLeadership = leadership_rating ?? existing.leadership_rating;
+
+    const overall_score = (updatedGoals + updatedSkills + updatedAttitude + updatedLeadership) / 4;
     
     let badge = 'Needs Improvement';
     if (overall_score >= 4.5) badge = 'Excellent';
@@ -81,14 +94,15 @@ router.put('/:id', authorize('ADMIN', 'HR', 'MANAGER'), async (req: AuthRequest,
     else if (overall_score >= 2.5) badge = 'Average';
 
     const review = await prisma.performanceReview.update({
+      // @ts-ignore
       where: { id: req.params.id },
       data: {
         cycle_name,
         review_period,
-        goals_rating,
-        skills_rating,
-        attitude_rating,
-        leadership_rating,
+        goals_rating: updatedGoals,
+        skills_rating: updatedSkills,
+        attitude_rating: updatedAttitude,
+        leadership_rating: updatedLeadership,
         overall_score,
         badge,
         remarks
@@ -104,6 +118,7 @@ router.put('/:id', authorize('ADMIN', 'HR', 'MANAGER'), async (req: AuthRequest,
 router.delete('/:id', authorize('ADMIN', 'HR', 'MANAGER'), async (req: AuthRequest, res: any, next: any) => {
   console.log(`DELETE /api/performance/${req.params.id}`);
   try {
+    // @ts-ignore
     await prisma.performanceReview.delete({ where: { id: req.params.id } });
     res.json({ success: true });
   } catch (err) {

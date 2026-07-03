@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { getMyPayslips, downloadPayslip } from '../services/selfService.service';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, ReceiptText } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { Skeleton } from '../components/Skeleton';
 
 const EmployeePayslips = () => {
+  const { showToast } = useToast();
   const [payslips, setPayslips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -16,6 +19,7 @@ const EmployeePayslips = () => {
       setPayslips(data);
     } catch (error) {
       console.error('Failed to fetch payslips', error);
+      showToast('Failed to load payslips', 'error');
     } finally {
       setLoading(false);
     }
@@ -24,13 +28,14 @@ const EmployeePayslips = () => {
   const handleDownload = async (payslipId: string, month: number, year: number) => {
     try {
       const response = await downloadPayslip(payslipId);
+      const contentType = response.headers['content-type'];
       const blob = new Blob([response.data], { 
-        type: response.headers['content-type'] || 'application/pdf' 
+        type: typeof contentType === 'string' ? contentType : 'application/pdf' 
       });
 
       let filename = `payslip_${month}_${year}.pdf`;
       const contentDisposition = response.headers['content-disposition'];
-      if (contentDisposition) {
+      if (typeof contentDisposition === 'string') {
         const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
         if (filenameMatch && filenameMatch[1]) {
           filename = filenameMatch[1];
@@ -46,6 +51,7 @@ const EmployeePayslips = () => {
       link.parentNode?.removeChild(link);
     } catch (error) {
       console.error('Failed to download payslip', error);
+      showToast('Failed to download payslip', 'error');
     }
   };
 
@@ -54,66 +60,75 @@ const EmployeePayslips = () => {
   };
 
   return (
-    <div>
-      <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '2rem' }}>My Payslips</h1>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '3rem' }}>
+      <div className="page-header">
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>My Payslips</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>View and download your monthly salary slips.</p>
+        </div>
+      </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Month/Year</th>
-              <th>Gross Salary</th>
-              <th>Deductions</th>
-              <th>Net Salary</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payslips.map((p) => (
-              <tr key={p.id}>
-                <td style={{ fontWeight: '500' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <FileText size={18} color="#64748b" />
-                    {getMonthName(p.month)} {p.year}
-                  </div>
-                </td>
-                <td>₹{Number(p.gross_salary).toLocaleString()}</td>
-                <td>₹{Number(p.total_deductions).toLocaleString()}</td>
-                <td style={{ fontWeight: 'bold', color: '#4f46e5' }}>₹{Number(p.net_salary).toLocaleString()}</td>
-                <td>
-                  <span style={{ 
-                    padding: '0.25rem 0.75rem', 
-                    borderRadius: '9999px', 
-                    fontSize: '0.75rem', 
-                    fontWeight: '600',
-                    backgroundColor: '#dcfce7',
-                    color: '#16a34a'
-                  }}>
-                    {p.status}
-                  </span>
-                </td>
-                <td>
-                  <button 
-                    onClick={() => handleDownload(p.id, p.month, p.year)}
-                    className="btn"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#4f46e5', padding: '0.25rem 0.5rem' }}
-                  >
-                    <Download size={16} />
-                    Download
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {payslips.length === 0 && !loading && (
-              <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                  No payslips found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="premium-card" style={{ padding: 0, overflow: 'hidden' }}>
+        {loading ? (
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Skeleton height="40px" />
+            <Skeleton height="40px" />
+            <Skeleton height="40px" />
+          </div>
+        ) : payslips.length === 0 ? (
+          <div className="empty-state">
+            <ReceiptText size={48} className="empty-state-icon" />
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No payslips found</h3>
+            <p style={{ color: 'var(--text-secondary)' }}>Your payslips will appear here once they are generated by HR.</p>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="premium-table">
+              <thead>
+                <tr>
+                  <th>Month/Year</th>
+                  <th>Gross Salary</th>
+                  <th>Deductions</th>
+                  <th>Net Salary</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payslips.map((p) => (
+                  <tr key={p.id}>
+                    <td style={{ fontWeight: 600 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ padding: '6px', backgroundColor: 'var(--bg-page)', borderRadius: '6px' }}>
+                          <FileText size={16} color="var(--primary)" />
+                        </div>
+                        {getMonthName(p.month)} {p.year}
+                      </div>
+                    </td>
+                    <td>₹{Number(p.gross_salary).toLocaleString()}</td>
+                    <td>₹{Number(p.total_deductions).toLocaleString()}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{Number(p.net_salary).toLocaleString()}</td>
+                    <td>
+                      <span className="status-badge" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
+                        {p.status}
+                      </span>
+                    </td>
+                    <td>
+                      <button 
+                        onClick={() => handleDownload(p.id, p.month, p.year)}
+                        className="btn"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', padding: '6px 12px', background: 'transparent', border: '1px solid var(--border)' }}
+                      >
+                        <Download size={14} />
+                        Download
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

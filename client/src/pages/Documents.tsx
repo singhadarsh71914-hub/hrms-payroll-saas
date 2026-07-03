@@ -3,11 +3,12 @@ import api from '../services/api';
 import { 
   FileText, Download, Trash2, Search, Upload, FileSignature, X, 
   FileCheck, FileSearch, Filter, CloudUpload, Loader2,
-  CheckCircle2, AlertCircle
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-
+import { Skeleton } from '../components/Skeleton';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 const Documents = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -15,6 +16,7 @@ const Documents = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -37,12 +39,13 @@ const Documents = () => {
 
   const fetchDocs = async () => {
     setIsLoading(true);
+    setError(false);
     try {
       const res = await api.get(isHR ? '/documents' : '/documents/my');
       setDocs(res.data || []);
     } catch (err) {
       console.error(err);
-      showToast("Failed to fetch documents", 'error');
+      setError(true);
     } finally {
       setIsLoading(false);
     }
@@ -117,20 +120,21 @@ const Documents = () => {
     }
     
     try {
-      showToast("Preparing download...", 'info');
+      showToast("Preparing download...", 'success');
       const response = await api.get(downloadUrl, {
         responseType: 'blob'
       });
       
       // Fix: Create blob with correct MIME type from server
+      const contentType = response.headers['content-type'];
       const blob = new Blob([response.data], { 
-        type: response.headers['content-type'] 
+        type: typeof contentType === 'string' ? contentType : undefined
       });
       
       // Fix: Extract filename from Content-Disposition header if available
       let finalFileName = documentName;
       const contentDisposition = response.headers['content-disposition'];
-      if (contentDisposition) {
+      if (typeof contentDisposition === 'string') {
         const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
         if (filenameMatch && filenameMatch[1]) {
           finalFileName = filenameMatch[1];
@@ -248,9 +252,10 @@ const Documents = () => {
         </div>
 
         {isLoading ? (
-          <div style={{ textAlign: 'center', padding: '5rem' }}>
-            <Loader2 size={48} className="animate-spin" color="var(--primary)" />
-            <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Decrypting vault files...</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+            <Skeleton height="150px" borderRadius="16px" />
+            <Skeleton height="150px" borderRadius="16px" />
+            <Skeleton height="150px" borderRadius="16px" />
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
@@ -313,11 +318,16 @@ const Documents = () => {
               </div>
             ))}
 
-            {filteredDocs.length === 0 && (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem 0' }}>
-                 <FileSearch size={64} color="var(--text-muted)" style={{ opacity: 0.3, marginBottom: '1.5rem' }} />
-                 <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>No Documents Found</h2>
-                 <p style={{ color: 'var(--text-muted)' }}>We couldn't find any documents matching your search or filters.</p>
+            {error ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem 0' }} className="empty-state">
+                 <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--danger)', marginBottom: '8px' }}>Failed to load data</h2>
+                 <p style={{ color: 'var(--text-secondary)' }}>We couldn't retrieve documents from the server.</p>
+              </div>
+            ) : filteredDocs.length === 0 && (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem 0' }} className="empty-state">
+                 <FileSearch size={64} className="empty-state-icon" />
+                 <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No Documents Found</h2>
+                 <p style={{ color: 'var(--text-secondary)' }}>We couldn't find any documents matching your search or filters.</p>
               </div>
             )}
           </div>
@@ -479,23 +489,15 @@ const Documents = () => {
       )}
 
       {/* Delete Confirmation Modal */}
-      {docToDelete && (
-        <div className="modal-overlay" style={{ background: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(8px)', zIndex: 1000 }}>
-          <div className="modal-content" style={{ maxWidth: '400px', borderRadius: '24px', padding: '2.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-               <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                  <AlertCircle size={32} />
-               </div>
-               <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>Purge Document?</h2>
-               <p style={{ color: 'var(--text-muted)' }}>This will permanently remove the record and the associated file from our secure servers.</p>
-            </div>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button className="btn btn-secondary" onClick={() => setDocToDelete(null)} style={{ flex: 1 }}>Abort</button>
-              <button className="btn btn-primary" style={{ background: 'var(--danger)', borderColor: 'var(--danger)', flex: 1 }} onClick={handleDelete}>Confirm Purge</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        isOpen={!!docToDelete}
+        title="Purge Document?"
+        message="This will permanently remove the record and the associated file from our secure servers."
+        onConfirm={handleDelete}
+        onCancel={() => setDocToDelete(null)}
+        confirmText="Confirm Purge"
+        isDestructive={true}
+      />
     </div>
   );
 };

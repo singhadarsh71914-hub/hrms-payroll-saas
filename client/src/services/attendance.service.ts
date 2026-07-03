@@ -2,8 +2,15 @@ import api from './api';
 
 export const attendanceService = {
   markAttendance: async (data: { employeeId: string; date: string; status: string; remarks?: string }) => {
-    const response = await api.post('/attendance/mark', data);
-    return response.data;
+    try {
+      const response = await api.post('/attendance/mark', data);
+      return response.data;
+    } catch (error: any) {
+      if (error.response && error.response.data && error.response.data.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error(error.message || 'Internal Server Error');
+    }
   },
 
   getAttendanceReport: async (month: number, year: number) => {

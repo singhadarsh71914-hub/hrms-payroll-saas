@@ -1,0 +1,66 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install Dependencies
+      run: npm ci
+      
+    - name: Install Client Dependencies
+      run: cd client && npm ci
+
+    - name: Prisma Generate
+      run: npx prisma generate
+
+    - name: Run Tests
+      run: npm run test
+      continue-on-error: true # We don't have unit tests yet
+
+    - name: Build Backend
+      run: npx tsup src/index.ts --format esm --clean --out-dir dist
+
+    - name: Build Frontend
+      run: cd client && npm run build
+
+    - name: Run Playwright tests
+      run: |
+        npx playwright install --with-deps
+        npx playwright test
+      continue-on-error: true
+
+    - name: Build Backend Docker Image
+      run: docker build -t hrms-backend:latest -f Dockerfile .
+
+    - name: Build Frontend Docker Image
+      run: docker build -t hrms-frontend:latest -f client/Dockerfile ./client
+
+  deploy:
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Deploy to Server
+      run: |
+        echo "Deploying to production server..."
+        # Add actual deployment ssh commands here

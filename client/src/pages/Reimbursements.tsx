@@ -3,6 +3,8 @@ import api from '../services/api';
 import { IndianRupee, Plus, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { Skeleton } from '../components/Skeleton';
+import toast from 'react-hot-toast';
 
 const Reimbursements = () => {
   const { user } = useAuth();
@@ -10,6 +12,8 @@ const Reimbursements = () => {
   const [claims, setClaims] = useState<any[]>([]);
   const [showApply, setShowApply] = useState(false);
   const [formData, setFormData] = useState({ type: 'TRAVEL', amount: '', description: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const isHR = user?.role === 'ADMIN' || user?.role === 'HR';
 
@@ -18,15 +22,16 @@ const Reimbursements = () => {
   }, []);
 
   const fetchClaims = async () => {
+    setLoading(true);
+    setError(false);
     try {
       const res = await api.get(isHR ? '/reimbursements' : '/reimbursements/my');
       setClaims(res.data || []);
     } catch (err) {
       console.error(err);
-      // Fallback
-      setClaims([
-        { id: '1', employee: { first_name: 'Kabir', last_name: 'Das' }, type: 'TRAVEL', amount: 5400, description: 'Client meeting to Mumbai', status: 'PENDING', created_at: new Date().toISOString() }
-      ]);
+      setError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,6 +56,18 @@ const Reimbursements = () => {
       showToast('Failed to update status', 'error');
     }
   };
+
+  if (loading) return (
+    <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <div className="page-header">
+        <div>
+           <Skeleton width="300px" height="32px" />
+           <div style={{ marginTop: '0.5rem' }}><Skeleton width="400px" height="20px" /></div>
+        </div>
+      </div>
+      <Skeleton height="400px" borderRadius="12px" />
+    </div>
+  );
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -112,46 +129,57 @@ const Reimbursements = () => {
               </tr>
             </thead>
             <tbody>
-              {claims.map(c => (
-                <tr key={c.id}>
-                  {isHR && (
-                    <td>
-                      <div style={{ fontWeight: '700' }}>{c.employee?.first_name} {c.employee?.last_name}</div>
-                    </td>
-                  )}
-                  <td><span className="badge badge-primary">{c.type}</span></td>
-                  <td style={{ fontWeight: '800', color: 'var(--primary)' }}>₹{Number(c.amount).toLocaleString()}</td>
-                  <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.description}</td>
-                  <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(c.created_at).toLocaleDateString()}</td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: '800', color: c.status === 'APPROVED' ? '#10b981' : c.status === 'REJECTED' ? '#ef4444' : '#f59e0b' }}>
-                      {c.status === 'APPROVED' && <CheckCircle size={14} />}
-                      {c.status === 'REJECTED' && <XCircle size={14} />}
-                      {c.status === 'PENDING' && <Clock size={14} />}
-                      {c.status}
+              {error ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '4rem', color: 'var(--danger)' }}>
+                    <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
+                       <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Failed to load data</h3>
+                       <p>Could not retrieve reimbursements from the server.</p>
                     </div>
                   </td>
-                  {isHR && (
-                    <td style={{ textAlign: 'right' }}>
-                      {c.status === 'PENDING' && (
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                          <button onClick={() => handleStatus(c.id, 'APPROVED')} className="btn btn-primary" style={{ padding: '0.4rem', borderRadius: '6px' }}><CheckCircle size={16} /></button>
-                          <button onClick={() => handleStatus(c.id, 'REJECTED')} className="btn btn-secondary" style={{ padding: '0.4rem', borderRadius: '6px', color: '#ef4444' }}><XCircle size={16} /></button>
-                        </div>
-                      )}
-                    </td>
-                  )}
                 </tr>
-              ))}
-              {claims.length === 0 && (
+              ) : claims.length === 0 ? (
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                       <IndianRupee size={48} opacity={0.2} />
-                       <span>No reimbursement claims found.</span>
+                    <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
+                       <IndianRupee size={48} className="empty-state-icon" />
+                       <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No claims found</h3>
+                       <p style={{ color: 'var(--text-secondary)' }}>No reimbursement claims have been submitted yet.</p>
                     </div>
                   </td>
                 </tr>
+              ) : (
+                claims.map(c => (
+                  <tr key={c.id}>
+                    {isHR && (
+                      <td>
+                        <div style={{ fontWeight: '700' }}>{c.employee?.first_name} {c.employee?.last_name}</div>
+                      </td>
+                    )}
+                    <td><span className="badge badge-primary">{c.type}</span></td>
+                    <td style={{ fontWeight: '800', color: 'var(--primary)' }}>?{Number(c.amount).toLocaleString()}</td>
+                    <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.description}</td>
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(c.created_at).toLocaleDateString()}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: '800', color: c.status === 'APPROVED' ? '#10b981' : c.status === 'REJECTED' ? '#ef4444' : '#f59e0b' }}>
+                        {c.status === 'APPROVED' && <CheckCircle size={14} />}
+                        {c.status === 'REJECTED' && <XCircle size={14} />}
+                        {c.status === 'PENDING' && <Clock size={14} />}
+                        {c.status}
+                      </div>
+                    </td>
+                    {isHR && (
+                      <td style={{ textAlign: 'right' }}>
+                        {c.status === 'PENDING' && (
+                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                            <button onClick={() => handleStatus(c.id, 'APPROVED')} className="btn btn-primary" style={{ padding: '0.4rem', borderRadius: '6px' }}><CheckCircle size={16} /></button>
+                            <button onClick={() => handleStatus(c.id, 'REJECTED')} className="btn btn-secondary" style={{ padding: '0.4rem', borderRadius: '6px', color: '#ef4444' }}><XCircle size={16} /></button>
+                          </div>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -162,3 +190,4 @@ const Reimbursements = () => {
 };
 
 export default Reimbursements;
+

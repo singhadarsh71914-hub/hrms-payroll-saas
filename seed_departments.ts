@@ -26,19 +26,21 @@ async function seed() {
 
   for (const company of companies) {
     console.log(`Seeding departments for company: ${company.name}`);
-    for (const dept of DEPARTMENTS) {
-      await prisma.department.upsert({
-        where: { id: `fixed-id-${company.id}-${dept.code}` }, // Not actually unique but just for upsert pattern
-        // Prisma doesn't have a unique constraint on (company_id, code) in the schema I saw?
-        // Let me check schema.prisma again.
-        update: {},
-        create: {
-          company_id: company.id,
-          name: dept.name,
-          code: dept.code
-        }
-      });
+    const existing = await prisma.department.findMany({
+      where: { company_id: company.id },
+      select: { code: true },
+    });
+    const existingCodes = new Set(existing.map(d => d.code));
+    const toCreate = DEPARTMENTS.filter(d => !existingCodes.has(d.code));
+    if (toCreate.length === 0) {
+      console.log(`  Already seeded — skipping.`);
+      continue;
     }
+    const result = await prisma.department.createMany({
+      data: toCreate.map(d => ({ company_id: company.id, name: d.name, code: d.code })),
+      skipDuplicates: true,
+    });
+    console.log(`  Created ${result.count} departments.`);
   }
 
   console.log('Departments seeded successfully');

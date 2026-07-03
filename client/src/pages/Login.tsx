@@ -23,7 +23,20 @@ const Login: React.FC = () => {
       setUser(data.user);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+      const status = err.response?.status;
+      const backendMessage = err.backendMessage || err.response?.data?.message || err.response?.data?.error;
+
+      if (status === 401) {
+        setError('Invalid credentials');
+      } else if (status === 403) {
+        setError(backendMessage || 'Access denied');
+      } else if (status === 429) {
+        setError(backendMessage || 'Too many login attempts. Please try again in 15 minutes.');
+      } else if (status >= 500) {
+        setError('A server error occurred. Please try again later.');
+      } else {
+        setError(backendMessage || 'Invalid credentials. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -80,6 +93,7 @@ const Login: React.FC = () => {
               <div style={{ position: 'relative' }}>
                 <Mail style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={18} />
                 <input 
+                  id="email"
                   type="email" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)} 
@@ -98,6 +112,7 @@ const Login: React.FC = () => {
               <div style={{ position: 'relative' }}>
                 <Lock style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={18} />
                 <input 
+                  id="password"
                   type="password" 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)} 

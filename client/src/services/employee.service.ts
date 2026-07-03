@@ -1,7 +1,10 @@
 import api from './api';
 
 export const getEmployees = async (includeInactive: boolean = false) => {
-  const response = await api.get('/employees', { params: { include_inactive: includeInactive } });
+  const response = await api.get('/employees', { 
+    params: { include_inactive: includeInactive, _t: Date.now() },
+    headers: { 'Cache-Control': 'no-cache' }
+  });
   return response.data;
 };
 
@@ -11,8 +14,15 @@ export const getEmployee = async (id: string) => {
 };
 
 export const createEmployee = async (employeeData: any) => {
-  const response = await api.post('/employees', employeeData);
-  return response.data;
+  try {
+    const response = await api.post('/employees', employeeData);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error(error.message || 'Internal Server Error');
+  }
 };
 
 export const updateEmployee = async (id: string, employeeData: any) => {
@@ -80,7 +90,7 @@ export const markEmployeeAttendance = async (data: any) => {
 };
 
 export const applyEmployeeLeave = async (data: any) => {
-  const response = await api.post('/leaves/apply', data);
+  const response = await api.post('/leave/apply', data);
   return response.data;
 };
 
@@ -90,11 +100,17 @@ export const applyEmployeeLoan = async (data: any) => {
 };
 
 export const getDepartments = async () => {
-  const response = await api.get('/org/departments');
+  const response = await api.get('/org/departments', { 
+    params: { _t: Date.now() },
+    headers: { 'Cache-Control': 'no-cache' }
+  });
   return response.data;
 };
 
 export const getDesignations = async () => {
-  const response = await api.get('/org/designations');
+  const response = await api.get('/org/designations', { 
+    params: { _t: Date.now() },
+    headers: { 'Cache-Control': 'no-cache' }
+  });
   return response.data;
 };

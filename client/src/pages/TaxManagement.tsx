@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getCompanyTaxSummary, downloadForm16, downloadBulkForm16 } from '../services/tax.service';
 import { Download, FileText, PieChart, Users, CheckCircle } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { Skeleton } from '../components/Skeleton';
 
 const TaxManagement = () => {
   const { showToast } = useToast();
@@ -121,7 +122,9 @@ const TaxManagement = () => {
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>
+          <div style={{ padding: '2rem' }}>
+             <Skeleton height="300px" borderRadius="12px" />
+          </div>
         ) : (
           <table className="table">
             <thead>
@@ -176,8 +179,12 @@ const TaxManagement = () => {
               ))}
               {summary.length === 0 && (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                    No tax data available for selected financial year.
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '4rem' }}>
+                    <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
+                       <FileText size={48} className="empty-state-icon" />
+                       <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No tax records</h3>
+                       <p style={{ color: 'var(--text-secondary)' }}>No tax data available for selected financial year.</p>
+                    </div>
                   </td>
                 </tr>
               )}

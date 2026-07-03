@@ -33,11 +33,11 @@ export class AnalyticsService {
     });
 
     const newHires = await prisma.employee.count({
-      where: { company_id: companyId, date_of_joining: { gte: firstDayThisMonth } }
+      where: { company_id: companyId, date_of_joining: { gte: firstDayThisMonth }, is_active: true }
     });
 
     const exits = await prisma.employee.count({
-      where: { company_id: companyId, date_of_leaving: { gte: firstDayThisMonth }, employment_status: { in: ['RESIGNED', 'TERMINATED'] } }
+      where: { company_id: companyId, date_of_leaving: { gte: firstDayThisMonth }, employment_status: { in: ['RESIGNED', 'TERMINATED'] }, is_active: true }
     });
 
     const thisMonthPayroll = await prisma.payrollRun.aggregate({
@@ -54,22 +54,22 @@ export class AnalyticsService {
     const payrollChange = prevPayrollCost === 0 ? 0 : ((currentPayrollCost - prevPayrollCost) / prevPayrollCost) * 100;
 
     const pendingLeaves = await prisma.leaveRequest.count({
-      where: { employee: { company_id: companyId }, status: 'PENDING' }
+      where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, status: 'PENDING' }
     });
 
     const pendingLoans = await prisma.loan.count({
-      where: { employee: { company_id: companyId }, status: 'PENDING' }
+      where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, status: 'PENDING' }
     });
 // Attendance Rate this month (calculate expected based on distinct working days present in records instead of raw days in month)
 const distinctDates = await prisma.attendance.groupBy({
   by: ['date'],
-  where: { employee: { company_id: companyId }, date: { gte: firstDayThisMonth } }
+  where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, date: { gte: firstDayThisMonth } }
 });
 const workingDaysCount = Math.max(distinctDates.length, 1);
 
 const presentCount = await prisma.attendance.count({
   where: {
-    employee: { company_id: companyId },
+    employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true },
     date: { gte: firstDayThisMonth },
     status: { in: ['PRESENT', 'HALF_DAY'] }
   }
@@ -87,7 +87,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
 
     // Attrition Rate = (Exits in period / Avg Employees) * 100
     const historicalExits = await prisma.employee.count({
-      where: { company_id: companyId, date_of_leaving: { gte: startDate }, employment_status: { in: ['RESIGNED', 'TERMINATED'] } }
+      where: { company_id: companyId, date_of_leaving: { gte: startDate }, employment_status: { in: ['RESIGNED', 'TERMINATED'] }, is_active: true }
     });
     const attritionRate = activeEmployees > 0 ? (historicalExits / activeEmployees) * 100 : 0;
 
@@ -124,7 +124,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
   static async getHeadcountTrend(companyId: string, rangeStr: string = '6m') {
     const { months } = this.parseRange(rangeStr);
     const employees = await prisma.employee.findMany({
-      where: { company_id: companyId },
+      where: { company_id: companyId, is_active: true },
       include: { department: true }
     });
 
@@ -156,7 +156,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
   static async getLeaveStats(companyId: string, rangeStr: string = '6m') {
     const { startDate } = this.parseRange(rangeStr);
     const requests = await prisma.leaveRequest.findMany({
-      where: { employee: { company_id: companyId }, start_date: { gte: startDate } }
+      where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, start_date: { gte: startDate } }
     });
 
     const breakdown = requests.reduce((acc: any, req) => {
@@ -187,7 +187,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
     const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const attendances = await prisma.attendance.findMany({
-      where: { employee: { company_id: companyId }, date: { gte: firstDayThisMonth } }
+      where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, date: { gte: firstDayThisMonth } }
     });
 
     const dailyTrend: any = {};
@@ -208,26 +208,38 @@ if (attendanceRate > 0 && attendanceRate < 50) {
   static async getDepartmentStats(companyId: string) {
     const departments = await prisma.department.findMany({
       where: { company_id: companyId },
-      include: { employees: { where: { employment_status: 'ACTIVE' }, include: { salaries: { orderBy: { effective_from: 'desc' }, take: 1 } } } }
+      include: { employees: { where: { employment_status: 'ACTIVE', is_active: true }, include: { salaries: { orderBy: { effective_from: 'desc' }, take: 1 } } } }
     });
 
-    return departments.map(d => {
+    const stats = departments.map(d => {
       const activeEmps = d.employees;
       const totalSalary = activeEmps.reduce((sum, e) => sum + (e.salaries[0] ? Number(e.salaries[0].ctc_monthly) : 0), 0);
       return { name: d.name, count: activeEmps.length, avgSalary: activeEmps.length > 0 ? totalSalary / activeEmps.length : 0 };
-    }).filter(d => d.count > 0);
+    });
+
+    const unassignedEmps = await prisma.employee.findMany({
+      where: { company_id: companyId, employment_status: 'ACTIVE', is_active: true, department_id: null },
+      include: { salaries: { orderBy: { effective_from: 'desc' }, take: 1 } }
+    });
+
+    if (unassignedEmps.length > 0) {
+      const totalSalary = unassignedEmps.reduce((sum, e) => sum + (e.salaries[0] ? Number(e.salaries[0].ctc_monthly) : 0), 0);
+      stats.push({ name: 'Unassigned', count: unassignedEmps.length, avgSalary: unassignedEmps.length > 0 ? totalSalary / unassignedEmps.length : 0 });
+    }
+
+    return stats.filter(d => d.count > 0);
   }
 
   static async getLoanStats(companyId: string, rangeStr: string = '6m') {
     const { months } = this.parseRange(rangeStr);
     const now = new Date();
 
-    const loans = await prisma.loan.findMany({ where: { employee: { company_id: companyId } } });
+    const loans = await prisma.loan.findMany({ where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true } } });
     const activeLoans = loans.filter(l => l.status === 'ACTIVE');
     const totalOutstanding = activeLoans.reduce((sum, l) => sum + Number(l.principal_amount), 0);
 
     const emiCollected = await prisma.loanRepayment.aggregate({
-      where: { loan: { employee: { company_id: companyId } }, month: now.getMonth() + 1, year: now.getFullYear(), status: 'DEDUCTED' },
+      where: { loan: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true } }, month: now.getMonth() + 1, year: now.getFullYear(), status: 'DEDUCTED' },
       _sum: { emi_amount: true }
     });
 
@@ -246,7 +258,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
   static async getTDSTrend(companyId: string, rangeStr: string = '6m') {
     const { months } = this.parseRange(rangeStr);
     const payslips = await prisma.payslip.findMany({
-      where: { employee: { company_id: companyId } },
+      where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true } },
       select: { month: true, year: true, tds: true },
       orderBy: [{ year: 'desc' }, { month: 'desc' }],
       take: months * 100 // Estimate to get recent ones
@@ -264,7 +276,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
 
   static async getLeaveUtilization(companyId: string) {
     const balances = await prisma.leaveBalance.findMany({
-      where: { employee: { company_id: companyId, employment_status: 'ACTIVE' }, year: new Date().getFullYear() },
+      where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, year: new Date().getFullYear() },
       include: { employee: true }
     });
 
@@ -279,7 +291,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
 
   static async getTopEmployees(companyId: string) {
     const employees = await prisma.employee.findMany({
-      where: { company_id: companyId, employment_status: 'ACTIVE' },
+      where: { company_id: companyId, employment_status: 'ACTIVE', is_active: true },
       include: { salaries: { orderBy: { effective_from: 'desc' }, take: 1 } }
     });
 
@@ -293,7 +305,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
 
-    const allEmps = await prisma.employee.findMany({ where: { company_id: companyId, employment_status: 'ACTIVE' } });
+    const allEmps = await prisma.employee.findMany({ where: { company_id: companyId, employment_status: 'ACTIVE', is_active: true } });
     
     // Birthdays this month
     const birthdays = allEmps.filter(e => e.date_of_birth && new Date(e.date_of_birth).getMonth() + 1 === currentMonth)
@@ -313,7 +325,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
     });
 
     // Joiners vs Exits Trend
-    const allEmpsHist = await prisma.employee.findMany({ where: { company_id: companyId } });
+    const allEmpsHist = await prisma.employee.findMany({ where: { company_id: companyId, is_active: true } });
     const joinersExitsTrend = [];
     for (let i = months - 1; i >= 0; i--) {
       const targetMonthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -328,7 +340,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
 
     // Salary Distribution
     const employeesWithSalary = await prisma.employee.findMany({
-      where: { company_id: companyId, employment_status: 'ACTIVE' },
+      where: { company_id: companyId, employment_status: 'ACTIVE', is_active: true },
       include: { salaries: { orderBy: { effective_from: 'desc' }, take: 1 } }
     });
     
@@ -347,7 +359,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
     endOfWeek.setDate(startOfWeek.getDate() + 7);
 
     const upcomingLeaves = await prisma.leaveRequest.findMany({
-      where: { employee: { company_id: companyId }, status: 'APPROVED', start_date: { gte: startOfWeek, lte: endOfWeek } },
+      where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, status: 'APPROVED', start_date: { gte: startOfWeek, lte: endOfWeek } },
       include: { employee: true }
     });
 
@@ -357,7 +369,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
 
     // Attrition Rate (Exits this month / Avg. Employees)
     const exitsThisMonth = await prisma.employee.count({
-      where: { company_id: companyId, date_of_leaving: { gte: firstDayThisMonth }, employment_status: { in: ['RESIGNED', 'TERMINATED'] } }
+      where: { company_id: companyId, date_of_leaving: { gte: firstDayThisMonth }, employment_status: { in: ['RESIGNED', 'TERMINATED'] }, is_active: true }
     });
     const attritionRate = allEmps.length > 0 ? (exitsThisMonth / allEmps.length) * 100 : 0;
 
@@ -417,7 +429,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
       { header: 'Salary (Monthly)', key: 'salary', width: 15 }
     ];
     empSheet.getRow(1).eachCell(cell => Object.assign(cell, headerStyle));
-    const employees = await prisma.employee.findMany({ where: { company_id: companyId }, include: { department: true, salaries: { take: 1, orderBy: { effective_from: 'desc' } } } });
+    const employees = await prisma.employee.findMany({ where: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, include: { department: true, salaries: { take: 1, orderBy: { effective_from: 'desc' } } } });
     employees.forEach(e => empSheet.addRow({
       code: e.employee_code, name: `${e.first_name} ${e.last_name}`, dept: e.department?.name || 'N/A', email: e.work_email,
       status: e.employment_status, join: new Date(e.date_of_joining).toLocaleDateString(), salary: e.salaries[0] ? Number(e.salaries[0].ctc_monthly) : 0
@@ -446,7 +458,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
       { header: 'Days', key: 'days', width: 10 }, { header: 'Status', key: 'status', width: 15 }
     ];
     leaveSheet.getRow(1).eachCell(cell => Object.assign(cell, headerStyle));
-    const leaves = await prisma.leaveRequest.findMany({ where: { employee: { company_id: companyId }, start_date: { gte: startDate } }, include: { employee: true } });
+    const leaves = await prisma.leaveRequest.findMany({ where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, start_date: { gte: startDate } }, include: { employee: true } });
     leaves.forEach(l => leaveSheet.addRow({
       emp: `${l.employee.first_name} ${l.employee.last_name}`, type: l.leave_type, start: new Date(l.start_date).toLocaleDateString(),
       end: new Date(l.end_date).toLocaleDateString(), days: Number(l.total_days), status: l.status
@@ -456,7 +468,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
     const attSheet = workbook.addWorksheet('Attendance Summary');
     attSheet.columns = [{ header: 'Employee', key: 'emp', width: 25 }, { header: 'Date', key: 'date', width: 15 }, { header: 'Status', key: 'status', width: 15 }];
     attSheet.getRow(1).eachCell(cell => Object.assign(cell, headerStyle));
-    const att = await prisma.attendance.findMany({ where: { employee: { company_id: companyId }, date: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } }, include: { employee: true } });
+    const att = await prisma.attendance.findMany({ where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true }, date: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } }, include: { employee: true } });
     att.forEach(a => attSheet.addRow({ emp: `${a.employee.first_name} ${a.employee.last_name}`, date: new Date(a.date).toLocaleDateString(), status: a.status }));
 
     // 6. Loan Portfolio
@@ -467,7 +479,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
       { header: 'Start', key: 'start', width: 15 }, { header: 'Status', key: 'status', width: 15 }
     ];
     loanSheet.getRow(1).eachCell(cell => Object.assign(cell, headerStyle));
-    const allLoans = await prisma.loan.findMany({ where: { employee: { company_id: companyId } }, include: { employee: true } });
+    const allLoans = await prisma.loan.findMany({ where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true } }, include: { employee: true } });
     allLoans.forEach(l => loanSheet.addRow({
       emp: `${l.employee.first_name} ${l.employee.last_name}`, type: l.loan_type, amount: Number(l.principal_amount),
       emi: Number(l.emi_amount), start: new Date(l.start_date).toLocaleDateString(), status: l.status
@@ -480,7 +492,7 @@ if (attendanceRate > 0 && attendanceRate < 50) {
       { header: 'Gross', key: 'gross', width: 15 }, { header: 'TDS', key: 'tds', width: 15 }
     ];
     taxSheet.getRow(1).eachCell(cell => Object.assign(cell, headerStyle));
-    const payslips = await prisma.payslip.findMany({ where: { employee: { company_id: companyId } }, include: { employee: true }, take: months * 100, orderBy: [{ year: 'desc' }, { month: 'desc' }] });
+    const payslips = await prisma.payslip.findMany({ where: { employee: { company_id: companyId, employment_status: 'ACTIVE', is_active: true } }, include: { employee: true }, take: months * 100, orderBy: [{ year: 'desc' }, { month: 'desc' }] });
     payslips.forEach(p => taxSheet.addRow({
       emp: `${p.employee.first_name} ${p.employee.last_name}`, period: `${p.month}/${p.year}`, gross: Number(p.gross_salary), tds: Number(p.tds)
     }));

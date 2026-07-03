@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { body, validationResult } from 'express-validator';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
 import { AppError } from '../middleware/error.ts';
 import { LeaveService } from '../services/leave.service.ts';
+import { validate } from '../middleware/validate.ts';
+import { createLeaveSchema, updateLeaveStatusSchema } from '../schemas/leave.schema.ts';
 
 const router = Router();
 
@@ -11,16 +12,8 @@ router.use(authenticate);
 // POST /apply
 router.post(
   '/apply',
-  [
-    body('leaveType').isIn(['SICK', 'CASUAL', 'ANNUAL']),
-    body('startDate').isISO8601(),
-    body('endDate').isISO8601(),
-    body('employeeId').optional().isUUID(),
-  ],
+  validate(createLeaveSchema),
   async (req: AuthRequest, res: any, next: any) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return next(new AppError('Validation failed', 400));
-
     try {
       const isHR = req.user?.role === 'HR' || req.user?.role === 'ADMIN';
       let employeeId = req.user?.employee_id;
@@ -42,7 +35,13 @@ router.post(
 // GET /balances
 router.get('/balances', async (req: AuthRequest, res: any, next: any) => {
   try {
-    const employeeId = req.user?.employee_id;
+    const isHR = req.user?.role === 'HR' || req.user?.role === 'ADMIN';
+    let employeeId = req.user?.employee_id;
+    
+    if (isHR && req.query.employeeId) {
+      employeeId = String(req.query.employeeId);
+    }
+
     if (!employeeId) return next(new AppError('Employee profile not found', 404));
 
     const year = new Date().getFullYear();
@@ -73,9 +72,7 @@ router.get('/requests', async (req: AuthRequest, res: any, next: any) => {
 router.patch(
   '/requests/:id/status',
   authorize('ADMIN', 'HR'),
-  [
-    body('status').isIn(['APPROVED', 'REJECTED']),
-  ],
+  validate(updateLeaveStatusSchema),
   async (req: AuthRequest, res: any, next: any) => {
     try {
       const { id } = req.params;

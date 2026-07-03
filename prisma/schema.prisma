@@ -7,7 +7,7 @@ datasource db {
 }
 
 model Company {
-  id                   String            @id @default(uuid())
+  id                   String              @id @default(uuid())
   name                 String
   trade_name           String?
   pan                  String?
@@ -20,9 +20,9 @@ model Company {
   state                String?
   pincode              String?
   logo_url             String?
-  financial_year_start Int               @default(4)
-  created_at           DateTime          @default(now())
-  updated_at           DateTime          @updatedAt
+  financial_year_start Int                 @default(4)
+  created_at           DateTime            @default(now())
+  updated_at           DateTime            @updatedAt
   departments          Department[]
   designations         Designation[]
   employees            Employee[]
@@ -34,6 +34,8 @@ model Company {
   announcements        Announcement[]
   performance_reviews  PerformanceReview[]
   documents            EmployeeDocument[]
+  bonuses              EmployeeBonus[]
+  payrollJobs          PayrollJob[]
 }
 
 model Department {
@@ -59,65 +61,71 @@ model Designation {
 }
 
 model Employee {
-  id                      String             @id @default(uuid())
-  company_id              String
-  employee_code           String
-  first_name              String
-  last_name               String
-  display_name            String?
-  gender                  Gender?
-  date_of_birth           DateTime?
-  date_of_joining         DateTime
-  date_of_leaving         DateTime?
-  employment_status       EmploymentStatus   @default(ACTIVE)
-  employment_type         EmploymentType     @default(FULL_TIME)
-  department_id           String?
-  designation_id          String?
-  reporting_manager_id    String?
-  work_location           String?
-  address_line1           String?
-  address_line2           String?
-  city                    String?
-  state                   String?
-  pincode                 String?
-  country                 String?
-  work_email              String             @unique
-  personal_email          String?
-  phone                   String?
-  emergency_contact_name  String?
-  emergency_contact_phone      String?
+  id                             String           @id @default(uuid())
+  company_id                     String
+  employee_code                  String
+  first_name                     String
+  last_name                      String
+  display_name                   String?
+  gender                         Gender?
+  date_of_birth                  DateTime?
+  date_of_joining                DateTime
+  date_of_leaving                DateTime?
+  employment_status              EmploymentStatus @default(ACTIVE)
+  employment_type                EmploymentType   @default(FULL_TIME)
+  department_id                  String?
+  designation_id                 String?
+  reporting_manager_id           String?
+  work_location                  String?
+  address_line1                  String?
+  address_line2                  String?
+  city                           String?
+  state                          String?
+  pincode                        String?
+  country                        String?
+  work_email                     String           @unique
+  personal_email                 String?
+  phone                          String?
+  emergency_contact_name         String?
+  emergency_contact_phone        String?
   emergency_contact_relationship String?
-  pan_number                   String?
-  aadhaar_number          String?
-  uan_number              String?
-  esic_ip_number          String?
-  bank_name               String?
-  bank_account_number     String?
-  bank_ifsc               String?
-  probation_end_date      DateTime?
-  notice_period_days      Int                @default(30)
-  avatar_url              String?
-  user_id                 String?            @unique
-  is_active               Boolean            @default(true)
-  deleted_at              DateTime?
-  created_at              DateTime           @default(now())
-  updated_at              DateTime           @updatedAt
-  attendance              Attendance[]
-  headed_departments      Department[]       @relation("DepartmentHead")
-  company                 Company            @relation(fields: [company_id], references: [id])
-  department              Department?        @relation("EmployeeDepartment", fields: [department_id], references: [id])
-  designation             Designation?       @relation(fields: [designation_id], references: [id])
-  reporting_manager       Employee?          @relation("ReportingManager", fields: [reporting_manager_id], references: [id])
-  subordinates            Employee[]         @relation("ReportingManager")
-  user                    User?              @relation(fields: [user_id], references: [id])
-  documents               EmployeeDocument[]
-  salaries                EmployeeSalary[]
-  leave_requests          LeaveRequest[]
-  leave_balances          LeaveBalance[]
-  payslips                Payslip[]
-  loans                   Loan[]
-  performance_reviews     PerformanceReview[]
-  reimbursements          Reimbursement[]
+  pan_number                     String?
+  aadhaar_number                 String?
+  uan_number                     String?
+  esic_ip_number                 String?
+  bank_name                      String?
+  bank_account_number            String?
+  bank_ifsc                      String?
+  probation_end_date             DateTime?
+  notice_period_days             Int              @default(30)
+  avatar_url                     String?
+
+  face_enrolled_at  DateTime?
+  face_descriptor   Json?
+  biometric_enabled Boolean?
+
+  user_id             String?             @unique
+  is_active           Boolean             @default(true)
+  deleted_at          DateTime?
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  attendance          Attendance[]
+  headed_departments  Department[]        @relation("DepartmentHead")
+  company             Company             @relation(fields: [company_id], references: [id])
+  department          Department?         @relation("EmployeeDepartment", fields: [department_id], references: [id])
+  designation         Designation?        @relation(fields: [designation_id], references: [id])
+  reporting_manager   Employee?           @relation("ReportingManager", fields: [reporting_manager_id], references: [id])
+  subordinates        Employee[]          @relation("ReportingManager")
+  user                User?               @relation(fields: [user_id], references: [id])
+  documents           EmployeeDocument[]
+  salaries            EmployeeSalary[]
+  leave_requests      LeaveRequest[]
+  leave_balances      LeaveBalance[]
+  payslips            Payslip[]
+  loans               Loan[]
+  bonuses             EmployeeBonus[]
+  performance_reviews PerformanceReview[]
+  reimbursements      Reimbursement[]
 
   @@unique([company_id, employee_code])
 }
@@ -185,9 +193,9 @@ model EmployeeDocument {
   document_name String
   file_url      String
   uploaded_at   DateTime     @default(now())
-  
-  company       Company      @relation(fields: [company_id], references: [id])
-  employee      Employee     @relation(fields: [employee_id], references: [id])
+
+  company  Company  @relation(fields: [company_id], references: [id])
+  employee Employee @relation(fields: [employee_id], references: [id])
 }
 
 model SalaryComponent {
@@ -195,11 +203,20 @@ model SalaryComponent {
   company_id           String
   name                 String
   code                 String
+  description          String?
   type                 ComponentType
   category             ComponentCategory
   is_taxable           Boolean                    @default(true)
   is_statutory         Boolean                    @default(false)
+  pf_applicable        Boolean                    @default(false)
+  esi_applicable       Boolean                    @default(false)
+  calculation_type     CalculationType?
+  formula              String?
+  value                Decimal?
+  max_limit            Decimal?
+  display_order        Int?                       @default(0)
   is_active            Boolean                    @default(true)
+  system_role          SystemComponentRole?
   payslip_line_items   PayslipLineItem[]
   company              Company                    @relation(fields: [company_id], references: [id])
   structure_components SalaryStructureComponent[]
@@ -208,13 +225,19 @@ model SalaryComponent {
 }
 
 model SalaryStructure {
-  id         String                     @id @default(uuid())
-  company_id String
-  name       String
-  is_active  Boolean                    @default(true)
-  salaries   EmployeeSalary[]
-  company    Company                    @relation(fields: [company_id], references: [id])
-  components SalaryStructureComponent[]
+  id          String                     @id @default(uuid())
+  company_id  String
+  name        String
+  description String?
+  is_active   Boolean                    @default(true)
+  created_by  String?
+  created_at  DateTime                   @default(now())
+  updated_at  DateTime                   @default(now()) @updatedAt
+  salaries    EmployeeSalary[]
+  company     Company                    @relation(fields: [company_id], references: [id])
+  components  SalaryStructureComponent[]
+
+  @@unique([company_id, name])
 }
 
 model SalaryStructureComponent {
@@ -223,6 +246,7 @@ model SalaryStructureComponent {
   salary_component_id String
   calculation_type    CalculationType
   value               Decimal
+  max_limit           Decimal?
   sequence            Int
   salary_component    SalaryComponent @relation(fields: [salary_component_id], references: [id])
   salary_structure    SalaryStructure @relation(fields: [salary_structure_id], references: [id])
@@ -244,68 +268,100 @@ model EmployeeSalary {
 }
 
 model PayrollRun {
-  id               String        @id @default(uuid())
-  company_id       String
-  month            Int
-  year             Int
-  run_date         DateTime
-  status           PayrollStatus @default(DRAFT)
-  total_employees  Int
-  total_gross      Decimal
-  total_deductions Decimal
-  total_net        Decimal
-  approved_by      String?
-  approved_at      DateTime?
-  created_by       String?
-  company          Company       @relation(fields: [company_id], references: [id])
-  payslips         Payslip[]
+  id                           String        @id @default(uuid())
+  company_id                   String
+  month                        Int
+  year                         Int
+  run_date                     DateTime
+  status                       PayrollStatus @default(DRAFT)
+  total_employees              Int
+  skipped_employees            Int           @default(0)
+  total_gross                  Decimal       @db.Decimal(10, 2)
+  total_deductions             Decimal       @db.Decimal(10, 2)
+  total_net                    Decimal       @db.Decimal(10, 2)
+  total_employer_contributions Decimal       @db.Decimal(10, 2)
+  total_company_cost           Decimal       @db.Decimal(10, 2)
+
+  compliance_snapshot       Json?
+  salary_structure_snapshot Json?
+  component_snapshot        Json?
+  bonus_snapshot            Json?
+  formula_snapshot          Json?
+
+  created_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  company     Company             @relation(fields: [company_id], references: [id])
+  payslips    Payslip[]
+  adjustments PayrollAdjustment[]
+  reversals   PayrollReversal[]
+  jobs        PayrollJob[]
 }
 
 model Payslip {
-  id               String            @id @default(uuid())
-  payroll_run_id   String
-  employee_id      String
-  month            Int
-  year             Int
-  working_days     Int
-  paid_days        Decimal
-  lop_days         Decimal
-  gross_salary     Decimal
-  total_deductions Decimal
-  net_salary       Decimal
-  pf_employee      Decimal
-  pf_employer      Decimal
-  esi_employee     Decimal
-  esi_employer     Decimal
-  professional_tax Decimal
-  tds              Decimal
-  status           PayslipStatus     @default(DRAFT)
-  slip_url         String?
-  employee         Employee          @relation(fields: [employee_id], references: [id])
-  payroll_run      PayrollRun        @relation(fields: [payroll_run_id], references: [id])
-  line_items       PayslipLineItem[]
+  id                           String            @id @default(uuid())
+  payroll_run_id               String
+  employee_id                  String
+  month                        Int
+  year                         Int
+  working_days                 Int
+  paid_days                    Decimal
+  lop_days                     Decimal
+  gross_salary                 Decimal
+  total_deductions             Decimal
+  net_salary                   Decimal
+  total_employer_contributions Decimal           @default(0)
+  total_company_cost           Decimal           @default(0)
+  pf_employee                  Decimal
+  pf_employer                  Decimal
+  esi_employee                 Decimal
+  esi_employer                 Decimal
+  professional_tax             Decimal
+  tds                          Decimal
+  status                       PayslipStatus     @default(DRAFT)
+  slip_url                     String?
+  state_code                   String?
+  financial_year               Int?
+  tax_regime_used              TaxRegime?
+  statutory_version            String?
+  salary_structure_version     String?
+  compliance_version           String?
+  formula_version              String?
+  tax_regime_version           String?
+  employee                     Employee          @relation(fields: [employee_id], references: [id])
+  payroll_run                  PayrollRun        @relation(fields: [payroll_run_id], references: [id])
+  line_items                   PayslipLineItem[]
 }
 
 model PayslipLineItem {
-  id                  String          @id @default(uuid())
+  id                  String           @id @default(uuid())
   payslip_id          String
-  salary_component_id String
+  salary_component_id String?
   component_name      String
   component_type      ComponentType
   amount              Decimal
-  payslip             Payslip         @relation(fields: [payslip_id], references: [id])
-  salary_component    SalaryComponent @relation(fields: [salary_component_id], references: [id])
+  payslip             Payslip          @relation(fields: [payslip_id], references: [id], onDelete: Cascade)
+  salary_component    SalaryComponent? @relation(fields: [salary_component_id], references: [id])
+}
+
+enum AttendanceSource {
+  EMPLOYEE_SELF
+  ADMIN_MARKED
 }
 
 model Attendance {
-  id          String           @id @default(uuid())
-  employee_id String
-  date        DateTime
-  check_in    DateTime?
-  check_out   DateTime?
-  status      AttendanceStatus @default(PRESENT)
-  remarks     String?
-  employee    Employee         @relation(fields: [employee_id], references: [id])
+  id                   String           @id @default(uuid())
+  employee_id          String
+  date                 DateTime
+  check_in             DateTime?
+  check_out            DateTime?
+  status               AttendanceStatus @default(PRESENT)
+  remarks              String?
+  source               AttendanceSource @default(EMPLOYEE_SELF)
+  submitted_at         DateTime?
+  submitted_by_user_id String?
+  employee             Employee         @relation(fields: [employee_id], references: [id])
 
   @@unique([employee_id, date])
 }
@@ -347,8 +403,19 @@ model User {
   last_login    DateTime?
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
+
+  email_verification_expires_at DateTime?
+  email_verification_token      String?   @unique
+  email_verified                Boolean   @default(false)
+  password_reset_attempts       Int       @default(0)
+  password_reset_requested_at   DateTime?
+  reset_password_expires_at     DateTime?
+  reset_password_token          String?   @unique
+  scheduled_purge_at            DateTime?
+
   employee      Employee?
-  company       Company?  @relation(fields: [company_id], references: [id])
+  company       Company?       @relation(fields: [company_id], references: [id])
+  refreshTokens RefreshToken[]
 }
 
 model Holiday {
@@ -402,6 +469,8 @@ enum ComponentType {
   EARNING
   DEDUCTION
   REIMBURSEMENT
+  EMPLOYER_CONTRIBUTION
+  BONUS
 }
 
 enum ComponentCategory {
@@ -414,14 +483,20 @@ enum CalculationType {
   FLAT_AMOUNT
   PERCENTAGE_OF_BASIC
   PERCENTAGE_OF_CTC
+  PERCENTAGE_OF_GROSS
+  REMAINDER_OF_CTC
   FORMULA
 }
 
 enum PayrollStatus {
   DRAFT
+  PROCESSING
   PROCESSED
   APPROVED
   PAID
+  COMPLETED
+  LOCKED
+  CANCELLED
 }
 
 enum PayslipStatus {
@@ -451,15 +526,15 @@ enum UserRole {
 }
 
 model Announcement {
-  id         String   @id @default(uuid())
+  id         String               @id @default(uuid())
   company_id String
   title      String
   content    String
   priority   AnnouncementPriority @default(NORMAL)
   created_by String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  company    Company  @relation(fields: [company_id], references: [id])
+  created_at DateTime             @default(now())
+  updated_at DateTime             @updatedAt
+  company    Company              @relation(fields: [company_id], references: [id])
 }
 
 enum AnnouncementPriority {
@@ -484,25 +559,25 @@ model PerformanceReview {
   reviewed_by       String?
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
-  
-  company           Company  @relation(fields: [company_id], references: [id])
-  employee          Employee @relation(fields: [employee_id], references: [id])
+
+  company  Company  @relation(fields: [company_id], references: [id])
+  employee Employee @relation(fields: [employee_id], references: [id])
 }
 
 model Reimbursement {
-  id              String   @id @default(uuid())
-  employee_id     String
-  type            ReimbursementType
-  amount          Decimal
-  description     String?
-  status          ReimbursementStatus @default(PENDING)
-  remarks         String?
-  approved_by     String?
-  approved_at     DateTime?
-  payroll_run_id  String?
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-  employee        Employee @relation(fields: [employee_id], references: [id])
+  id             String              @id @default(uuid())
+  employee_id    String
+  type           ReimbursementType
+  amount         Decimal
+  description    String?
+  status         ReimbursementStatus @default(PENDING)
+  remarks        String?
+  approved_by    String?
+  approved_at    DateTime?
+  payroll_run_id String?
+  created_at     DateTime            @default(now())
+  updated_at     DateTime            @updatedAt
+  employee       Employee            @relation(fields: [employee_id], references: [id])
 }
 
 enum ReimbursementType {
@@ -518,4 +593,251 @@ enum ReimbursementStatus {
   APPROVED
   REJECTED
   PROCESSED
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  user_id    String
+  token_hash String
+  expires_at DateTime
+  created_at DateTime  @default(now())
+  revoked_at DateTime?
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  user_id     String?
+  action      String
+  entity_type String?
+  entity_id   String?
+  metadata    Json?
+  ip_address  String?
+  created_at  DateTime @default(now())
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  company_id String
+  user_id    String
+  type       String
+  title      String
+  message    String
+  metadata   Json?
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+}
+
+enum SystemComponentRole {
+  BASIC
+  HRA
+  SPECIAL_ALLOWANCE
+  PF_EMPLOYEE
+  PF_EMPLOYER
+  PT
+  TDS
+  ESI_EMPLOYEE
+  ESI_EMPLOYER
+  LWF_EMPLOYEE
+  LWF_EMPLOYER
+  GRATUITY_EMPLOYER
+}
+
+enum TaxRegime {
+  OLD
+  NEW
+}
+
+enum BonusType {
+  JOINING
+  PERFORMANCE
+  RETENTION
+  FESTIVAL
+  REFERRAL
+  SALES_COMMISSION
+  OVERTIME
+  OTHER
+}
+
+enum CompensationCategory {
+  FIXED_BONUS
+  VARIABLE_COMPENSATION
+}
+
+enum BonusStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model EmployeeBonus {
+  id              String               @id @default(uuid())
+  employee_id     String
+  company_id      String
+  type            BonusType
+  category        CompensationCategory @default(FIXED_BONUS)
+  name            String
+  description     String?
+  amount          Decimal
+  taxable         Boolean              @default(true)
+  recurring       Boolean              @default(false)
+  start_date      DateTime?
+  end_date        DateTime?
+  effective_month String?
+  status          BonusStatus          @default(APPROVED)
+  is_active       Boolean              @default(true)
+  created_by      String?
+  created_at      DateTime             @default(now())
+  updated_at      DateTime             @updatedAt
+
+  employee Employee @relation(fields: [employee_id], references: [id])
+  company  Company  @relation(fields: [company_id], references: [id])
+}
+
+enum RuleType {
+  PT
+  LWF
+  ESI
+  BONUS
+  GRATUITY
+}
+
+model StateComplianceRule {
+  id             String   @id @default(uuid())
+  company_id     String?
+  state_code     String
+  financial_year Int
+  rule_type      RuleType
+  configuration  Json
+  effective_from DateTime
+  effective_to   DateTime
+  version        Int      @default(1)
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@unique([company_id, state_code, rule_type, financial_year, version])
+}
+
+model BonusRule {
+  id                String   @id @default(uuid())
+  company_id        String?
+  financial_year    Int
+  min_salary_limit  Decimal
+  min_bonus_percent Decimal
+  max_bonus_percent Decimal
+  effective_from    DateTime
+  effective_to      DateTime
+  version           Int      @default(1)
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  @@unique([company_id, financial_year, version])
+}
+
+model TaxSlab {
+  id                String    @id @default(uuid())
+  regime            TaxRegime
+  financial_year    Int
+  min_income        Decimal
+  max_income        Decimal?
+  rate              Decimal
+  rebate_rules      Json?
+  cess_percent      Decimal   @default(4)
+  surcharge_percent Decimal   @default(0)
+  effective_from    DateTime
+  effective_to      DateTime
+  version           Int       @default(1)
+  is_active         Boolean   @default(true)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  @@unique([regime, financial_year, min_income, max_income, version])
+}
+
+model PayrollAdjustment {
+  id                String     @id @default(uuid())
+  original_run_id   String
+  reason            String
+  created_by        String
+  created_at        DateTime   @default(now())
+  adjustment_amount Decimal
+  payroll_run       PayrollRun @relation(fields: [original_run_id], references: [id])
+}
+
+model PayrollReversal {
+  id              String     @id @default(uuid())
+  original_run_id String
+  reason          String
+  created_by      String
+  created_at      DateTime   @default(now())
+  reversal_amount Decimal?
+  payroll_run     PayrollRun @relation(fields: [original_run_id], references: [id])
+}
+
+model PayrollJob {
+  id                  String    @id @default(uuid())
+  company_id          String
+  payroll_run_id      String?
+  status              String    @default("QUEUED")
+  total_employees     Int       @default(0)
+  processed_employees Int       @default(0)
+  failed_employees    Int       @default(0)
+  started_at          DateTime?
+  completed_at        DateTime?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now()) @updatedAt
+
+  company     Company        @relation(fields: [company_id], references: [id])
+  payroll_run PayrollRun?    @relation(fields: [payroll_run_id], references: [id])
+  batches     PayrollBatch[]
+}
+
+model PayrollBatch {
+  id             String   @id @default(uuid())
+  payroll_job_id String
+  batch_number   Int
+  employee_count Int
+  status         String   @default("QUEUED")
+  duration_ms    Int?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now()) @updatedAt
+
+  payroll_job PayrollJob @relation(fields: [payroll_job_id], references: [id])
+}
+
+model PayrollExecutionToken {
+  id           String   @id @default(uuid())
+  company_id   String
+  month        Int
+  year         Int
+  request_hash String   @unique
+  job_id       String?
+  created_at   DateTime @default(now())
+  expires_at   DateTime
+
+  @@unique([company_id, month, year])
+}
+
+model EmployeeAttritionScore {
+  id            String   @id @default(uuid())
+  employee_id   String
+  score         Float
+  risk_level    String
+  signals       Json
+  calculated_at DateTime @default(now())
+
+  @@index([employee_id])
+}
+
+model ReportSchedule {
+  id          String   @id @default(uuid())
+  name        String
+  report_type String
+  frequency   String
+  emails      Json
+  last_run_at DateTime?
+  next_run_at DateTime?
+  created_at  DateTime @default(now())
 }

@@ -1,12 +1,15 @@
 import { Router } from 'express';
 import { SalaryService } from '../services/salary.service.ts';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
+import { validate } from '../middleware/validate.ts';
+import { reviseSalarySchema } from '../schemas/salary.schema.ts';
 
 const router = Router();
 
 // Get salary history for an employee
 router.get('/history/:employeeId', authenticate, async (req: AuthRequest, res, next) => {
   try {
+    // @ts-ignore
     const history = await SalaryService.getRevisionHistory(req.params.employeeId);
     res.json(history);
   } catch (error) {
@@ -15,7 +18,7 @@ router.get('/history/:employeeId', authenticate, async (req: AuthRequest, res, n
 });
 
 // Revise salary
-router.post('/revise', authenticate, authorize('ADMIN', 'HR'), async (req: AuthRequest, res, next) => {
+router.post('/revise', authenticate, authorize('ADMIN', 'HR'), validate(reviseSalarySchema), async (req: AuthRequest, res, next) => {
   try {
     const result = await SalaryService.reviseSalary({
       ...req.body,

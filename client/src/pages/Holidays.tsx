@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { holidayService } from '../services/holiday.service';
 import { Palmtree, Plus, Trash2, Calendar, MapPin, Building2, Download } from 'lucide-react';
-
+import { Skeleton } from '../components/Skeleton';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 const Holidays: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -17,6 +18,7 @@ const Holidays: React.FC = () => {
     type: 'NATIONAL'
   });
   const [submitting, setSubmitting] = useState(false);
+  const [deleteHolidayId, setDeleteHolidayId] = useState<string | null>(null);
 
   const isHR = user?.role === 'HR' || user?.role === 'ADMIN';
 
@@ -51,13 +53,16 @@ const Holidays: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!deleteHolidayId) return;
     try {
-      await holidayService.deleteHoliday(id);
+      await holidayService.deleteHoliday(deleteHolidayId);
       fetchData();
       showToast('Holiday deleted successfully', 'success');
+      setDeleteHolidayId(null);
     } catch (err) {
       showToast('Failed to delete holiday', 'error');
+      setDeleteHolidayId(null);
     }
   };
 
@@ -92,7 +97,18 @@ const Holidays: React.FC = () => {
     }
   };
 
-  if (loading && holidays.length === 0) return <div>Loading holidays...</div>;
+  if (loading && holidays.length === 0) return (
+    <div>
+      <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Palmtree size={32} className="text-primary" />
+          <h1>Holiday Calendar</h1>
+        </div>
+        <Skeleton width="150px" height="40px" />
+      </div>
+      <Skeleton height="500px" borderRadius="12px" />
+    </div>
+  );
 
   return (
     <div>
@@ -168,7 +184,7 @@ const Holidays: React.FC = () => {
                     </td>
                     {isHR && (
                       <td style={{ padding: '1rem', textAlign: 'right' }}>
-                        <button onClick={() => handleDelete(h.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>
+                        <button onClick={() => setDeleteHolidayId(h.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>
                           <Trash2 size={18} />
                         </button>
                       </td>
@@ -177,8 +193,12 @@ const Holidays: React.FC = () => {
                 ))}
                 {holidays.length === 0 && (
                   <tr>
-                    <td colSpan={isHR ? 4 : 3} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      No holidays found for this year
+                    <td colSpan={isHR ? 4 : 3} style={{ padding: '4rem', textAlign: 'center' }}>
+                      <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
+                        <Calendar size={48} className="empty-state-icon" />
+                        <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No holidays found</h3>
+                        <p style={{ color: 'var(--text-secondary)' }}>No holidays have been set for {selectedYear}.</p>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -240,6 +260,16 @@ const Holidays: React.FC = () => {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteHolidayId}
+        title="Delete Holiday"
+        message="Are you sure you want to delete this holiday? This action cannot be undone."
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteHolidayId(null)}
+        confirmText="Delete"
+        isDestructive={true}
+      />
     </div>
   );
 };

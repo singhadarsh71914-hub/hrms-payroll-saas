@@ -1,0 +1,11 @@
+node_modules
+.git
+.env
+.github
+client
+test-results
+playwright-report
+uploads
+brain
+.gemini
+*.log

@@ -1,0 +1,65 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "logs\\.3507cfbdaae946cf6dfbcb4d941c43517a22df73-audit.json",
+    "files": [
+        {
+            "date": 1781969324056,
+            "name": "logs\\app-2026-06-20.log",
+            "hash": "a979f0523013beeb6400e2d91016a918e6f12066034cee2ebc373d6cda94ad88"
+        },
+        {
+            "date": 1782139064998,
+            "name": "logs\\app-2026-06-22.log",
+            "hash": "90e5d28414805ed06fb9cdd8cdc57dff4ad878c278429d5b98191354c36ffa82"
+        },
+        {
+            "date": 1782158118347,
+            "name": "logs\\app-2026-06-23.log",
+            "hash": "d23e8b5d46a983b05f3548c2765c77d32c30fe2a72a83d75ef43c66780178ccd"
+        },
+        {
+            "date": 1782289841640,
+            "name": "logs\\app-2026-06-24.log",
+            "hash": "485a0f2af4c18e2d894e0bf0bbb96ba2983ec2b4b11a3e5825a732de9658921e"
+        },
+        {
+            "date": 1782325982636,
+            "name": "logs\\app-2026-06-25.log",
+            "hash": "6908d0fcb98485e2087751c925fe967bf4f64bd747b1d49e141a11991588ce95"
+        },
+        {
+            "date": 1782631267852,
+            "name": "logs\\app-2026-06-28.log",
+            "hash": "c6ed597d620561efb37e23a099b7577e02142610e53beac1e15ee0a7888716b5"
+        },
+        {
+            "date": 1782671704931,
+            "name": "logs\\app-2026-06-29.log",
+            "hash": "393357bafe4090fae2191d6b0a52a69b40fd12364c52b177a467f89dea4412e7"
+        },
+        {
+            "date": 1782760403505,
+            "name": "logs\\app-2026-06-30.log",
+            "hash": "bcae76a188061c58750d60095b60dbdf114eb704e39c51e3dab52855f5a9cff9"
+        },
+        {
+            "date": 1782844339901,
+            "name": "logs\\app-2026-07-01.log",
+            "hash": "4fba68dac534c5aa565dfe01f0a319b8b78456063ec6e616f57f7bb97835af9e"
+        },
+        {
+            "date": 1782931118577,
+            "name": "logs\\app-2026-07-02.log",
+            "hash": "f687798e1bd580d36f11b6dc5600b29741672b5373cc93b5d74b9d403df77542"
+        },
+        {
+            "date": 1783018942954,
+            "name": "logs\\app-2026-07-03.log",
+            "hash": "1e0a264bcecace4e448cfaea909c18fa69cd28824c2361a911ee2cb57452c9bd"
+        }
+    ],
+    "hashType": "sha256"
+}

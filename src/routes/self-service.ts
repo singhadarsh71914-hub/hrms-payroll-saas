@@ -4,6 +4,8 @@ import { authenticate, AuthRequest } from '../middleware/auth.ts';
 import { AppError } from '../middleware/error.ts';
 import { LeaveService } from '../services/leave.service.ts';
 import { PayrollService } from '../services/payroll.service.ts';
+import { validate } from '../middleware/validate.ts';
+import { createLeaveSchema } from '../schemas/leave.schema.ts';
 
 const router = Router();
 
@@ -22,12 +24,19 @@ router.use(verifyEmployee);
 // DASHBOARD STATS
 router.get('/dashboard', async (req: AuthRequest, res: any, next: any) => {
   try {
+    console.log({
+      route: '/api/self-service/dashboard',
+      userId: req.user?.id,
+      companyId: req.user?.company_id,
+      success: 'PENDING'
+    });
+
     const employeeId = req.user!.employee_id!;
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    const [balances, latestPayslip, attendance] = await Promise.all([
+    const [balances, latestPayslip, attendance, employee] = await Promise.all([
       LeaveService.getLeaveBalances(employeeId, currentYear),
       prisma.payslip.findFirst({
         where: { employee_id: employeeId, status: 'FINALIZED' },
@@ -42,6 +51,10 @@ router.get('/dashboard', async (req: AuthRequest, res: any, next: any) => {
           },
         },
       }),
+      prisma.employee.findUnique({
+        where: { id: employeeId },
+        select: { first_name: true, last_name: true, face_enrolled_at: true, face_descriptor: true, biometric_enabled: true }
+      })
     ]);
 
     const attendanceSummary = {
@@ -52,11 +65,25 @@ router.get('/dashboard', async (req: AuthRequest, res: any, next: any) => {
     };
 
     res.json({
+      employee,
       leaveBalances: balances,
       latestPayslip,
       attendanceSummary,
     });
+    console.log({
+      route: '/api/self-service/dashboard',
+      userId: req.user?.id,
+      companyId: req.user?.company_id,
+      success: true
+    });
   } catch (err) {
+    console.log({
+      route: '/api/self-service/dashboard',
+      userId: req.user?.id,
+      companyId: req.user?.company_id,
+      success: false,
+      error: err
+    });
     next(err);
   }
 });
@@ -78,12 +105,37 @@ router.get('/payslips', async (req: AuthRequest, res: any, next: any) => {
 router.get('/payslips/:id/download', async (req: AuthRequest, res: any, next: any) => {
   try {
     const payslip = await prisma.payslip.findFirst({
-      where: { id: req.params.id, employee_id: req.user!.employee_id! },
+      // @ts-ignore
+      where: { id: req.params.id },
+      include: { payroll_run: true }
     });
 
     if (!payslip) return next(new AppError('Payslip not found', 404));
 
-    const doc = await PayrollService.generatePayslipPDF(payslip.payroll_run_id, payslip.employee_id);
+    const runId = payslip.payroll_run_id;
+    const employeeId = payslip.employee_id;
+
+    // --- AUTHORIZATION CHECKS ---
+    const targetEmployee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      // @ts-ignore
+      select: { company_id: true, manager_id: true }
+    });
+
+    if (!targetEmployee) return next(new AppError('Employee not found', 404));
+
+    const user = req.user!;
+    if (targetEmployee.company_id !== user.company_id) return next(new AppError('Access denied', 403));
+
+    if (user.role === 'EMPLOYEE' && user.employee_id !== employeeId) return next(new AppError('Access denied', 403));
+
+    if (user.role === 'MANAGER' && user.employee_id !== employeeId && targetEmployee.manager_id !== user.employee_id) return next(new AppError('Access denied', 403));
+
+    // @ts-ignore
+    if (payslip.payroll_run.company_id !== user.company_id) return next(new AppError('Access denied', 403));
+    // ----------------------------
+
+    const doc = await PayrollService.generatePayslipPDF(runId, employeeId);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=payslip_${payslip.month}_${payslip.year}.pdf`);
@@ -105,7 +157,7 @@ router.get('/leaves', async (req: AuthRequest, res: any, next: any) => {
 });
 
 // APPLY LEAVE
-router.post('/leaves', async (req: AuthRequest, res: any, next: any) => {
+router.post('/leaves', validate(createLeaveSchema), async (req: AuthRequest, res: any, next: any) => {
   try {
     const leave = await LeaveService.applyLeave(req.user!.employee_id!, req.body);
     res.json(leave);

@@ -5,6 +5,7 @@ import { holidayService } from '../services/holiday.service';
 import { Calendar, Clock, Save, ChevronLeft, UserCheck, UserX, CalendarDays } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
+import { Skeleton } from '../components/Skeleton';
 
 const Attendance: React.FC = () => {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ const Attendance: React.FC = () => {
   // Daily marking state
   const [markDate, setMarkDate] = useState(new Date().toISOString().split('T')[0]);
   const [dailyAttendance, setDailyAttendance] = useState<Record<string, string>>({});
+  const [dailySource, setDailySource] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   const isHR = user?.role === 'HR' || user?.role === 'ADMIN';
@@ -41,18 +43,19 @@ const Attendance: React.FC = () => {
       currentMarkDate.setHours(0,0,0,0);
       
       const daily: Record<string, string> = {};
+      const sourceMap: Record<string, string> = {};
       report.forEach((emp: any) => {
         const record = emp.attendance.find((a: any) => {
           const d = new Date(a.date);
           d.setHours(0,0,0,0);
-          return d.getTime() === currentMarkDate.getTime();
+          return d.valueOf() === currentMarkDate.valueOf();
         });
 
         let defaultStatus = 'PRESENT';
         const isHoliday = holidayData.some((h: any) => {
           const hd = new Date(h.date);
           hd.setHours(0,0,0,0);
-          return hd.getTime() === currentMarkDate.getTime();
+          return hd.valueOf() === currentMarkDate.valueOf();
         });
         const isWeekend = currentMarkDate.getDay() === 0 || currentMarkDate.getDay() === 6;
         
@@ -60,8 +63,12 @@ const Attendance: React.FC = () => {
         else if (isWeekend) defaultStatus = 'PRESENT'; 
 
         daily[emp.id] = record?.status || defaultStatus;
+        if (record?.source) {
+          sourceMap[emp.id] = record.source;
+        }
       });
       setDailyAttendance(daily);
+      setDailySource(sourceMap);
 
     } catch (err) {
       console.error('Failed to fetch attendance data', err);
@@ -77,20 +84,24 @@ const Attendance: React.FC = () => {
   const handleMarkAttendance = async () => {
     setSubmitting(true);
     try {
-      const promises = Object.entries(dailyAttendance).map(([employeeId, status]) => 
-        attendanceService.markAttendance({
-          employeeId,
-          date: markDate,
-          status
-        })
-      );
-      await Promise.all(promises);
+      const promises = Object.entries(dailyAttendance)
+        .filter(([employeeId, _]) => dailySource[employeeId] !== 'EMPLOYEE_SELF')
+        .map(([employeeId, status]) => 
+          attendanceService.markAttendance({
+            employeeId,
+            date: markDate,
+            status
+          })
+        );
+      if (promises.length > 0) {
+        await Promise.all(promises);
+      }
       showToast('Attendance marked successfully!', 'success');
       setView('report');
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to mark attendance', err);
-      showToast('Failed to mark attendance', 'error');
+      showToast(err.message || 'Failed to mark attendance', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -122,7 +133,24 @@ const Attendance: React.FC = () => {
     }
   };
 
-  if (loading && reportData.length === 0) return <div style={{ padding: '2rem' }}>Loading attendance ecosystem...</div>;
+  if (loading && reportData.length === 0) return (
+    <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
+      <div className="page-header">
+        <div>
+          <Skeleton width="300px" height="32px" />
+          <div style={{ marginTop: '0.5rem' }}><Skeleton width="400px" height="20px" /></div>
+        </div>
+      </div>
+      <Skeleton height="80px" borderRadius="12px" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem', marginTop: '2rem' }}>
+        <Skeleton height="100px" borderRadius="12px" />
+        <Skeleton height="100px" borderRadius="12px" />
+        <Skeleton height="100px" borderRadius="12px" />
+        <Skeleton height="100px" borderRadius="12px" />
+      </div>
+      <Skeleton height="400px" borderRadius="12px" />
+    </div>
+  );
 
   return (
     <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
@@ -225,13 +253,13 @@ const Attendance: React.FC = () => {
                           const record = emp.attendance.find((a: any) => {
                             const ad = new Date(a.date);
                             ad.setHours(0,0,0,0);
-                            return ad.getTime() === dateObj.getTime();
+                            return ad.valueOf() === dateObj.valueOf();
                           });
                           
                           const holiday = holidays.find(h => {
                             const hd = new Date(h.date);
                             hd.setHours(0,0,0,0);
-                            return hd.getTime() === dateObj.getTime();
+                            return hd.valueOf() === dateObj.valueOf();
                           });
 
                           return (
@@ -302,16 +330,22 @@ const Attendance: React.FC = () => {
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>{emp.employee_code}</div>
                     </td>
                     <td style={{ padding: '1.25rem' }}>
-                      <select 
-                        value={dailyAttendance[emp.id] || 'PRESENT'}
-                        onChange={(e) => setDailyAttendance({ ...dailyAttendance, [emp.id]: e.target.value })}
-                        style={{ padding: '0.6rem 1rem', width: '180px', borderRadius: '8px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600' }}
-                      >
-                        <option value="PRESENT">Present (Full Day)</option>
-                        <option value="ABSENT">Absent (Unpaid)</option>
-                        <option value="HALF_DAY">Half Day</option>
-                        <option value="ON_LEAVE">Approved Leave</option>
-                      </select>
+                      {dailySource[emp.id] === 'EMPLOYEE_SELF' ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontWeight: '700', fontSize: '0.875rem' }}>
+                          ✓ Submitted by Employee
+                        </div>
+                      ) : (
+                        <select 
+                          value={dailyAttendance[emp.id] || 'PRESENT'}
+                          onChange={(e) => setDailyAttendance({ ...dailyAttendance, [emp.id]: e.target.value })}
+                          style={{ padding: '0.6rem 1rem', width: '180px', borderRadius: '8px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600' }}
+                        >
+                          <option value="PRESENT">Present (Full Day)</option>
+                          <option value="ABSENT">Absent (Unpaid)</option>
+                          <option value="HALF_DAY">Half Day</option>
+                          <option value="ON_LEAVE">Approved Leave</option>
+                        </select>
+                      )}
                     </td>
                     <td style={{ padding: '1.25rem', textAlign: 'center' }}>
                       <div style={{ 

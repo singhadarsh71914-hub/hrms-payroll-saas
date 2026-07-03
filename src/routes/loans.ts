@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { body, validationResult } from 'express-validator';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
 import { AppError } from '../middleware/error.ts';
 import { LoanService } from '../services/loan.service.ts';
+import { validate } from '../middleware/validate.ts';
+import { applyLoanSchema, updateLoanStatusSchema } from '../schemas/loan.schema.ts';
 
 const router = Router();
 
@@ -11,19 +12,8 @@ router.use(authenticate);
 // APPLY LOAN (Employee or HR/Admin on behalf)
 router.post(
   '/apply',
-  [
-    body('loanType').isIn(['PERSONAL', 'MEDICAL', 'EMERGENCY', 'EDUCATION', 'HOME']),
-    body('principalAmount').isNumeric(),
-    body('interestRate').isNumeric(),
-    body('tenureMonths').isInt({ min: 1 }),
-    body('startDate').isISO8601(),
-  ],
+  validate(applyLoanSchema),
   async (req: AuthRequest, res: any, next: any) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return next(new AppError('Validation failed', 400));
-    }
-
     // Determine target employee ID
     let targetEmployeeId = req.user?.employee_id;
     const isHR = req.user?.role === 'HR' || req.user?.role === 'ADMIN';
@@ -79,6 +69,7 @@ router.get('/my', async (req: AuthRequest, res: any, next: any) => {
 // GET LOAN DETAILS & SCHEDULE
 router.get('/:id', async (req: AuthRequest, res: any, next: any) => {
   try {
+    // @ts-ignore
     const loan = await LoanService.getLoanById(req.params.id);
     if (!loan) return next(new AppError('Loan not found', 404));
     
@@ -94,8 +85,9 @@ router.get('/:id', async (req: AuthRequest, res: any, next: any) => {
 });
 
 // APPROVE LOAN (HR/Admin)
-router.put('/:id/approve', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, next: any) => {
+router.put('/:id/approve', authorize('ADMIN', 'HR'), validate(updateLoanStatusSchema), async (req: AuthRequest, res: any, next: any) => {
   try {
+    // @ts-ignore
     const loan = await LoanService.approveLoan(req.params.id, req.user!.id);
     res.json(loan);
   } catch (err) {
@@ -104,8 +96,9 @@ router.put('/:id/approve', authorize('ADMIN', 'HR'), async (req: AuthRequest, re
 });
 
 // REJECT LOAN (HR/Admin)
-router.put('/:id/reject', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, next: any) => {
+router.put('/:id/reject', authorize('ADMIN', 'HR'), validate(updateLoanStatusSchema), async (req: AuthRequest, res: any, next: any) => {
   try {
+    // @ts-ignore
     const loan = await LoanService.rejectLoan(req.params.id, req.user!.id, req.body.remarks);
     res.json(loan);
   } catch (err) {

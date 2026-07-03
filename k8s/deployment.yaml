@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hrms-payroll-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hrms-payroll-worker
+  template:
+    metadata:
+      labels:
+        app: hrms-payroll-worker
+    spec:
+      containers:
+      - name: worker
+        image: hrms-payroll:latest
+        env:
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: hrms-secrets
+              key: REDIS_URL
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10

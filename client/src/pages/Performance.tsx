@@ -3,12 +3,15 @@ import api from '../services/api';
 import { Award, Plus, Star, Search, Calendar, ChevronRight, Edit2, Trash2, X, Target, Zap, Heart, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { Skeleton } from '../components/Skeleton';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 const Performance = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [reviews, setReviews] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
   
   const [showCreate, setShowCreate] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
@@ -37,12 +40,15 @@ const Performance = () => {
   }, [isHR]);
 
   const fetchReviews = async () => {
+    setLoading(true);
     try {
       const res = await api.get(isHR ? '/performance' : '/performance/my');
       setReviews(res.data || []);
     } catch (err) {
       console.error(err);
       showToast('Failed to load performance reviews', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -161,6 +167,24 @@ const Performance = () => {
     r.cycle_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (loading) return (
+    <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <div className="page-header" style={{ marginBottom: '2rem' }}>
+        <div>
+          <Skeleton width="300px" height="40px" />
+          <Skeleton width="400px" height="20px" style={{ marginTop: '0.5rem' }} />
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
+         <Skeleton height="120px" borderRadius="16px" />
+         <Skeleton height="120px" borderRadius="16px" />
+         <Skeleton height="120px" borderRadius="16px" />
+         <Skeleton height="120px" borderRadius="16px" />
+      </div>
+      <Skeleton height="400px" borderRadius="16px" />
+    </div>
+  );
+
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
       <div className="page-header">
@@ -275,9 +299,10 @@ const Performance = () => {
               {filteredReviews.length === 0 && (
                 <tr>
                   <td colSpan={6} style={{ textAlign: 'center', padding: '4rem' }}>
-                    <div style={{ color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                       <Award size={48} opacity={0.2} />
-                       <span>No performance records found.</span>
+                    <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
+                       <Award size={48} className="empty-state-icon" />
+                       <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No records found</h3>
+                       <p style={{ color: 'var(--text-secondary)' }}>No performance records found.</p>
                     </div>
                   </td>
                 </tr>
@@ -288,23 +313,15 @@ const Performance = () => {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {reviewToDelete && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '400px' }}>
-            <div className="modal-header">
-              <h2>Confirm Deletion</h2>
-              <button className="icon-btn" onClick={() => setReviewToDelete(null)}><X size={20} /></button>
-            </div>
-            <div className="modal-body">
-              <p>Are you sure you want to delete this performance review? This action cannot be undone.</p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setReviewToDelete(null)}>Cancel</button>
-              <button className="btn btn-primary" style={{ background: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={handleDelete}>Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        isOpen={!!reviewToDelete}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this performance review? This action cannot be undone."
+        onConfirm={handleDelete}
+        onCancel={() => setReviewToDelete(null)}
+        confirmText="Delete"
+        isDestructive={true}
+      />
 
       {/* Create/Edit Review Modal */}
       {showCreate && (
@@ -449,7 +466,7 @@ const Performance = () => {
               {selectedReview.employee && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', padding: '1rem', background: 'var(--bg-page)', borderRadius: '12px' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800' }}>
-                    {selectedReview.employee.first_name[0]}{selectedReview.employee.last_name[0]}
+                    {selectedReview.employee.first_name?.[0] || ''}{selectedReview.employee.last_name?.[0] || ''}
                   </div>
                   <div>
                     <div style={{ fontWeight: '800' }}>{selectedReview.employee.first_name} {selectedReview.employee.last_name}</div>

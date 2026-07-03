@@ -8,6 +8,7 @@ const LoanManagement = () => {
   const [stats, setStats] = useState<any>(null);
   const [loans, setLoans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [filterStatus, setFilterStatus] = useState('');
   const [selectedLoan, setSelectedLoan] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
@@ -273,3 +274,4 @@ const LoanManagement = () => {
 };
 
 export default LoanManagement;
+

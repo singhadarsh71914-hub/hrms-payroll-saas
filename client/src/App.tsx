@@ -26,7 +26,17 @@ import Performance from './pages/Performance';
 import Reimbursements from './pages/Reimbursements';
 import Documents from './pages/Documents';
 import Announcements from './pages/Announcements';
+import Analytics from './pages/Analytics';
+import AttendanceIntelligence from './pages/AttendanceIntelligence';
+import AuditLogs from './pages/AuditLogs';
+import StatutoryConfig from './pages/admin/StatutoryConfig';
+import CompanySettings from './pages/CompanySettings';
+import SalaryComponents from './pages/SalaryComponents';
+import SalaryStructures from './pages/SalaryStructures';
 import './styles/global.css';
+
+import { ConnectivityBanner } from './components/ConnectivityBanner';
+import { NotificationProvider } from './context/NotificationContext';
 
 const Home = () => {
   const { user } = useAuth();
@@ -38,22 +48,29 @@ function App() {
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <Routes>
+          <NotificationProvider>
+            <ConnectivityBanner />
+            <BrowserRouter>
+              <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/set-password" element={<SetPassword />} />
               
               <Route element={<ProtectedRoute />}>
+                <Route path="/statutory-config" element={<Layout><StatutoryConfig /></Layout>} />
                 <Route path="/" element={<Layout><Home /></Layout>} />
                 
                 {/* Admin/HR Routes */}
+                <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
                 <Route path="/employees" element={<Layout><EmployeeList /></Layout>} />
                 <Route path="/employees/add" element={<Layout><EmployeeForm /></Layout>} />
                 <Route path="/employees/edit/:id" element={<Layout><EmployeeForm /></Layout>} />
                 <Route path="/employees/:id" element={<Layout><EmployeeDetails /></Layout>} />
                 <Route path="/attendance" element={<Layout><Attendance /></Layout>} />
+                <Route path="/attendance/intelligence" element={<Layout><AttendanceIntelligence /></Layout>} />
                 <Route path="/payroll" element={<Layout><Payroll /></Layout>} />
+                <Route path="/salary-components" element={<Layout><SalaryComponents /></Layout>} />
+                <Route path="/salary-structures" element={<Layout><SalaryStructures /></Layout>} />
                 <Route path="/loans" element={<Layout><LoanManagement /></Layout>} />
                 <Route path="/tax" element={<Layout><TaxManagement /></Layout>} />
                 <Route path="/leave" element={<Layout><Leave /></Layout>} />
@@ -62,6 +79,8 @@ function App() {
                 <Route path="/reimbursements" element={<Layout><Reimbursements /></Layout>} />
                 <Route path="/documents" element={<Layout><Documents /></Layout>} />
                 <Route path="/announcements" element={<Layout><Announcements /></Layout>} />
+                <Route path="/audit-logs" element={<Layout><AuditLogs /></Layout>} />
+                <Route path="/company-settings" element={<Layout><CompanySettings /></Layout>} />
 
                 {/* Employee Routes */}
                 <Route path="/my-leaves" element={<Layout><EmployeeLeaves /></Layout>} />
@@ -70,7 +89,8 @@ function App() {
                 <Route path="/my-tax" element={<Layout><MyTax /></Layout>} />
               </Route>
             </Routes>
-          </BrowserRouter>
+            </BrowserRouter>
+          </NotificationProvider>
         </AuthProvider>
       </ToastProvider>
     </ThemeProvider>

@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.ts';
 import { Prisma, LoanType, LoanStatus } from '@prisma/client';
+import { NotificationService } from './notification.service.ts';
 
 const { Decimal } = Prisma;
 
@@ -48,7 +49,7 @@ export class LoanService {
     if (!loan) throw new Error('Loan not found');
     if (loan.status !== 'PENDING') throw new Error('Loan already processed');
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const updatedLoan = await tx.loan.update({
         where: { id: loanId },
         data: {
@@ -91,10 +92,23 @@ export class LoanService {
 
       return updatedLoan;
     });
+
+    const empUser = await prisma.employee.findUnique({ where: { id: loan.employee_id }, include: { user: true } });
+    if (empUser && empUser.user) {
+        await NotificationService.createNotification({
+            company_id: empUser.company_id,
+            user_id: empUser.user.id,
+            type: 'LOAN_APPROVED',
+            title: 'Loan Approved',
+            message: `Your loan request for ₹${loan.principal_amount} has been approved.`,
+        });
+    }
+
+    return result;
   }
 
   static async rejectLoan(loanId: string, approvedBy: string, remarks?: string) {
-    return prisma.loan.update({
+    const loan = await prisma.loan.update({
       where: { id: loanId },
       data: {
         status: 'REJECTED',
@@ -103,6 +117,19 @@ export class LoanService {
         remarks
       }
     });
+
+    const empUser = await prisma.employee.findUnique({ where: { id: loan.employee_id }, include: { user: true } });
+    if (empUser && empUser.user) {
+        await NotificationService.createNotification({
+            company_id: empUser.company_id,
+            user_id: empUser.user.id,
+            type: 'LOAN_REJECTED',
+            title: 'Loan Rejected',
+            message: `Your loan request for ₹${loan.principal_amount} has been rejected.`,
+        });
+    }
+
+    return loan;
   }
 
   static async getLoanById(loanId: string) {

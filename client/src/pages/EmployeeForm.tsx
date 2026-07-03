@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createEmployee, updateEmployee, getEmployee, getDepartments, getDesignations, getEmployees } from '../services/employee.service';
+import { Skeleton } from '../components/Skeleton';
 
 const EmployeeForm: React.FC = () => {
   const { id } = useParams();
@@ -39,15 +40,16 @@ const EmployeeForm: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [depts, desigs, emps] = await Promise.all([getDepartments(), getDesignations(), getEmployees()]);
-        setDepartments(depts);
-        setDesignations(desigs);
-        setEmployees(emps);
+        setDepartments(Array.isArray(depts) ? depts : (depts?.data || []));
+        setDesignations(Array.isArray(desigs) ? desigs : (desigs?.data || []));
+        setEmployees(Array.isArray(emps) ? emps : (emps?.data || []));
 
         if (id) {
           const emp = await getEmployee(id);
@@ -82,6 +84,8 @@ const EmployeeForm: React.FC = () => {
         }
       } catch (err) {
         console.error('Failed to fetch initial data', err);
+      } finally {
+        setInitialLoading(false);
       }
     };
     fetchData();
@@ -103,6 +107,8 @@ const EmployeeForm: React.FC = () => {
       if (!payload.designation_id) delete (payload as any).designation_id;
       if (!payload.reporting_manager_id) delete (payload as any).reporting_manager_id;
       if (!payload.gender) delete (payload as any).gender;
+      if (!payload.personal_email) delete (payload as any).personal_email;
+
 
       if (id) {
         await updateEmployee(id, payload);
@@ -111,11 +117,24 @@ const EmployeeForm: React.FC = () => {
       }
       navigate(id ? `/employees/${id}` : '/employees');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to save employee');
+      setError(err.message || 'Internal Server Error');
     } finally {
       setLoading(false);
     }
   };
+
+  if (initialLoading) {
+    return (
+      <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '2rem' }}>
+        <Skeleton height="40px" width="300px" style={{ marginBottom: '2rem' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <Skeleton height="400px" borderRadius="12px" />
+          <Skeleton height="300px" borderRadius="12px" />
+          <Skeleton height="250px" borderRadius="12px" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '2rem' }}>
@@ -285,7 +304,7 @@ const EmployeeForm: React.FC = () => {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
             <button type="button" className="btn" onClick={() => navigate(id ? `/employees/${id}` : '/employees')} style={{ border: '1px solid var(--border)' }}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button data-testid="save-employee-btn" type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? 'Saving...' : 'Save Profile'}
             </button>
           </div>

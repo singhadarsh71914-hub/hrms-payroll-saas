@@ -1,62 +1,63 @@
 import api from './api';
+import type { AxiosRequestConfig } from 'axios';
 
-export const getOverviewStats = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/overview?range=${range}`);
+export const getOverviewStats = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/overview?range=${range}`, config);
   return response.data;
 };
 
-export const getPayrollTrend = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/payroll-trend?range=${range}`);
+export const getPayrollTrend = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/payroll-trend?range=${range}`, config);
   return response.data;
 };
 
-export const getHeadcountTrend = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/headcount?range=${range}`);
+export const getHeadcountTrend = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/headcount?range=${range}`, config);
   return response.data;
 };
 
-export const getLeaveStats = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/leave-stats?range=${range}`);
+export const getLeaveStats = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/leave-stats?range=${range}`, config);
   return response.data;
 };
 
-export const getAttendanceStats = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/attendance-stats?range=${range}`);
+export const getAttendanceStats = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/attendance-stats?range=${range}`, config);
   return response.data;
 };
 
-export const getDepartmentStats = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/department-stats?range=${range}`);
+export const getDepartmentStats = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/department-stats?range=${range}`, config);
   return response.data;
 };
 
-export const getLoanStats = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/loan-stats?range=${range}`);
+export const getLoanStats = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/loan-stats?range=${range}`, config);
   return response.data;
 };
 
-export const getTDSTrend = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/tds-trend?range=${range}`);
+export const getTDSTrend = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/tds-trend?range=${range}`, config);
   return response.data;
 };
 
-export const getLeaveUtilization = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/leave-utilization?range=${range}`);
+export const getLeaveUtilization = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/leave-utilization?range=${range}`, config);
   return response.data;
 };
 
-export const getTopEmployees = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/top-employees?range=${range}`);
+export const getTopEmployees = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/top-employees?range=${range}`, config);
   return response.data;
 };
 
-export const getMiscWidgets = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/misc-widgets?range=${range}`);
+export const getMiscWidgets = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/misc-widgets?range=${range}`, config);
   return response.data;
 };
 
-export const exportReport = async (range: string = '6m') => {
-  const response = await api.get(`/analytics/export?range=${range}`, { responseType: 'blob' });
+export const exportReport = async (range: string = '6m', config?: AxiosRequestConfig) => {
+  const response = await api.get(`/analytics/export?range=${range}`, { ...config, responseType: 'blob' });
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');
   link.href = url;

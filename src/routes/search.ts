@@ -1,10 +1,11 @@
+import { logError } from '../utils/logError.ts';
 import { Router, Response } from 'express';
 import prisma from '../lib/prisma.ts';
 import { authenticate, AuthRequest } from '../middleware/auth.ts';
 
 const router = Router();
 
-router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
+router.get('/', authenticate, async (req: AuthRequest, res: Response, next: any) => {
   const q = (req.query.q as string)?.trim();
 
   if (!q || q.length < 2) {
@@ -173,8 +174,8 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 
     res.json({ results });
   } catch (error: any) {
-    console.error('[Search] Fatal error:', error.message);
-    res.status(500).json({ error: 'Search failed on server', details: error.message });
+    logError('SEARCH.TS', req, error);
+    next(error);
   }
 });
 

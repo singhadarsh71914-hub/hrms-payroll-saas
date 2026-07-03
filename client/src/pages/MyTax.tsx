@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useToast } from '../context/ToastContext';
 import { getMyTaxSummary, downloadMyForm16 } from '../services/tax.service';
-import { Download, PieChart, AlertCircle } from 'lucide-react';
+import { Download, AlertCircle, Receipt } from 'lucide-react';
+import { Skeleton } from '../components/Skeleton';
 
 const MyTax = () => {
   const { showToast } = useToast();
@@ -42,15 +43,17 @@ const MyTax = () => {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold' }}>My Tax Documents</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '3rem' }}>
+      <div className="page-header">
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>My Tax Documents</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>View your TDS details and download Form 16.</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <select 
-            className="form-input" 
             value={financialYear}
             onChange={(e) => setFinancialYear(parseInt(e.target.value))}
-            style={{ width: 'auto' }}
+            style={{ width: 'auto', fontWeight: 600, padding: '8px 16px' }}
           >
             <option value={2024}>FY 2024-25</option>
             <option value={2025}>FY 2025-26</option>
@@ -60,38 +63,49 @@ const MyTax = () => {
       </div>
 
       {loading ? (
-        <div>Loading tax summary...</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px' }}>
+            <Skeleton height="120px" borderRadius="12px" />
+            <Skeleton height="120px" borderRadius="12px" />
+            <Skeleton height="120px" borderRadius="12px" />
+            <Skeleton height="120px" borderRadius="12px" />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '32px' }}>
+            <Skeleton height="350px" borderRadius="12px" />
+            <Skeleton height="250px" borderRadius="12px" />
+          </div>
+        </div>
       ) : summary ? (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-            <div className="card">
-              <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>Total Earnings</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>₹{Number(summary.totalGross).toLocaleString()}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+            <div className="premium-card">
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Earnings</div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)' }}>₹{Number(summary.totalGross).toLocaleString()}</div>
             </div>
-            <div className="card">
-              <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>Taxable Income</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>₹{Number(summary.taxableIncome).toLocaleString()}</div>
-              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>Standard Deduction Applied: ₹{summary.standardDeduction.toLocaleString()}</div>
+            <div className="premium-card">
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Taxable Income</div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)' }}>₹{Number(summary.taxableIncome).toLocaleString()}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>Standard Deduction: ₹{summary.standardDeduction.toLocaleString()}</div>
             </div>
-            <div className="card">
-              <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>Total TDS Deducted</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#16a34a' }}>₹{Number(summary.totalTdsDeducted).toLocaleString()}</div>
+            <div className="premium-card">
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total TDS Deducted</div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--success)' }}>₹{Number(summary.totalTdsDeducted).toLocaleString()}</div>
             </div>
-            <div className="card" style={{ border: summary.balanceTax > 0 ? '1px solid #ef4444' : '1px solid #16a34a' }}>
-              <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>Estimated Tax Liability</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>₹{Number(summary.totalTaxLiability).toLocaleString()}</div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 'bold', marginTop: '0.25rem', color: summary.balanceTax > 0 ? '#dc2626' : '#16a34a' }}>
+            <div className="premium-card" style={{ border: summary.balanceTax > 0 ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)', backgroundColor: summary.balanceTax > 0 ? 'rgba(239, 68, 68, 0.02)' : 'rgba(16, 185, 129, 0.02)' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Estimated Tax Liability</div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)' }}>₹{Number(summary.totalTaxLiability).toLocaleString()}</div>
+              <div style={{ fontSize: '14px', fontWeight: 700, marginTop: '4px', color: summary.balanceTax > 0 ? 'var(--danger)' : 'var(--success)' }}>
                 {summary.balanceTax > 0 ? `Payable: ₹${Number(summary.balanceTax).toLocaleString()}` : `Refundable: ₹${Math.abs(Number(summary.balanceTax)).toLocaleString()}`}
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem' }}>
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ padding: '1.25rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', margin: 0 }}>Quarterly TDS Summary</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '32px' }}>
+            <div className="premium-card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-page)' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Quarterly TDS Summary</h3>
               </div>
-              <table className="table">
+              <table className="premium-table">
                 <thead>
                   <tr>
                     <th>Quarter</th>
@@ -120,34 +134,34 @@ const MyTax = () => {
                     <td>Jan - Mar</td>
                     <td style={{ textAlign: 'right' }}>{Number(summary.quarters[3]).toLocaleString()}</td>
                   </tr>
-                  <tr style={{ background: '#f8fafc', fontWeight: 'bold' }}>
-                    <td colSpan={2}>Total</td>
-                    <td style={{ textAlign: 'right' }}>{Number(summary.totalTdsDeducted).toLocaleString()}</td>
+                  <tr style={{ background: 'var(--bg-page)' }}>
+                    <td colSpan={2} style={{ fontWeight: 700 }}>Total</td>
+                    <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--primary)' }}>{Number(summary.totalTdsDeducted).toLocaleString()}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            <div className="card">
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', marginBottom: '1rem' }}>Form 16 (Part A & B)</h3>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1.5rem' }}>
+            <div className="premium-card" style={{ display: 'flex', flexDirection: 'column' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Form 16 (Part A & B)</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
                 Your complete Form 16 containing the TDS certificate and detailed salary breakdown as per the New Tax Regime is available for download.
               </p>
               <button 
                 className="btn btn-primary" 
                 onClick={handleDownload}
-                style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
+                style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: 'auto' }}
               >
                 <Download size={18} />
                 Download Form 16 PDF
               </button>
 
-              <div style={{ marginTop: '2rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#4f46e5', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                  <AlertCircle size={18} />
+              <div style={{ marginTop: '32px', padding: '16px', background: 'rgba(37, 99, 235, 0.05)', borderRadius: '8px', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', fontWeight: 600, marginBottom: '8px' }}>
+                  <AlertCircle size={16} />
                   Note
                 </div>
-                <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
                   This computation is based on the New Tax Regime. Standard Deduction of ₹75,000 has been considered. Chapter VI-A deductions are not applicable.
                 </p>
               </div>
@@ -155,10 +169,10 @@ const MyTax = () => {
           </div>
         </>
       ) : (
-        <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-          <PieChart size={48} color="#cbd5e1" style={{ margin: '0 auto 1rem auto' }} />
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>No Data Available</h3>
-          <p style={{ color: '#64748b' }}>Tax details for the selected financial year are not available yet.</p>
+        <div className="empty-state">
+          <Receipt size={48} className="empty-state-icon" />
+          <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No Data Available</h3>
+          <p style={{ color: 'var(--text-secondary)' }}>Tax details for the selected financial year are not available yet.</p>
         </div>
       )}
     </div>

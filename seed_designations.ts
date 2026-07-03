@@ -26,17 +26,21 @@ async function seed() {
 
   for (const company of companies) {
     console.log(`Seeding designations for company: ${company.name}`);
-    for (const desig of DESIGNATIONS) {
-      await prisma.designation.upsert({
-        where: { id: `fixed-id-desig-${company.id}-${desig.name.replace(/\s+/g, '-')}` },
-        update: {},
-        create: {
-          company_id: company.id,
-          name: desig.name,
-          level: desig.level
-        }
-      });
+    const existing = await prisma.designation.findMany({
+      where: { company_id: company.id },
+      select: { name: true },
+    });
+    const existingNames = new Set(existing.map(d => d.name));
+    const toCreate = DESIGNATIONS.filter(d => !existingNames.has(d.name));
+    if (toCreate.length === 0) {
+      console.log(`  Already seeded — skipping.`);
+      continue;
     }
+    const result = await prisma.designation.createMany({
+      data: toCreate.map(d => ({ company_id: company.id, name: d.name, level: d.level })),
+      skipDuplicates: true,
+    });
+    console.log(`  Created ${result.count} designations.`);
   }
 
   console.log('Designations seeded successfully');
