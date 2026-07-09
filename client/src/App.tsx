@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -7,6 +7,9 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import SetPassword from './pages/SetPassword';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeList from './pages/EmployeeList';
@@ -27,6 +30,7 @@ import Reimbursements from './pages/Reimbursements';
 import Documents from './pages/Documents';
 import Announcements from './pages/Announcements';
 import Analytics from './pages/Analytics';
+import WorkforceIntelligence from './pages/analytics/WorkforceIntelligence';
 import AttendanceIntelligence from './pages/AttendanceIntelligence';
 import AuditLogs from './pages/AuditLogs';
 import StatutoryConfig from './pages/admin/StatutoryConfig';
@@ -55,13 +59,18 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/set-password" element={<SetPassword />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               
               <Route element={<ProtectedRoute />}>
                 <Route path="/statutory-config" element={<Layout><StatutoryConfig /></Layout>} />
                 <Route path="/" element={<Layout><Home /></Layout>} />
+                <Route path="/dashboard" element={<Navigate to="/" replace />} />
                 
                 {/* Admin/HR Routes */}
                 <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
+                <Route path="/workforce-intelligence" element={<Layout><WorkforceIntelligence /></Layout>} />
                 <Route path="/employees" element={<Layout><EmployeeList /></Layout>} />
                 <Route path="/employees/add" element={<Layout><EmployeeForm /></Layout>} />
                 <Route path="/employees/edit/:id" element={<Layout><EmployeeForm /></Layout>} />

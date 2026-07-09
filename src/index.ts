@@ -33,6 +33,14 @@ Sentry.init({
   }
 });
 
+process.on('uncaughtException', (err: any) => {
+  if (err.code !== 'ECONNREFUSED') console.error('Uncaught Exception:', err);
+});
+process.on('unhandledRejection', (reason: any, promise) => {
+  if (reason && reason.code === 'ECONNREFUSED') return;
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 import express from 'express';
 import http from 'http';
 import { initSocket } from './socket.ts';
@@ -91,6 +99,8 @@ app.use(cors({
     origin: [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5174',
         'http://localhost:4173',
         'http://127.0.0.1:4173',
         'http://localhost:5182',
@@ -112,17 +122,11 @@ app.use(express.json());
 import { requestIdMiddleware } from './middleware/request-id.ts';
 app.use(requestIdMiddleware);
 
-// Structured Logging with Pino
-app.use(pinoHttp({
-  logger: logger as any,
-  reqCustomProps: (req: any, res: any) => {
-    return {
-      request_id: req.id,
-      user_id: req.user?.id || 'anonymous',
-      company_id: req.user?.company_id || 'unknown'
-    };
-  }
-}));
+// Structured Logging with Winston
+app.use((req, res, next) => {
+  logger.info(`Incoming Request: ${req.method} ${req.url}`);
+  next();
+});
 
 // Routes
 // Apply authLimiter specifically to auth routes first
@@ -161,7 +165,7 @@ app.use('/api/company', companyRoutes);
 app.use('/api/compliance', complianceRoutes);
 console.log('Compliance routes mounted');
 
-app.use('/', healthRoutes);
+app.use('/health', healthRoutes);
 
 app.get('/debug-sentry', function mainHandler(req, res) {
   throw new Error("Sentry Backend Test");

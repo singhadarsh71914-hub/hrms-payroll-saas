@@ -64,20 +64,12 @@ export class SmtpEmailService implements EmailProvider {
   }
 
   async sendEmailVerification(email: string, verificationToken: string): Promise<void> {
-    console.log({
-      smtpHost: process.env.SMTP_HOST,
-      smtpUser: process.env.EMAIL_USER,
-      smtpConfigured: !!process.env.SMTP_HOST
-    });
-
     if (!this.isConfigured || !this.transporter) {
       logger.error('Cannot send verification email: SMTP not configured');
       return;
     }
 
     const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`;
-    console.log('SENDING VERIFICATION LINK:', verifyLink);
-
     const mailOptions = {
       from: `"HRMS Support" <${process.env.EMAIL_USER}>`,
       to: email,

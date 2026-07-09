@@ -56,7 +56,7 @@ export default function WorkforceAnalytics() {
               const employee = employees[virtualRow.index];
               return (
                 <div
-                  key={virtualRow.index}
+                  key={employee?.id || virtualRow.key}
                   className="absolute top-0 left-0 w-full flex items-center px-4 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors"
                   style={{
                     height: `${virtualRow.size}px`,

@@ -28,7 +28,7 @@ export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({
     <div className={`skeleton-text-container ${className}`} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton 
-          key={i} 
+          key={`skel-line-${i}`} 
           width={i === lines - 1 && lines > 1 ? '70%' : '100%'} 
           height="16px" 
         />

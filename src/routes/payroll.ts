@@ -32,7 +32,7 @@ router.get('/:runId/payslip/:employeeId', async (req: AuthRequest, res: any, nex
 
     const doc = await PayrollService.generatePayslipPDF(runId as string, employeeId as string);
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', "attachment; filename=payslip_$employeeId.pdf");
+    res.setHeader('Content-Disposition', `attachment; filename=payslip_${employeeId}.pdf`);
     doc.pipe(res);
   } catch (err) { next(err); }
 });
@@ -47,7 +47,9 @@ router.post('/run', authorize('ADMIN', 'HR'), validate(runPayrollSchema), async 
       entityType: 'PAYROLL_RUN', entityId: result.id, metadata: { month, year }, ipAddress: req.ip,
     });
     res.status(201).json(result);
-  } catch (err: any) { next(new AppError(err.message, 400)); }
+  } catch (err: any) {
+    next(err);
+  }
 });
 
 router.get('/runs', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, next: any) => {

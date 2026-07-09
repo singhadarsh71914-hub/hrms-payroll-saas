@@ -344,7 +344,7 @@ const EmployeeDashboard = () => {
           <div className="card-title"><Bell size={20} color="#f59e0b" /> Company Announcements</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
             {announcements.slice(0, 3).map((a: any, i: number) => (
-              <div key={i} style={{ padding: '1rem', background: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc', borderRadius: '8px', borderLeft: `3px solid ${a.priority === 'URGENT' ? '#ef4444' : a.priority === 'IMPORTANT' ? '#f59e0b' : '#3b82f6'}` }}>
+              <div key={a.id || `action-${i}`} style={{ padding: '1rem', background: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc', borderRadius: '8px', borderLeft: `3px solid ${a.priority === 'URGENT' ? '#ef4444' : a.priority === 'IMPORTANT' ? '#f59e0b' : '#3b82f6'}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <h4 style={{ margin: 0, fontWeight: 700 }}>{a.title}</h4>
                   <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)' }}>{new Date(a.created_at).toLocaleDateString()}</span>

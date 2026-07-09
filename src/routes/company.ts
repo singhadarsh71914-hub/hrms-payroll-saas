@@ -44,4 +44,15 @@ router.put('/', authorize('ADMIN'), async (req: AuthRequest, res, next) => {
   }
 });
 
+router.get('/location', async (req: AuthRequest, res: any, next: any) => {
+  try {
+    // Mock company location for dashboard compatibility since lat/lng isn't in schema
+    res.json({
+      data: { lat: 20.5937, lng: 78.9629, radius: 1000 }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

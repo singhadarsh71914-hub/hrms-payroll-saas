@@ -46,15 +46,13 @@ export class SalaryService {
       let defaultStructure = await prisma.salaryStructure.findFirst();
       if (!defaultStructure) {
         // Create a default structure if none exists
-        defaultStructure = await prisma.salaryStructure.create({
-          data: {
-            company_id: employee.company_id,
-            name: 'Standard Indian Corporate',
-            is_active: true
-          }
+        await SalarySeedService.bootstrapTenant(employee.company_id);
+        defaultStructure = await prisma.salaryStructure.findFirst({
+          where: { company_id: employee.company_id }
         });
-        
-        await SalarySeedService.seedDefaultComponents(employee.company_id, defaultStructure.id);
+        if (!defaultStructure) {
+           throw new Error("Failed to bootstrap default structure");
+        }
       }
       salaryStructureId = defaultStructure.id;
     }

@@ -19,7 +19,7 @@ interface RuleEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   rule: any;
-  onSave: (id: string, newConfig: any) => Promise<void>;
+  onSave: (id: string, newConfig: any, fullRule?: any) => Promise<void>;
 }
 
 export function RuleEditModal({ isOpen, onClose, rule, onSave }: RuleEditModalProps) {
@@ -60,7 +60,7 @@ export function RuleEditModal({ isOpen, onClose, rule, onSave }: RuleEditModalPr
     try {
       const newConfig = isPT ? data : rule.configuration; 
       // For ESI/LWF we just return the existing if not edited (for simplicity we focus PT dynamic editor)
-      await onSave(rule.id, newConfig);
+      await onSave(rule.id, newConfig, rule);
       onClose();
     } catch (err) {
       console.error(err);

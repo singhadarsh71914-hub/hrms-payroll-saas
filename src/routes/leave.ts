@@ -27,7 +27,7 @@ router.post(
       const result = await LeaveService.applyLeave(employeeId, req.body);
       res.status(201).json(result);
     } catch (err: any) {
-      next(new AppError(err.message, 400));
+      next(err);
     }
   }
 );
@@ -82,7 +82,7 @@ router.patch(
       const result = await LeaveService.updateLeaveStatus(id as string, status, approvedBy);
       res.json(result);
     } catch (err: any) {
-      next(new AppError(err.message, 400));
+      next(err);
     }
   }
 );

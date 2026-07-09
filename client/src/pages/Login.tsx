@@ -107,7 +107,7 @@ const Login: React.FC = () => {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>Password</label>
-                <a href="#" style={{ fontSize: '13px', fontWeight: '600' }}>Forgot password?</a>
+                <Link to="/forgot-password" style={{ fontSize: '13px', fontWeight: '600' }}>Forgot password?</Link>
               </div>
               <div style={{ position: 'relative' }}>
                 <Lock style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={18} />

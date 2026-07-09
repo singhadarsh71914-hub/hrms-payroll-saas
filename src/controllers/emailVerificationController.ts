@@ -8,14 +8,15 @@ import { emailService } from '../services/email.service';
 import { logger } from '../utils/logger';
 import { rateLimit } from 'express-rate-limit';
 
+const isDev = process.env.NODE_ENV === 'development';
 export const resendVerificationLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  limit: 3, // Limit each IP to 3 requests per hour to prevent spam
+  windowMs: isDev ? 1 * 60 * 1000 : 15 * 60 * 1000, // 1 min in dev, 15 min in prod
+  limit: isDev ? 100 : 3, // 100 requests in dev, 3 per 15 min in prod
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { 
     code: 'RATE_LIMITED',
-    message: 'Please wait before requesting another email.' 
+    message: 'Please wait before requesting another email. Try again later.' 
   }
 });
 

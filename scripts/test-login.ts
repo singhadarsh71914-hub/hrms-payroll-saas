@@ -1,7 +1,29 @@
-import bcrypt from "bcryptjs";
+import 'dotenv/config';
+import prisma from '../src/lib/prisma.ts';
+import bcrypt from 'bcryptjs';
 
-const hash = "$2b$10$CZ5A5fOAgYg0BGHXkrbvT.wnUOC4Apzk4FN/m/91zpCDl7CmV3wLm";
+async function testLogin() {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: 'admin@e2e.com' }
+    });
 
-bcrypt.compare("password", hash)
-  .then(console.log)
-  .catch(console.error);
+    if (!user) {
+      console.log('FAIL: User not found');
+      return;
+    }
+
+    const match = await bcrypt.compare('admin123', user.password_hash);
+    if (match) {
+      console.log('PASS: Password verification successful');
+    } else {
+      console.log('FAIL: Password mismatch');
+    }
+  } catch (error) {
+    console.error('Error during test:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+testLogin();

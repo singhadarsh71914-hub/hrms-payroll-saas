@@ -25,11 +25,6 @@ router.use(authenticate);
 
 // GET ALL EMPLOYEES
 router.get('/', async (req: AuthRequest, res: any, next: any) => {
-  console.log('=== EMPLOYEES REQUEST ===');
-  console.log('User:', req.user);
-  console.log('Company ID:', req.user?.company_id);
-  console.log('Query:', req.query);
-
   try {
     const includeInactive = req.query.include_inactive === 'true' && req.user?.role === 'ADMIN';
     const whereClause: any = { company_id: req.user?.company_id as string };
@@ -42,12 +37,9 @@ router.get('/', async (req: AuthRequest, res: any, next: any) => {
       where: whereClause,
       include: { department: true, designation: true },
     });
-    
-    console.log('Employee count:', employees.length);
     return res.json(employees);
   } catch (err) {
-    console.error('EMPLOYEE ROUTE ERROR:', err);
-    throw err;
+    next(err);
   }
 });
 
@@ -158,7 +150,8 @@ router.post(
       );
 
       // 5. Send Welcome Email
-      const setPasswordUrl = `http://localhost:5173/set-password?token=${welcomeToken}`;
+      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const setPasswordUrl = `${baseUrl}/set-password?token=${welcomeToken}`;
       
       sendEmail(
         result.employee.work_email,
@@ -186,25 +179,20 @@ router.post(
 
       res.status(201).json(result.employee);
     } catch (error: any) {
-      console.error('\n===== EMPLOYEE CREATE ERROR =====');
-      console.error(error);
-
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
         const target = (error.meta as any)?.target as string[] | string | undefined;
-        
         const targetStr = Array.isArray(target) ? target.join(',') : (target || '');
 
-        if (targetStr.includes('work_email')) {
+        if (targetStr.includes('work_email') || targetStr.includes('email')) {
           return res.status(409).json({
             status: 'error',
             field: 'work_email',
             message: 'An employee with this work email already exists.'
           });
         }
-
         if (targetStr.includes('employee_code')) {
           return res.status(409).json({
             status: 'error',
@@ -212,35 +200,12 @@ router.post(
             message: 'Employee code already exists.'
           });
         }
-
         return res.status(409).json({
           status: 'error',
           message: 'Duplicate data detected.'
         });
       }
-
-      if (error instanceof Error) {
-        console.error('MESSAGE:', error.message);
-        console.error('STACK:\n', error.stack);
-      }
-
-      if (error?.code) {
-        console.error('PRISMA CODE:', error.code);
-      }
-
-      if (error?.meta) {
-        console.error('PRISMA META:', error.meta);
-      }
-
-      console.error('REQUEST BODY:', req.body);
-      console.error('USER:', req.user);
-
-      return res.status(500).json({
-        status: 'error',
-        message: error instanceof Error
-          ? error.message
-          : 'Internal Server Error'
-      });
+      next(error);
     }
   }
 );

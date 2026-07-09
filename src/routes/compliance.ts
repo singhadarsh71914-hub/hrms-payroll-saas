@@ -5,12 +5,11 @@ import { UserRole } from '@prisma/client';
 
 const router = Router();
 
-router.get('/', ComplianceController.getRules);
-
-// Only ADMIN and HR can view/edit compliance rules
+// All compliance routes require authentication
 router.use(authenticate);
 router.use(authorize(UserRole.ADMIN, UserRole.HR));
 
+router.get('/', ComplianceController.getRules);
 router.post('/rules', ComplianceController.createRule);
 router.put('/rules/:id', ComplianceController.updateRule);
 router.post('/tax-slabs', ComplianceController.createTaxSlab);

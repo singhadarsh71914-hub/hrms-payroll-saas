@@ -3,9 +3,9 @@ import { logError } from '../utils/logError.ts';
 import { Router } from 'express';
 import { authLimiter, globalLimiter } from '../middleware/security.ts';
 import { createBullBoard } from '@bull-board/api';
-import { BullMQAdapter } from '@bull-board/api/bullMQAdapter.js';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { ExpressAdapter } from '@bull-board/express';
-import { payrollQueue, pdfQueue, dlqQueue } from '../services/queue.service.ts';
+import { payrollQueue, pdfQueue, dlqQueue, reportQueue } from '../services/queue.service.ts';
 import { authorize } from '../middleware/auth.ts';
 
 const router = Router();
@@ -33,12 +33,20 @@ router.post('/reset-rate-limit', (req, res, next) => {
 const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath('/api/admin/queues');
 
+const queues = [];
+if (payrollQueue && typeof payrollQueue.add === 'function') {
+  try {
+    queues.push(
+      new BullMQAdapter(payrollQueue),
+      new BullMQAdapter(pdfQueue),
+      new BullMQAdapter(dlqQueue),
+      new BullMQAdapter(reportQueue)
+    );
+  } catch(e) {}
+}
+
 createBullBoard({
-  queues: [
-    new BullMQAdapter(payrollQueue),
-    new BullMQAdapter(pdfQueue),
-    new BullMQAdapter(dlqQueue)
-  ],
+  queues,
   serverAdapter: serverAdapter,
 });
 

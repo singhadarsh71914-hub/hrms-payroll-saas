@@ -153,6 +153,9 @@ export default function SalaryStructures() {
 
   const handleAssign = async () => {
     try {
+      if (!assignData.structureId) {
+        return toast.error('Please select a salary structure');
+      }
       const ids = assignData.employeeIds.split(',').map(s => s.trim()).filter(Boolean);
       await assignSalaryStructure(assignData.structureId, {
         employeeIds: ids,
@@ -176,7 +179,7 @@ export default function SalaryStructures() {
           <p className="page-subtitle">Manage company payroll structures and assign them to employees.</p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button className="btn btn-secondary" onClick={() => {
+          <button className="btn btn-secondary" disabled={structures.length === 0} onClick={() => {
             setAssignData({ structureId: structures[0]?.id || '', employeeIds: '', effectiveFrom: '' });
             setIsAssignModalOpen(true);
           }}>

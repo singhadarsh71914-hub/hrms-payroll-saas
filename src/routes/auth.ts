@@ -1,6 +1,4 @@
-import { logError } from '../utils/logError.ts';
 import { Router } from 'express';
-import { logger } from '../utils/logger.ts';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -10,9 +8,15 @@ import { AuditService, AuditAction } from '../services/audit.service.ts';
 import { validate } from '../middleware/validate.ts';
 import { registerSchema, loginSchema, setPasswordSchema } from '../schemas/auth.schema.ts';
 import { authLimiter } from '../middleware/security.ts';
+import { authenticate } from '../middleware/auth.ts';
+
+// @ts-ignore
+import { forgotPassword, resetPassword, forgotPasswordLimiter, resetPasswordLimiter } from '../controllers/authResetController.ts';
+// @ts-ignore
+import { sendVerification, verifyEmail, resendVerificationLimiter } from '../controllers/emailVerificationController.ts';
 
 const router = Router();
-// ... (rest of imports and helpers)
+
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   console.error("FATAL ERROR: JWT_SECRET environment variable is missing.");
@@ -64,13 +68,6 @@ const setRefreshTokenCookie = (res: any, token: string) => {
   });
 };
 
-// @ts-ignore
-import { forgotPassword, resetPassword, forgotPasswordLimiter, resetPasswordLimiter } from '../controllers/authResetController';
-// @ts-ignore
-import { sendVerification, verifyEmail, resendVerificationLimiter } from '../controllers/emailVerificationController';
-// @ts-ignore
-import { authenticate } from '../middleware/auth.ts';
-
 // PASSWORD RESET
 router.post('/forgot-password', forgotPasswordLimiter, forgotPassword);
 router.post('/reset-password', resetPasswordLimiter, resetPassword);
@@ -87,7 +84,6 @@ router.post(
   async (req: any, res: any, next: any) => {
     try {
       const { email, password, role, company_name } = req.body;
-// ...
 
       if (!email) {
         return next(new AppError('Email is required', 400));
@@ -160,15 +156,6 @@ router.post(
       });
 
       const bcryptMatch = user ? await bcrypt.compare(password, user.password_hash) : false;
-      
-      console.log({
-        email,
-        userFound: !!user,
-        bcryptMatch,
-        emailVerified: user?.email_verified,
-        active: user?.is_active,
-        role: user?.role
-      });
 
       if (!user || !bcryptMatch) {
         await AuditService.log({
@@ -177,7 +164,6 @@ router.post(
           metadata: { email },
           ipAddress: req.ip,
         });
-        console.log("return next(new AppError('Invalid credentials', 401)); // LINE 169");
         return next(new AppError('Invalid credentials', 401));
       }
 
@@ -204,7 +190,11 @@ router.post(
       });
 
       // Reset rate limit on successful login
-      authLimiter.resetKey(req.rateLimit?.key || req.ip);
+      if (req.rateLimit?.key) {
+        authLimiter.resetKey(req.rateLimit.key);
+      } else {
+        authLimiter.resetKey(req.ip);
+      }
 
       res.json({
         accessToken,
@@ -216,20 +206,8 @@ router.post(
           company: user.company,
         },
       });
-    } catch (error: any) {
-      console.error("========== LOGIN FAILURE ==========");
-      console.error("MESSAGE:", error?.message);
-      console.error("STACK:", error?.stack);
-      console.error("FULL ERROR:", error);
-
-      if (error?.code) {
-        console.error("CODE:", error.code);
-      }
-
-      return res.status(500).json({
-        status: "error",
-        message: error?.message || "Internal server error"
-      });
+    } catch (err) {
+      next(err);
     }
   }
 );
@@ -321,8 +299,6 @@ router.post('/logout', async (req: any, res: any, next: any) => {
 });
 
 // GET CURRENT USER
-// @ts-ignore
-import { authenticate } from '../middleware/auth.ts';
 router.get('/me', authenticate, (req: any, res: any) => {
   res.json({ user: req.user });
 });

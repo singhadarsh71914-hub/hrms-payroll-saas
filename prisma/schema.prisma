@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
@@ -7,47 +8,53 @@ datasource db {
 }
 
 model Company {
-  id                   String              @id @default(uuid())
-  name                 String
-  trade_name           String?
-  pan                  String?
-  tan                  String?
-  pf_registration_no   String?
-  esi_registration_no  String?
-  pt_registration_no   String?
-  address              String?
-  city                 String?
-  state                String?
-  pincode              String?
-  logo_url             String?
-  financial_year_start Int                 @default(4)
-  created_at           DateTime            @default(now())
-  updated_at           DateTime            @updatedAt
-  departments          Department[]
-  designations         Designation[]
-  employees            Employee[]
-  holidays             Holiday[]
-  payroll_runs         PayrollRun[]
-  salary_components    SalaryComponent[]
-  salary_structures    SalaryStructure[]
-  users                User[]
-  announcements        Announcement[]
-  performance_reviews  PerformanceReview[]
-  documents            EmployeeDocument[]
-  bonuses              EmployeeBonus[]
-  payrollJobs          PayrollJob[]
+  id                     String                           @id @default(uuid())
+  name                   String
+  trade_name             String?
+  pan                    String?
+  tan                    String?
+  pf_registration_no     String?
+  esi_registration_no    String?
+  pt_registration_no     String?
+  address                String?
+  city                   String?
+  state                  String?
+  pincode                String?
+  logo_url               String?
+  financial_year_start   Int                              @default(4)
+  created_at             DateTime                         @default(now())
+  updated_at             DateTime                         @updatedAt
+  departments            Department[]
+  designations           Designation[]
+  employees              Employee[]
+  holidays               Holiday[]
+  payroll_runs           PayrollRun[]
+  salary_components      SalaryComponent[]
+  salary_structures      SalaryStructure[]
+  users                  User[]
+  announcements          Announcement[]
+  performance_reviews    PerformanceReview[]
+  documents              EmployeeDocument[]
+  bonuses                EmployeeBonus[]
+  payrollJobs            PayrollJob[]
+  employee_snapshots     EmployeeIntelligenceSnapshot[]
+  department_snapshots   DepartmentIntelligenceSnapshot[]
+  company_snapshots      CompanyIntelligenceSnapshot[]
+  intelligence_anomalies IntelligenceAnomaly[]
 }
 
 model Department {
-  id               String     @id @default(uuid())
-  company_id       String
-  name             String
-  code             String
-  head_employee_id String?
-  is_active        Boolean    @default(true)
-  company          Company    @relation(fields: [company_id], references: [id])
-  head_employee    Employee?  @relation("DepartmentHead", fields: [head_employee_id], references: [id])
-  employees        Employee[] @relation("EmployeeDepartment")
+  id                     String                           @id @default(uuid())
+  company_id             String
+  name                   String
+  code                   String
+  head_employee_id       String?
+  is_active              Boolean                          @default(true)
+  company                Company                          @relation(fields: [company_id], references: [id])
+  head_employee          Employee?                        @relation("DepartmentHead", fields: [head_employee_id], references: [id])
+  employees              Employee[]                       @relation("EmployeeDepartment")
+  department_snapshots   DepartmentIntelligenceSnapshot[]
+  intelligence_anomalies IntelligenceAnomaly[]
 }
 
 model Designation {
@@ -104,28 +111,32 @@ model Employee {
   face_descriptor   Json?
   biometric_enabled Boolean?
 
-  user_id             String?             @unique
-  is_active           Boolean             @default(true)
-  deleted_at          DateTime?
-  created_at          DateTime            @default(now())
-  updated_at          DateTime            @updatedAt
-  attendance          Attendance[]
-  headed_departments  Department[]        @relation("DepartmentHead")
-  company             Company             @relation(fields: [company_id], references: [id])
-  department          Department?         @relation("EmployeeDepartment", fields: [department_id], references: [id])
-  designation         Designation?        @relation(fields: [designation_id], references: [id])
-  reporting_manager   Employee?           @relation("ReportingManager", fields: [reporting_manager_id], references: [id])
-  subordinates        Employee[]          @relation("ReportingManager")
-  user                User?               @relation(fields: [user_id], references: [id])
-  documents           EmployeeDocument[]
-  salaries            EmployeeSalary[]
-  leave_requests      LeaveRequest[]
-  leave_balances      LeaveBalance[]
-  payslips            Payslip[]
-  loans               Loan[]
-  bonuses             EmployeeBonus[]
-  performance_reviews PerformanceReview[]
-  reimbursements      Reimbursement[]
+  user_id                String?                        @unique
+  is_active              Boolean                        @default(true)
+  deleted_at             DateTime?
+  created_at             DateTime                       @default(now())
+  updated_at             DateTime                       @updatedAt
+  attendance             Attendance[]
+  headed_departments     Department[]                   @relation("DepartmentHead")
+  company                Company                        @relation(fields: [company_id], references: [id])
+  department             Department?                    @relation("EmployeeDepartment", fields: [department_id], references: [id])
+  designation            Designation?                   @relation(fields: [designation_id], references: [id])
+  reporting_manager      Employee?                      @relation("ReportingManager", fields: [reporting_manager_id], references: [id])
+  subordinates           Employee[]                     @relation("ReportingManager")
+  user                   User?                          @relation(fields: [user_id], references: [id])
+  documents              EmployeeDocument[]
+  salaries               EmployeeSalary[]
+  leave_requests         LeaveRequest[]
+  leave_balances         LeaveBalance[]
+  payslips               Payslip[]
+  loans                  Loan[]
+  bonuses                EmployeeBonus[]
+  performance_reviews    PerformanceReview[]
+  reimbursements         Reimbursement[]
+  employee_snapshots     EmployeeIntelligenceSnapshot[]
+  intelligence_anomalies IntelligenceAnomaly[]
+  attrition_scores       EmployeeAttritionScore[]
+  base_salary            Decimal?                       @db.Decimal(10, 2)
 
   @@unique([company_id, employee_code])
 }
@@ -362,6 +373,7 @@ model Attendance {
   submitted_at         DateTime?
   submitted_by_user_id String?
   employee             Employee         @relation(fields: [employee_id], references: [id])
+  over_time_hours      Decimal?         @db.Decimal(10, 2)
 
   @@unique([employee_id, date])
 }
@@ -821,23 +833,122 @@ model PayrollExecutionToken {
 }
 
 model EmployeeAttritionScore {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   employee_id   String
   score         Float
   risk_level    String
   signals       Json
-  calculated_at DateTime @default(now())
+  calculated_at DateTime  @default(now())
+  employee      Employee  @relation(fields: [employee_id], references: [id])
 
   @@index([employee_id])
 }
 
 model ReportSchedule {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   report_type String
   frequency   String
   emails      Json
   last_run_at DateTime?
   next_run_at DateTime?
-  created_at  DateTime @default(now())
+  created_at  DateTime  @default(now())
+}
+
+model EmployeeIntelligenceSnapshot {
+  id                 String   @id @default(uuid())
+  company_id         String
+  employee_id        String
+  snapshot_date      DateTime
+  attrition_risk     String
+  burnout_risk       String
+  attendance_score   Float
+  productivity_score Float
+  overtime_risk      String
+  forecast_payload   Json?
+  anomalies          Json?
+  recommendations    Json?
+  created_at         DateTime @default(now())
+
+  company  Company  @relation(fields: [company_id], references: [id])
+  employee Employee @relation(fields: [employee_id], references: [id])
+
+  @@index([company_id, snapshot_date])
+  @@index([employee_id, snapshot_date])
+}
+
+model DepartmentIntelligenceSnapshot {
+  id                 String   @id @default(uuid())
+  company_id         String
+  department_id      String
+  snapshot_date      DateTime
+  attrition_risk     String
+  burnout_risk       String
+  attendance_score   Float
+  productivity_score Float
+  overtime_risk      String
+  forecast_payload   Json?
+  anomalies          Json?
+  recommendations    Json?
+  created_at         DateTime @default(now())
+
+  company    Company    @relation(fields: [company_id], references: [id])
+  department Department @relation(fields: [department_id], references: [id])
+
+  @@index([company_id, snapshot_date])
+  @@index([department_id, snapshot_date])
+}
+
+model CompanyIntelligenceSnapshot {
+  id                 String   @id @default(uuid())
+  company_id         String
+  snapshot_date      DateTime
+  attrition_risk     String
+  burnout_risk       String
+  attendance_score   Float
+  productivity_score Float
+  overtime_risk      String
+  forecast_payload   Json?
+  anomalies          Json?
+  recommendations    Json?
+  created_at         DateTime @default(now())
+
+  company Company @relation(fields: [company_id], references: [id])
+
+  @@index([company_id, snapshot_date])
+}
+
+model ScheduledReport {
+  id          String    @id @default(uuid())
+  company_id  String
+  report_type String
+  frequency   String
+  recipients  Json
+  enabled     Boolean   @default(true)
+  last_run_at DateTime?
+  next_run_at DateTime?
+  created_at  DateTime  @default(now())
+
+  @@index([company_id])
+}
+
+model IntelligenceAnomaly {
+  id            String    @id @default(uuid())
+  company_id    String
+  employee_id   String?
+  department_id String?
+  type          String
+  severity      String
+  message       String
+  metadata      Json?
+  resolved_at   DateTime?
+  created_at    DateTime  @default(now())
+
+  company    Company     @relation(fields: [company_id], references: [id])
+  employee   Employee?   @relation(fields: [employee_id], references: [id])
+  department Department? @relation(fields: [department_id], references: [id])
+
+  @@index([company_id])
+  @@index([employee_id])
+  @@index([department_id])
 }

@@ -40,8 +40,8 @@ export default function RiskHeatmap() {
               paddingAngle={5}
               dataKey="value"
             >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+              {data.map((entry) => (
+                <Cell key={entry.name} fill={entry.color} stroke="none" />
               ))}
             </Pie>
             <RechartsTooltip 

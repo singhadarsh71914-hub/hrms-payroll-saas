@@ -73,8 +73,19 @@ export default function StatutoryConfig() {
     }
   };
 
-  const handleSaveRule = async (id: string, newConfig: any) => {
-    await api.put(`/compliance/rules/${id}`, { configuration: newConfig });
+  const handleSaveRule = async (id: string, newConfig: any, fullRule?: any) => {
+    if (id === 'new' && fullRule) {
+      await api.post('/compliance/rules', {
+        state_code: fullRule.state_code,
+        financial_year: fullRule.financial_year,
+        rule_type: fullRule.rule_type,
+        configuration: newConfig,
+        effective_from: fullRule.effective_from,
+        effective_to: fullRule.effective_to,
+      });
+    } else {
+      await api.put(`/compliance/rules/${id}`, { configuration: newConfig });
+    }
     fetchRules();
   };
 
@@ -84,6 +95,20 @@ export default function StatutoryConfig() {
     acc[key].push(rule);
     return acc;
   }, {} as Record<string, ComplianceRule[]>);
+
+  const handleCreateRule = () => {
+    setEditingRule({
+      id: 'new',
+      state_code: 'GLOBAL',
+      rule_type: 'PT',
+      financial_year: parseInt(financialYear),
+      configuration: { slabs: [] },
+      is_active: true,
+      version: 1,
+      effective_from: `${financialYear}-04-01T00:00:00Z`,
+      effective_to: `${parseInt(financialYear) + 1}-03-31T23:59:59Z`,
+    } as any);
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
@@ -127,7 +152,7 @@ export default function StatutoryConfig() {
             <p className="text-slate-500 mb-8 max-w-md">
               Create PT, ESI, LWF, Gratuity, or Tax rules for the financial year {financialYear}-{(parseInt(financialYear) + 1).toString().slice(2)}.
             </p>
-            <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <button onClick={handleCreateRule} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
               <PlusCircle size={20} />
               Create Rule
             </button>

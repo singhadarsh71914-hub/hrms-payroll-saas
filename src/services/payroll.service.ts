@@ -147,16 +147,6 @@ export class PayrollService {
       throw new Error(`Payroll for ${monthNames[month - 1]} ${year} has already been processed. Duplicate runs are not allowed.`);
     }
 
-    // Auto-seed default components if the company's structure has none.
-    // This is a one-time idempotent operation guarded inside the service.
-    const structure = await prisma.salaryStructure.findFirst({
-      where: { company_id: companyId, is_active: true },
-      select: { id: true }
-    });
-    if (structure) {
-      await SalarySeedService.seedDefaultComponents(companyId, structure.id);
-    }
-
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       select: { state: true }
@@ -189,6 +179,14 @@ export class PayrollService {
         }
       }
     });
+
+    if (employees.length === 0) {
+      const AppError = require('../utils/appError').default || require('../utils/appError');
+      if (AppError) {
+        throw new AppError('No active employees found to process payroll', 400);
+      }
+      throw new Error('No active employees found to process payroll');
+    }
 
     const rawStructures = await prisma.salaryStructure.findMany({ where: { company_id: companyId } });
     const structureSnapshot = rawStructures.map(s => ({

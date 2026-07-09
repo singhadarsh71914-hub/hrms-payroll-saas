@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckCircle, AlertTriangle, Loader, Mail } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Loader, Mail, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -10,8 +10,18 @@ const VerifyEmail = () => {
   const token = searchParams.get('token');
   const [loading, setLoading] = useState(!!token);
   const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  useEffect(() => {
+    let timer: any;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   useEffect(() => {
     if (token) {
@@ -23,7 +33,8 @@ const VerifyEmail = () => {
           // Let's use a standard fetch or let it redirect?
           // Actually, if backend is GET /api/auth/verify-email?token=...
           // We can just window.location.href to the backend!
-          window.location.href = `http://localhost:3000/api/auth/verify-email?token=${token}`;
+          const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+          window.location.href = `${baseUrl}/auth/verify-email?token=${token}`;
         } catch (err) {
           console.error(err);
         }
@@ -33,13 +44,22 @@ const VerifyEmail = () => {
   }, [token]);
 
   const handleResend = async () => {
+    if (!navigator.onLine) {
+      setError('You are offline. Please check your network connection.');
+      return;
+    }
     setLoading(true);
     setError(null);
+    setSuccessMsg(null);
     try {
       const response = await api.post('/auth/resend-verification');
-      alert(response.data.message || 'Email sent successfully.');
+      setSuccessMsg(response.data.message || 'Email sent successfully.');
+      setCountdown(60);
     } catch (err: any) {
-      if (err.response?.data?.message) {
+      if (err.response?.status === 429) {
+        setError(err.response?.data?.message || 'Too many requests. Please try again later.');
+        setCountdown(60);
+      } else if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
         setError('Failed to resend verification email.');
@@ -47,6 +67,10 @@ const VerifyEmail = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openGmail = () => {
+    window.open('https://mail.google.com', '_blank');
   };
 
   return (
@@ -81,14 +105,15 @@ const VerifyEmail = () => {
                 The verification link is invalid or has expired. Please request a new link.
               </p>
               {error && <div style={{ color: 'var(--danger)', marginBottom: '16px' }}>{error}</div>}
+              {successMsg && <div style={{ color: 'var(--success)', marginBottom: '16px' }}>{successMsg}</div>}
               {user ? (
                 <button 
                   onClick={handleResend} 
                   className="btn btn-primary" 
-                  disabled={loading}
+                  disabled={loading || countdown > 0}
                   style={{ width: '100%', justifyContent: 'center' }}
                 >
-                  {loading ? <Loader size={18} className="spin" /> : 'Resend Link'}
+                  {loading ? <Loader size={18} className="spin" /> : (countdown > 0 ? `Resend available in ${countdown}s` : 'Resend Link')}
                 </button>
               ) : (
                 <button onClick={() => navigate('/login')} className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
@@ -107,14 +132,24 @@ const VerifyEmail = () => {
                 Please verify your email to unlock all features.
               </p>
               {error && <div style={{ color: 'var(--danger)', marginBottom: '16px' }}>{error}</div>}
-              <button 
-                onClick={handleResend} 
-                className="btn btn-secondary" 
-                disabled={loading}
-                style={{ width: '100%', justifyContent: 'center' }}
-              >
-                {loading ? <Loader size={18} className="spin" /> : 'Resend Verification Email'}
-              </button>
+              {successMsg && <div style={{ color: 'var(--success)', marginBottom: '16px' }}>{successMsg}</div>}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button 
+                  onClick={openGmail} 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  Open Gmail <ExternalLink size={16} style={{ marginLeft: '8px' }} />
+                </button>
+                <button 
+                  onClick={handleResend} 
+                  className="btn btn-secondary" 
+                  disabled={loading || countdown > 0}
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  {loading ? <Loader size={18} className="spin" /> : (countdown > 0 ? `Resend available in ${countdown}s` : 'Resend Verification Email')}
+                </button>
+              </div>
             </>
           )}
 

@@ -5,11 +5,18 @@ import { WebSocketService } from '../services/websocket.service.ts';
 import { moveToDLQ } from '../services/queue.service.ts';
 import { MetricsService } from '../services/metrics.service.ts';
 
-const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+const isRedisEnabled = process.env.ENABLE_REDIS !== 'false';
+const connection = isRedisEnabled ? new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: null,
+  retryStrategy: (times) => times > 3 ? null : Math.min(times * 50, 2000)
+}) : null;
+if (connection) {
+  connection.on('error', (err) => {
+  if ((err as any).code !== 'ECONNREFUSED') console.error('Redis error:', err.message);
 });
+}
 
-export const payrollWorker = new Worker('payroll-processing', async (job: Job) => {
+export const payrollWorker = isRedisEnabled ? new Worker('payroll-processing', async (job: Job) => {
   const { payroll_job_id, company_id, month, year, employee_ids } = job.data;
   
   MetricsService.incrementPayrollJobsRunning();
@@ -76,10 +83,14 @@ export const payrollWorker = new Worker('payroll-processing', async (job: Job) =
   } finally {
     MetricsService.decrementPayrollJobsRunning();
   }
-}, { connection: connection as any });
+}, { connection: connection as any }) : { on: () => {} } as unknown as Worker;
 
 payrollWorker.on('failed', async (job: Job | undefined, err: Error) => {
   if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
     await moveToDLQ('payroll-processing', job.data, err);
   }
+});
+
+payrollWorker.on('error', (err: any) => {
+  if ((err as any).code !== 'ECONNREFUSED') console.error('payrollWorker error:', err.message);
 });

@@ -77,7 +77,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div style={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', borderRadius: '12px', padding: '12px 16px', boxShadow: '0 12px 32px rgba(0,0,0,0.5)' }}>
         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase' }}>{label}</p>
         {payload.map((p: any, i: number) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontSize: '14px', fontWeight: 700 }}>
+          <div key={`tooltip-${i}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontSize: '14px', fontWeight: 700 }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: p.color || '#3B82F6' }} />
             {p.name === 'net' || p.name === 'salary' ? formatK(p.value) : p.value}
           </div>
@@ -124,7 +124,7 @@ const StaticPayrollCompliance = memo(() => (
   <Card title="Payroll Compliance" subtitle="Regulatory health status" style={{ gridColumn: 'span 6', height: CARD_HEIGHTS.intelligence }}>
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, marginTop: '-5px' }}>
        {['Provident Fund (PF)', 'Employee State Insurance (ESI)', 'Tax Deducted at Source (TDS)', 'Professional Tax (PT)'].map((item, idx) => (
-          <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)' }}>
+          <div key={`comp-${idx}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <CheckCircle size={16} color="#10B981" />
               <span style={{ fontWeight: 500, fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>{item}</span>
@@ -183,7 +183,7 @@ const StaticActivityFeed = memo(({ auditLogs }: { auditLogs: any[] }) => (
           { user: 'Manager', action: 'approved leave', entity: 'Jane Smith' },
           { user: 'Admin', action: 'updated department', entity: 'Engineering' },
         ].map((log: any, i: number) => (
-          <div key={i} style={{ display: 'flex', gap: '16px', padding: '10px 0', position: 'relative', zIndex: 1 }}>
+          <div key={`demo-log-${i}`} style={{ display: 'flex', gap: '16px', padding: '10px 0', position: 'relative', zIndex: 1 }}>
             <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#0F172A', border: '3px solid rgba(255,255,255,0.1)', marginTop: '2px', flexShrink: 0 }} />
             <div style={{ flex: 1, opacity: 0.5 }}>
               <div style={{ fontSize: '13px', color: '#fff', fontWeight: 500 }}>
@@ -277,7 +277,7 @@ const StaticCalendar = memo(({ holidays, birthdays, calendarTab, setCalendarTab 
                     {upcomingHolidays[month].map((h: any, i: number) => {
                       const cat = getHolidayCategory(h.name);
                       return (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div key={`holiday-${i}`} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                           <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.05))', border: '1px solid rgba(59,130,246,0.2)', boxShadow: '0 4px 12px rgba(59,130,246,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <div style={{ fontSize: '11px', fontWeight: 700, color: '#3B82F6', textTransform: 'uppercase', lineHeight: 1 }}>{new Date(h.date).toLocaleString('default', { month: 'short' })}</div>
                             <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff', lineHeight: 1, marginTop: '2px' }}>{new Date(h.date).getDate()}</div>
@@ -327,7 +327,7 @@ const StaticCalendar = memo(({ holidays, birthdays, calendarTab, setCalendarTab 
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {thisMonthBirthdays.map((b: any, i: number) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
+                <div key={`bday-${b.id || i}`} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(236,72,153,0.2), rgba(236,72,153,0.05))', border: '1px solid rgba(236,72,153,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#EC4899', flexShrink: 0 }}>
                     {b.name.split(' ').map((n:any)=>n[0]).join('')}
                   </div>
@@ -436,12 +436,13 @@ function AutoSizedAreaChart({ data }: { data: any[] }) {
 
   // Custom dot: larger and brighter for non-zero values.
   const renderDot = (props: any) => {
-    const { cx, cy, value } = props;
+    const { cx, cy, value, index, payload } = props;
+    const dotKey = payload?.month ? `dot-${payload.month}` : `dot-${index}`;
     if (value > 0) {
-      return <circle key={`dot-${cx}-${cy}`} cx={cx} cy={cy} r={4.5} fill="#FF5A67" stroke="rgba(255,90,103,0.3)" strokeWidth={4} />;
+      return <circle key={dotKey} cx={cx} cy={cy} r={4.5} fill="#FF5A67" stroke="rgba(255,90,103,0.3)" strokeWidth={4} />;
     }
     // Zero values: small muted dot to show the data point exists.
-    return <circle key={`dot-${cx}-${cy}`} cx={cx} cy={cy} r={2.5} fill="rgba(255,90,103,0.35)" strokeWidth={0} />;
+    return <circle key={dotKey} cx={cx} cy={cy} r={2.5} fill="rgba(255,90,103,0.35)" strokeWidth={0} />;
   };
 
   // Custom label: only render for non-zero values to avoid clutter.
@@ -629,7 +630,7 @@ export default function Analytics() {
     <div style={{ maxWidth: '1800px', margin: '0 auto', paddingBottom: '40px' }}>
       <Skeleton height="48px" width="250px" style={{ marginBottom: '32px' }} />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '24px', marginBottom: '32px' }}>
-        {[1,2,3,4,5].map(i => <Skeleton key={i} height="110px" borderRadius="20px" />)}
+        {[1,2,3,4,5].map(i => <Skeleton key={`skel-${i}`} height="110px" borderRadius="20px" />)}
       </div>
     </div>
   );
@@ -683,7 +684,7 @@ export default function Analytics() {
               <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', padding: '4px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 {['3m', '6m', '1y'].map((range) => (
                   <button 
-                    key={range} 
+                    key={`range-${range}`} 
                     onClick={() => setDateRange(range)} 
                     style={{ padding: '4px 16px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '12px', background: dateRange === range ? '#2563EB' : 'transparent', color: dateRange === range ? '#fff' : 'rgba(255,255,255,0.4)', transition: 'all 0.2s' }}
                   >
@@ -768,7 +769,7 @@ export default function Analytics() {
                     <ResponsiveContainer>
                       <PieChart>
                         <Pie data={safeDeptDist} cx="50%" cy="50%" innerRadius={35} outerRadius={50} paddingAngle={2} dataKey="count" stroke="none">
-                          {safeDeptDist.map((_e: any, index: number) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                          {safeDeptDist.map((e: any, index: number) => <Cell key={`pie-${e.name || index}`} fill={COLORS[index % COLORS.length]} />)}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
                       </PieChart>
@@ -783,7 +784,7 @@ export default function Analytics() {
                       const total = (overview?.activeEmployees || 30);
                       const pct = Math.round((d.count / total) * 100) || 0;
                       return (
-                        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div key={`dept-stat-${d.name || i}`} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', lineHeight: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: COLORS[i % COLORS.length] }} />

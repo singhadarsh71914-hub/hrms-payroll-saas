@@ -121,9 +121,13 @@ const Performance = () => {
   };
 
   const renderStars = (score: number) => {
-    return Array.from({ length: 5 }).map((_, i) => (
-      <Star key={i} size={14} fill={i < score ? "#f59e0b" : "transparent"} color={i < score ? "#f59e0b" : "var(--border)"} />
-    ));
+    return (
+      <div style={{ display: 'flex', gap: '2px' }}>
+        {[...Array(5)].map((_, i) => (
+          <Star key={`star-${i}`} size={14} fill={i < score ? "#f59e0b" : "transparent"} color={i < score ? "#f59e0b" : "var(--border)"} />
+        ))}
+      </div>
+    );
   };
 
   const StarSelector = ({ label, value, icon: Icon, onChange }: { label: string, value: number, icon: any, onChange: (v: number) => void }) => (
@@ -452,9 +456,9 @@ const Performance = () => {
                     {selectedReview.overall_score}
                  </div>
                  <div>
-                    <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.25rem' }}>
-                       {Array.from({ length: 5 }).map((_, i) => (
-                         <Star key={i} size={18} fill={i < Math.round(selectedReview.overall_score) ? "#fbbf24" : "transparent"} color={i < Math.round(selectedReview.overall_score) ? "#fbbf24" : "rgba(255,255,255,0.3)"} />
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                       {[...Array(5)].map((_, i) => (
+                         <Star key={`star-${i}`} size={18} fill={i < Math.round(selectedReview.overall_score) ? "#fbbf24" : "transparent"} color={i < Math.round(selectedReview.overall_score) ? "#fbbf24" : "rgba(255,255,255,0.3)"} />
                        ))}
                     </div>
                     <span style={{ fontSize: '0.85rem', fontWeight: '800', background: 'rgba(255,255,255,0.2)', padding: '0.25rem 0.75rem', borderRadius: '100px' }}>{selectedReview.badge}</span>
