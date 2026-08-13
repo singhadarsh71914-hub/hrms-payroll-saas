@@ -65,7 +65,7 @@ export default function CompanySettings() {
     return (
       <div className="page-container">
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--danger)' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Failed to load data</h3>
+          <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, marginBottom: '8px' }}>Failed to load data</h3>
           <p>Could not retrieve company configuration from the server.</p>
         </div>
       </div>
@@ -92,14 +92,14 @@ export default function CompanySettings() {
           className="btn btn-primary"
           onClick={handleSubmit}
           disabled={saving}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}
         >
           <Save size={18} />
           {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
 
-      <div style={{ display: 'grid', gap: '24px', maxWidth: '900px' }}>
+      <div style={{ display: 'grid', gap: 'var(--spacing-xl, 24px)', maxWidth: '900px' }}>
         
         {/* Basic Info */}
         <motion.div 
@@ -107,17 +107,17 @@ export default function CompanySettings() {
           animate={{ opacity: 1, y: 0 }}
           className="premium-card"
         >
-          <div className="card-header" style={{ padding: '24px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', color: '#3b82f6' }}>
+          <div className="card-header" style={{ padding: 'var(--spacing-xl, 24px)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: 'var(--radius-md)', color: 'var(--primary)' }}>
               <Building2 size={24} />
             </div>
             <div>
-              <h2 style={{ fontSize: '18px', margin: 0, color: 'var(--text-primary)' }}>General Information</h2>
-              <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>Basic company profile and addresses</p>
+              <h2 style={{ fontSize: 'var(--font-md, 18px)', margin: 0, color: 'var(--text-primary)' }}>General Information</h2>
+              <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: 'var(--font-base, 14px)' }}>Basic company profile and addresses</p>
             </div>
           </div>
-          <div style={{ padding: '24px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ padding: 'var(--spacing-xl, 24px)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: 'var(--spacing-lg, 16px)' }}>
               <div className="form-group">
                 <label>Legal Name</label>
                 <input type="text" name="name" value={company.name || ''} onChange={handleChange} required />
@@ -153,17 +153,17 @@ export default function CompanySettings() {
           transition={{ delay: 0.1 }}
           className="premium-card"
         >
-          <div className="card-header" style={{ padding: '24px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ padding: '10px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '12px', color: '#8b5cf6' }}>
+          <div className="card-header" style={{ padding: 'var(--spacing-xl, 24px)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ padding: '10px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: 'var(--radius-md)', color: 'var(--secondary)' }}>
               <Hash size={24} />
             </div>
             <div>
-              <h2 style={{ fontSize: '18px', margin: 0, color: 'var(--text-primary)' }}>Registration Numbers</h2>
-              <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>Tax and statutory compliance registrations</p>
+              <h2 style={{ fontSize: 'var(--font-md, 18px)', margin: 0, color: 'var(--text-primary)' }}>Registration Numbers</h2>
+              <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: 'var(--font-base, 14px)' }}>Tax and statutory compliance registrations</p>
             </div>
           </div>
-          <div style={{ padding: '24px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ padding: 'var(--spacing-xl, 24px)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: 'var(--spacing-lg, 16px)' }}>
               <div className="form-group">
                 <label>PAN (Permanent Account Number)</label>
                 <input type="text" name="pan" value={company.pan || ''} onChange={handleChange} />
@@ -191,17 +191,17 @@ export default function CompanySettings() {
           transition={{ delay: 0.2 }}
           className="premium-card"
         >
-          <div className="card-header" style={{ padding: '24px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ padding: '10px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '12px', color: '#f59e0b' }}>
+          <div className="card-header" style={{ padding: 'var(--spacing-xl, 24px)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ padding: '10px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: 'var(--radius-md)', color: 'var(--warning)' }}>
               <MapPin size={24} />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><h2 style={{ fontSize: '18px', margin: 0, color: 'var(--text-primary)' }}>Geofencing & Locations</h2><span className="badge badge-error" style={{ background: 'var(--danger-light)', color: 'var(--danger)', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>DISABLED</span></div>
-              <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>Migration Notice for Attendance Tracking</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><h2 style={{ fontSize: 'var(--font-md, 18px)', margin: 0, color: 'var(--text-primary)' }}>Geofencing & Locations</h2><span className="badge badge-error" style={{ background: 'var(--danger-light)', color: 'var(--danger)', padding: '2px 8px', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-sm, 12px)', fontWeight: 'bold' }}>DISABLED</span></div>
+              <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: 'var(--font-base, 14px)' }}>Migration Notice for Attendance Tracking</p>
             </div>
           </div>
-          <div style={{ padding: '24px' }}>
-            <div style={{ padding: '16px', background: 'rgba(59, 130, 246, 0.05)', borderRadius: '8px', borderLeft: '4px solid #3b82f6' }}>
+          <div style={{ padding: 'var(--spacing-xl, 24px)' }}>
+            <div style={{ padding: 'var(--spacing-lg, 16px)', background: 'rgba(59, 130, 246, 0.05)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--primary)' }}>
               <h3 style={{ fontSize: '16px', margin: '0 0 8px', color: 'var(--text-primary)' }}>Feature Flag: Geofencing Granularity</h3>
               <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: '1.5' }}>
                 Global company-wide geofencing has been retired. To support multi-office organizations, 

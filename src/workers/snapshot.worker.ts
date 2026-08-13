@@ -20,7 +20,6 @@ if (connection) {
 }
 
 export const snapshotWorker = isRedisEnabled ? new Worker('workforce-snapshot', async (job) => {
-  console.log(`Processing workforce-snapshot job`);
   
   // Get all companies
   const companies = await prisma.company.findMany({ select: { id: true } });
@@ -46,18 +45,28 @@ export const snapshotWorker = isRedisEnabled ? new Worker('workforce-snapshot', 
       where: { company_id: companyId, resolved_at: null, created_at: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
     });
     
+    const companyRecommendations: { type: string; message: string }[] = [];
+    if (avgAttrition > 50) companyRecommendations.push({ type: 'RETENTION', message: `Avg attrition risk elevated (${avgAttrition.toFixed(1)}). Schedule retention interviews.` });
+    if (avgAttendanceScore > 40) companyRecommendations.push({ type: 'ATTENDANCE', message: `Above-average absenteeism. Consider workforce wellness initiatives.` });
+    if (payrollAnomalies.length > 0) companyRecommendations.push({ type: 'PAYROLL', message: `Payroll spike detected. Audit latest payroll run.` });
+    if (companyRecommendations.length === 0) companyRecommendations.push({ type: 'STATUS', message: 'All metrics within normal range. No action required.' });
+
+    const productivityScore = attendance.length > 0
+      ? Math.max(0, 100 - (attendance.filter((a: any) => a.overtime_risk !== 'LOW').length / attendance.length) * 100)
+      : 100;
+
     // Save company snapshot
     await FeatureStoreService.saveCompanySnapshot({
       company_id: companyId,
       snapshot_date,
       attrition_risk: avgAttrition > 75 ? 'HIGH' : avgAttrition > 50 ? 'MEDIUM' : 'LOW',
-      burnout_risk: avgAttendanceScore > 80 ? 'HIGH' : 'LOW',
+      burnout_risk: avgAttendanceScore > 80 ? 'HIGH' : avgAttendanceScore > 40 ? 'MEDIUM' : 'LOW',
       attendance_score: Math.max(0, 100 - avgAttendanceScore),
-      productivity_score: 95,
-      overtime_risk: 'MEDIUM',
+      productivity_score: productivityScore,
+      overtime_risk: attendance.some((a: any) => a.overtime_risk === 'HIGH' || a.overtime_risk === 'CRITICAL') ? 'HIGH' : 'MEDIUM',
       forecast_payload: forecast,
       anomalies: [...payrollAnomalies, ...recentAnomalies.map((a: any) => ({ type: a.type, message: a.message, severity: a.severity }))],
-      recommendations: [{ type: 'PAYROLL', message: 'Review Q4 bonus structure' }]
+      recommendations: companyRecommendations
     });
     
     // Department / employee loops (Top 10 risks)
@@ -75,12 +84,14 @@ export const snapshotWorker = isRedisEnabled ? new Worker('workforce-snapshot', 
         employee_id: risk.employee_id,
         snapshot_date,
         attrition_risk: risk.attrition_risk || 'LOW',
-        burnout_risk: empAtt.burnout_indicators,
-        attendance_score: Math.max(0, 100 - empAtt.absenteeism_score),
-        productivity_score: 85,
+        burnout_risk: empAtt.burnout_indicators || 'LOW',
+        attendance_score: Math.max(0, 100 - (empAtt.absenteeism_score || 0)),
+        productivity_score: empAtt.overtime_risk === 'HIGH' ? 60 : empAtt.overtime_risk === 'MEDIUM' ? 80 : 95,
         overtime_risk: empAtt.overtime_risk || 'LOW',
-        anomalies: [...risk.reasons, ...empAnomalies.map((a: any) => a.message)],
-        recommendations: [{ type: 'RETENTION', message: 'Schedule 1-on-1 due to stats' }]
+        anomalies: [...risk.reasons, ...empAnomalies.map((a: any) => ({ type: a.type, message: a.message, severity: a.severity }))],
+        recommendations: risk.risk_score > 50
+          ? [{ type: 'RETENTION', message: `Schedule 1-on-1. Risk score: ${risk.risk_score}` }]
+          : []
       });
     }
   }

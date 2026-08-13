@@ -35,7 +35,7 @@ export default function AttendanceTimer({ durationSeconds }: AttendanceTimerProp
       >
         {formatDuration(durationSeconds)}
       </motion.div>
-      <p style={{ margin: '0.5rem 0 0', color: 'var(--text-muted)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Current Session Timer</p>
+      <p style={{ margin: '0.5rem 0 0', color: 'var(--text-muted)', fontSize: 'var(--font-base, 14px)', textTransform: 'uppercase', letterSpacing: '1px' }}>Current Session Timer</p>
     </div>
   );
 }

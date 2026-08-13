@@ -112,7 +112,6 @@ const Documents = () => {
   const handleDownload = async (doc: any) => {
     const docId = doc.id;
     const documentName = doc.document_name;
-    console.log('Downloading document:', docId, documentName);
     const downloadUrl = `documents/${docId}/download`;
     
     if (!docId) {
@@ -189,9 +188,9 @@ const Documents = () => {
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
-    if (ext === 'pdf') return <FileText size={24} color="#ef4444" />;
-    if (['doc', 'docx'].includes(ext || '')) return <FileSignature size={24} color="#3b82f6" />;
-    if (['jpg', 'jpeg', 'png'].includes(ext || '')) return <FileCheck size={24} color="#10b981" />;
+    if (ext === 'pdf') return <FileText size={24} color="var(--danger)" />;
+    if (['doc', 'docx'].includes(ext || '')) return <FileSignature size={24} color="var(--primary)" />;
+    if (['jpg', 'jpeg', 'png'].includes(ext || '')) return <FileCheck size={24} color="var(--success)" />;
     return <FileText size={24} color="var(--text-muted)" />;
   };
 
@@ -203,7 +202,7 @@ const Documents = () => {
           <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', fontSize: '1.1rem' }}>Secure management of company records and employee dossiers</p>
         </div>
         {isHR && (
-          <button className="btn btn-primary" onClick={() => setIsUploadModalOpen(true)} style={{ boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3)', padding: '0.75rem 1.5rem' }}>
+          <button className="btn btn-primary" onClick={() => setIsUploadModalOpen(true)} style={{ boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))', padding: '0.75rem 1.5rem' }}>
             <CloudUpload size={20} />
             Secure Upload
           </button>
@@ -222,7 +221,7 @@ const Documents = () => {
               style={{ 
                 width: '100%', 
                 padding: '1rem 1.5rem 1rem 3.5rem', 
-                borderRadius: '12px', 
+                borderRadius: 'var(--radius-md)', 
                 border: '1.5px solid var(--border)', 
                 background: 'var(--bg-page)', 
                 color: 'white',
@@ -233,7 +232,7 @@ const Documents = () => {
               onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
             />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-page)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1.5px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-page)', padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)' }}>
             <Filter size={18} color="var(--text-muted)" />
             <select 
               value={filterType}
@@ -252,13 +251,13 @@ const Documents = () => {
         </div>
 
         {isLoading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fill, minmax(320px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
             <Skeleton height="150px" borderRadius="16px" />
             <Skeleton height="150px" borderRadius="16px" />
             <Skeleton height="150px" borderRadius="16px" />
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fill, minmax(320px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
             {filteredDocs.map((doc) => (
               <div key={doc.id} className="premium-card" style={{ 
                 padding: '1.5rem', 
@@ -281,7 +280,7 @@ const Documents = () => {
                   <div style={{ 
                     width: '50px', 
                     height: '50px', 
-                    borderRadius: '12px', 
+                    borderRadius: 'var(--radius-md)', 
                     background: 'rgba(255,255,255,0.05)', 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -290,11 +289,11 @@ const Documents = () => {
                     {getFileIcon(doc.document_name)}
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => handleDownload(doc)} style={{ padding: '0.5rem', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: 'none', cursor: 'pointer' }} title="Download">
+                    <button onClick={() => handleDownload(doc)} style={{ padding: '0.5rem', borderRadius: 'var(--radius-md)', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', border: 'none', cursor: 'pointer' }} title="Download">
                       <Download size={18} />
                     </button>
                     {isHR && (
-                      <button onClick={() => setDocToDelete(doc.id)} style={{ padding: '0.5rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', cursor: 'pointer' }} title="Delete">
+                      <button onClick={() => setDocToDelete(doc.id)} style={{ padding: '0.5rem', borderRadius: 'var(--radius-md)', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', border: 'none', cursor: 'pointer' }} title="Delete">
                         <Trash2 size={18} />
                       </button>
                     )}
@@ -308,25 +307,25 @@ const Documents = () => {
 
                 <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 900 }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: 'var(--radius-full, 50%)', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-sm, 12px)', fontWeight: 900 }}>
                       {doc.employee?.first_name?.[0]}{doc.employee?.last_name?.[0]}
                     </div>
                     <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{doc.employee?.first_name} {doc.employee?.last_name}</span>
                   </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(doc.uploaded_at).toLocaleDateString()}</span>
+                  <span style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }}>{new Date(doc.uploaded_at).toLocaleDateString()}</span>
                 </div>
               </div>
             ))}
 
             {error ? (
               <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem 0' }} className="empty-state">
-                 <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--danger)', marginBottom: '8px' }}>Failed to load data</h2>
+                 <h2 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--danger)', marginBottom: '8px' }}>Failed to load data</h2>
                  <p style={{ color: 'var(--text-secondary)' }}>We couldn't retrieve documents from the server.</p>
               </div>
             ) : filteredDocs.length === 0 && (
               <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem 0' }} className="empty-state">
                  <FileSearch size={64} className="empty-state-icon" />
-                 <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No Documents Found</h2>
+                 <h2 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No Documents Found</h2>
                  <p style={{ color: 'var(--text-secondary)' }}>We couldn't find any documents matching your search or filters.</p>
               </div>
             )}
@@ -337,13 +336,13 @@ const Documents = () => {
       {/* Upload Modal */}
       {isUploadModalOpen && (
         <div className="modal-overlay" style={{ background: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-          <div className="modal-content" style={{ width: '100%', maxWidth: '500px', borderRadius: '16px', padding: '2rem', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+          <div className="modal-content" style={{ width: '100%', maxWidth: '500px', borderRadius: '16px', padding: '2rem', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))' }}>
             <div className="modal-header" style={{ marginBottom: '1.5rem', border: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white' }}>Upload Document</h2>
+                <h2 style={{ fontSize: 'var(--font-lg, 24px)', fontWeight: 900, color: 'white' }}>Upload Document</h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Securely add a new file to the vault</p>
               </div>
-              <button type="button" onClick={handleCancel} style={{ background: 'var(--bg-page)', borderRadius: '8px', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.5rem', display: 'flex', alignItems: 'center' }}>
+              <button type="button" onClick={handleCancel} style={{ background: 'var(--bg-page)', borderRadius: 'var(--radius-md)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.5rem', display: 'flex', alignItems: 'center' }}>
                 <X size={20} />
               </button>
             </div>
@@ -357,7 +356,7 @@ const Documents = () => {
                     value={uploadData.employee_id} 
                     onChange={e => setUploadData({...uploadData, employee_id: e.target.value})}
                     required
-                    style={{ width: '100%', background: 'var(--bg-page)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.75rem', color: 'white', outline: 'none' }}
+                    style={{ width: '100%', background: 'var(--bg-page)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '0.75rem', color: 'white', outline: 'none' }}
                   >
                     <option value="" style={{ background: 'var(--bg-card)' }}>Select Employee</option>
                     {employees.map(emp => (
@@ -373,7 +372,7 @@ const Documents = () => {
                     value={uploadData.document_type} 
                     onChange={e => setUploadData({...uploadData, document_type: e.target.value})}
                     required
-                    style={{ width: '100%', background: 'var(--bg-page)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.75rem', color: 'white', outline: 'none' }}
+                    style={{ width: '100%', background: 'var(--bg-page)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '0.75rem', color: 'white', outline: 'none' }}
                   >
                     <option value="" style={{ background: 'var(--bg-card)' }}>Select Type</option>
                     <option value="OFFER_LETTER" style={{ background: 'var(--bg-card)' }}>Offer Letter</option>
@@ -394,7 +393,7 @@ const Documents = () => {
                     value={uploadData.document_name} 
                     onChange={e => setUploadData({...uploadData, document_name: e.target.value})}
                     required
-                    style={{ width: '100%', background: 'var(--bg-page)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.75rem', color: 'white', outline: 'none' }}
+                    style={{ width: '100%', background: 'var(--bg-page)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '0.75rem', color: 'white', outline: 'none' }}
                   />
                 </div>
 
@@ -408,7 +407,7 @@ const Documents = () => {
                     onClick={() => fileInputRef.current?.click()}
                     style={{
                       border: `2px dashed ${dragActive ? 'var(--primary)' : 'var(--border)'}`,
-                      borderRadius: '12px',
+                      borderRadius: 'var(--radius-md)',
                       padding: '2rem',
                       textAlign: 'center',
                       background: dragActive ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-page)',
@@ -426,16 +425,16 @@ const Documents = () => {
                     
                     {file ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                         <CheckCircle2 size={32} color="#10b981" />
+                         <CheckCircle2 size={32} color="var(--success)" />
                          <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'white' }}>{file.name}</p>
-                         <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); }} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>Remove</button>
+                         <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); }} style={{ background: 'none', border: 'none', color: 'var(--danger)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>Remove</button>
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                         <CloudUpload size={32} color="var(--primary)" />
                         <div>
                           <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'white' }}>Drag & drop or click to browse</p>
-                          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.25rem' }}>PDF, DOC, JPG, PNG (Max 5MB)</p>
+                          <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm, 12px)', marginTop: '0.25rem' }}>PDF, DOC, JPG, PNG (Max 5MB)</p>
                         </div>
                       </div>
                     )}
@@ -448,7 +447,7 @@ const Documents = () => {
                   type="button" 
                   onClick={handleCancel} 
                   disabled={isUploading}
-                  style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 600 }}
+                  style={{ padding: '0.75rem 1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 600 }}
                 >
                   Cancel
                 </button>
@@ -457,7 +456,7 @@ const Documents = () => {
                   disabled={isUploading}
                   style={{ 
                     padding: '0.75rem 1.5rem', 
-                    borderRadius: '8px', 
+                    borderRadius: 'var(--radius-md)', 
                     background: 'var(--primary)', 
                     color: 'white', 
                     border: 'none', 

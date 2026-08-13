@@ -17,22 +17,24 @@ const EmailVerificationBanner = () => {
     <div style={{
       backgroundColor: 'var(--primary)',
       color: '#ffffff',
-      padding: '12px 24px',
+      padding: '10px 20px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      flexWrap: 'wrap',
+      gap: '12px',
+      boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))',
       zIndex: 100,
       position: 'relative'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <Mail size={20} />
-        <span style={{ fontSize: '14px', fontWeight: 500 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 auto', minWidth: '200px' }}>
+        <Mail size={20} style={{ flexShrink: 0 }} />
+        <span style={{ fontSize: 'var(--font-base, 14px)', fontWeight: 500 }}>
           Please verify your email address to unlock full platform features (like Payroll and Documents).
         </span>
       </div>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-lg, 16px)' }}>
         <button 
           onClick={() => navigate('/verify-email')}
           style={{
@@ -46,7 +48,7 @@ const EmailVerificationBanner = () => {
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: 'var(--spacing-sm, 8px)',
             transition: 'background 0.2s'
           }}
           onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}

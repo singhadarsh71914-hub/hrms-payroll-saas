@@ -119,7 +119,7 @@ router.get('/payslips/:id/download', async (req: AuthRequest, res: any, next: an
     const targetEmployee = await prisma.employee.findUnique({
       where: { id: employeeId },
       // @ts-ignore
-      select: { company_id: true, manager_id: true }
+      select: { company_id: true, reporting_manager_id: true }
     });
 
     if (!targetEmployee) return next(new AppError('Employee not found', 404));
@@ -129,7 +129,7 @@ router.get('/payslips/:id/download', async (req: AuthRequest, res: any, next: an
 
     if (user.role === 'EMPLOYEE' && user.employee_id !== employeeId) return next(new AppError('Access denied', 403));
 
-    if (user.role === 'MANAGER' && user.employee_id !== employeeId && targetEmployee.manager_id !== user.employee_id) return next(new AppError('Access denied', 403));
+    if (user.role === 'MANAGER' && user.employee_id !== employeeId && targetEmployee.reporting_manager_id !== user.employee_id) return next(new AppError('Access denied', 403));
 
     // @ts-ignore
     if (payslip.payroll_run.company_id !== user.company_id) return next(new AppError('Access denied', 403));

@@ -9,7 +9,6 @@ router.use(authenticate);
 
 // Get my reimbursements
 router.get('/my', async (req: AuthRequest, res: any, next: any) => {
-  console.log('GET /api/reimbursements/my');
   try {
     const claims = await prisma.reimbursement.findMany({
       where: { employee: { user_id: req.user!.id } },
@@ -23,7 +22,6 @@ router.get('/my', async (req: AuthRequest, res: any, next: any) => {
 
 // Apply for reimbursement
 router.post('/', validate(createReimbursementSchema), async (req: AuthRequest, res: any, next: any) => {
-  console.log('POST /api/reimbursements');
   try {
     const employee = await prisma.employee.findUnique({ where: { user_id: req.user!.id } });
     if (!employee) throw new Error("Employee not found");
@@ -44,7 +42,6 @@ router.post('/', validate(createReimbursementSchema), async (req: AuthRequest, r
 
 // Get all reimbursements
 router.get('/', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, next: any) => {
-  console.log('GET /api/reimbursements');
   try {
     const claims = await prisma.reimbursement.findMany({
       where: { employee: { company_id: req.user!.company_id! } },
@@ -59,7 +56,6 @@ router.get('/', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, nex
 
 // Process reimbursement
 router.put('/:id/status', authorize('ADMIN', 'HR'), validate(updateReimbursementStatusSchema), async (req: AuthRequest, res: any, next: any) => {
-  console.log(`PUT /api/reimbursements/${req.params.id}/status`);
   try {
     const { status, remarks } = req.body;
     const claim = await prisma.reimbursement.update({

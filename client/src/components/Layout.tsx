@@ -223,17 +223,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         
         {/* TOP NAVBAR */}
         <header className="top-navbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
-             <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-               HRMS <span style={{ color: 'var(--text-muted)' }}>/</span> <span style={{ color: 'var(--primary)' }}>{getPageTitle()}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+             <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: '100%' }}>
+               <span className="hide-on-mobile">HRMS <span style={{ color: 'var(--text-muted)' }}>/</span> </span><span style={{ color: 'var(--primary)' }}>{getPageTitle()}</span>
              </span>
              
              {/* Navbar center — search */}
-             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
+             <div className="hide-on-mobile" style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
                <GlobalSearch />
              </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
 
             {/* NOTIFICATIONS */}
             <div ref={notifRef} style={{ position: 'relative' }}>

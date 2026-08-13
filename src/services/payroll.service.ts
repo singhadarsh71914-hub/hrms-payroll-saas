@@ -118,7 +118,7 @@ export class PayrollService {
 
     let performance_score: number | undefined;
     if (performance) {
-      performance_score = performance.overall_score;
+      performance_score = performance.overall_score !== null ? performance.overall_score : undefined;
     }
 
     return Object.freeze({
@@ -731,7 +731,6 @@ export class PayrollService {
     });
 
     // Send emails asynchronously after transaction
-    console.log(`Starting background email process for payroll run: ${payrollRun.id}`);
     this.sendPayslipsByEmail(payrollRun.id).catch(err => console.error('Failed to send payslip emails:', err));
 
     const userEmps = await prisma.employee.findMany({ 
@@ -763,7 +762,6 @@ export class PayrollService {
   }
 
   static async sendPayslipsByEmail(runId: string) {
-    console.log(`Fetching payslips for run: ${runId}`);
     const payslips = await prisma.payslip.findMany({
       where: { payroll_run_id: runId },
       include: {
@@ -771,7 +769,6 @@ export class PayrollService {
       }
     });
 
-    console.log(`Found ${payslips.length} payslips to process.`);
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     for (const payslip of payslips) {
@@ -780,7 +777,6 @@ export class PayrollService {
         continue;
       }
 
-      console.log(`Processing payslip for ${payslip.employee.work_email}...`);
       try {
         const doc = await this.generatePayslipPDF(runId, payslip.employee_id);
         const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
@@ -954,7 +950,6 @@ export class PayrollService {
     const totalsY = doc.y;
     
     // Debug font before printing rupee symbol
-    console.log(`Current doc font before Rupee symbol: ${(doc as any)._font?.name}`);
 
     doc.text(`Gross Earnings: `, 60, totalsY);
     doc.text(`₹${Number(payslip.gross_salary).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 200, totalsY, { width: 90, align: 'right' });

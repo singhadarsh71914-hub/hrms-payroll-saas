@@ -9,6 +9,10 @@ const router = Router();
 // Get salary history for an employee
 router.get('/history/:employeeId', authenticate, async (req: AuthRequest, res, next) => {
   try {
+    const isSelf = req.user?.employee_id === req.params.employeeId;
+    const isManager = ['ADMIN', 'HR', 'MANAGER'].includes(req.user?.role || '');
+    if (!isSelf && !isManager) return next(new Error('Unauthorized access'));
+
     // @ts-ignore
     const history = await SalaryService.getRevisionHistory(req.params.employeeId);
     res.json(history);

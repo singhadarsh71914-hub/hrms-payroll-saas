@@ -68,7 +68,7 @@ const EmployeeLeaves = () => {
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '3rem' }}>
       <div className="page-header">
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>My Leaves</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>My Leaves</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Manage your leave applications and history.</p>
         </div>
         <button data-testid="apply-leave-btn" onClick={() => setShowModal(true)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -79,7 +79,7 @@ const EmployeeLeaves = () => {
 
       <div className="premium-card" style={{ padding: 0, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ padding: 'var(--spacing-xl, 24px)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg, 16px)' }}>
             <Skeleton height="40px" />
             <Skeleton height="40px" />
             <Skeleton height="40px" />
@@ -87,7 +87,7 @@ const EmployeeLeaves = () => {
         ) : leaves.length === 0 ? (
           <div className="empty-state">
             <CalendarX size={48} className="empty-state-icon" />
-            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No leave history found</h3>
+            <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No leave history found</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>You haven't applied for any leaves yet.</p>
             <button onClick={() => setShowModal(true)} className="btn btn-primary">Apply Now</button>
           </div>
@@ -128,7 +128,7 @@ const EmployeeLeaves = () => {
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '500px', padding: '32px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '24px' }}>Apply for Leave</h2>
+            <h2 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '24px' }}>Apply for Leave</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Leave Type</label>
@@ -141,7 +141,7 @@ const EmployeeLeaves = () => {
                   <option value="CASUAL">Casual Leave</option>
                 </select>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: 'var(--spacing-lg, 16px)', marginBottom: '16px' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label>Start Date</label>
                   <input 

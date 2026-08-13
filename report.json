@@ -1,0 +1,27 @@
+{
+  "registration": {
+    "payload": {
+      "email": "admin.1783869724781@cyberdyne.com",
+      "password": "pass_1783869724781",
+      "company_name": "Cyberdyne 1783869724781",
+      "first_name": "Miles",
+      "last_name": "Dyson"
+    },
+    "status": 201,
+    "response": {
+      "message": "User registered successfully",
+      "userId": "128628dc-16d1-454e-acaa-2497e97be76e",
+      "companyId": "3b946434-b0eb-4a12-b024-2b0b4bf44192"
+    }
+  },
+  "login": {
+    "status": 200,
+    "tokenGenerated": true
+  },
+  "db": {
+    "company": "3b946434-b0eb-4a12-b024-2b0b4bf44192",
+    "user": "128628dc-16d1-454e-acaa-2497e97be76e",
+    "passwordHash": "Verified via login success",
+    "companyRelationship": "Verified via login success"
+  }
+}

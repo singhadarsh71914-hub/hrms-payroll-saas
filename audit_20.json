@@ -1,0 +1,198 @@
+[
+  {
+    "file": "\\components\\attendance\\AttendanceCard.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance\\AttendanceCharts.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance\\AttendanceSkeleton.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance\\AttendanceTimeline.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance\\AuthenticityScore.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance\\FaceIdCard.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance\\LocationCard.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance\\MonthlyInsights.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\AttendanceAnalytics.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\AttendanceForecast.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\CommandCenter.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\ExecutiveToolbar.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\LiveAlertsFeed.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\NotificationCenter.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\RiskAnalysisPanel.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\RiskHeatmap.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\WorkforceHealthCard.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\WorkforceMap.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\attendance-intelligence\\WorkforceTable.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\EmailVerificationBanner.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\GlobalSearch.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\components\\Layout.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\context\\ToastContext.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\analytics\\ExecutiveDashboard.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\analytics\\WorkforceIntelligence.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Analytics.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Announcements.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Attendance.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\AuditLogs.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\CompanySettings.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Dashboard.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Documents.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\EmployeeDashboard.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\EmployeeDetails.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\EmployeeForm.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\EmployeeLeaves.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\EmployeeList.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\EmployeePayslips.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Leave.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\LoanManagement.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Login.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\MyLoans.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\MyTax.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Payroll.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Performance.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Register.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\Reimbursements.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\SalaryStructures.tsx",
+    "status": "Fixed"
+  },
+  {
+    "file": "\\pages\\SetPassword.tsx",
+    "status": "Fixed"
+  }
+]

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { attendanceService } from '../services/attendance.service';
 import { holidayService } from '../services/holiday.service';
@@ -113,12 +113,23 @@ const Attendance: React.FC = () => {
 
   const days = Array.from({ length: getDaysInMonth(selectedMonth, selectedYear) }, (_, i) => i + 1);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
+  useEffect(() => { setCurrentPage(1); }, [selectedMonth, selectedYear, view]);
+
+  const { totalPages, paginatedReportData } = useMemo(() => {
+    const total = Math.ceil(reportData.length / itemsPerPage);
+    const paginated = reportData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    return { totalPages: total, paginatedReportData: paginated };
+  }, [reportData, currentPage]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PRESENT': return '#10b981';
-      case 'ABSENT': return '#ef4444';
-      case 'HALF_DAY': return '#f59e0b';
-      case 'ON_LEAVE': return '#3b82f6';
+      case 'PRESENT': return 'var(--success)';
+      case 'ABSENT': return 'var(--danger)';
+      case 'HALF_DAY': return 'var(--warning)';
+      case 'ON_LEAVE': return 'var(--primary)';
       default: return 'var(--text-muted)';
     }
   };
@@ -142,7 +153,7 @@ const Attendance: React.FC = () => {
         </div>
       </div>
       <Skeleton height="80px" borderRadius="12px" />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem', marginTop: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(4, 1fr)'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem', marginTop: '2rem' }}>
         <Skeleton height="100px" borderRadius="12px" />
         <Skeleton height="100px" borderRadius="12px" />
         <Skeleton height="100px" borderRadius="12px" />
@@ -177,11 +188,11 @@ const Attendance: React.FC = () => {
           <div className="premium-card" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Calendar size={20} color="var(--primary)" />
-              <label style={{ fontWeight: '700', fontSize: '0.875rem' }}>View Period</label>
+              <label style={{ fontWeight: '700', fontSize: 'var(--font-base, 14px)' }}>View Period</label>
               <select 
                 value={selectedMonth} 
                 onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1.5px solid var(--border)', background: 'var(--bg)', outline: 'none', fontWeight: '600' }}
+                style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', outline: 'none', fontWeight: '600' }}
               >
                 {Array.from({ length: 12 }, (_, i) => (
                   <option key={i + 1} value={i + 1}>
@@ -192,7 +203,7 @@ const Attendance: React.FC = () => {
               <select 
                 value={selectedYear} 
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1.5px solid var(--border)', background: 'var(--bg)', outline: 'none', fontWeight: '600' }}
+                style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', outline: 'none', fontWeight: '600' }}
               >
                 {[2024, 2025, 2026].map(y => (
                   <option key={y} value={y}>{y}</option>
@@ -201,31 +212,31 @@ const Attendance: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
-            <div className="premium-card" style={{ textAlign: 'center', borderLeft: '6px solid #10b981' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Present</div>
-              <div style={{ fontSize: '2rem', fontWeight: '900', color: '#10b981' }}>{summaryData.reduce((acc, curr) => acc + curr.PRESENT, 0)}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(4, 1fr)'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
+            <div className="premium-card" style={{ textAlign: 'center', borderLeft: '6px solid var(--success)' }}>
+              <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Present</div>
+              <div style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: '900', color: 'var(--success)' }}>{summaryData.reduce((acc, curr) => acc + curr.PRESENT, 0)}</div>
             </div>
-            <div className="premium-card" style={{ textAlign: 'center', borderLeft: '6px solid #ef4444' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Absent</div>
-              <div style={{ fontSize: '2rem', fontWeight: '900', color: '#ef4444' }}>{summaryData.reduce((acc, curr) => acc + curr.ABSENT, 0)}</div>
+            <div className="premium-card" style={{ textAlign: 'center', borderLeft: '6px solid var(--danger)' }}>
+              <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Absent</div>
+              <div style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: '900', color: 'var(--danger)' }}>{summaryData.reduce((acc, curr) => acc + curr.ABSENT, 0)}</div>
             </div>
-            <div className="premium-card" style={{ textAlign: 'center', borderLeft: '6px solid #f59e0b' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Half Day</div>
-              <div style={{ fontSize: '2rem', fontWeight: '900', color: '#f59e0b' }}>{summaryData.reduce((acc, curr) => acc + curr.HALF_DAY, 0)}</div>
+            <div className="premium-card" style={{ textAlign: 'center', borderLeft: '6px solid var(--warning)' }}>
+              <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Half Day</div>
+              <div style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: '900', color: 'var(--warning)' }}>{summaryData.reduce((acc, curr) => acc + curr.HALF_DAY, 0)}</div>
             </div>
-            <div className="premium-card" style={{ textAlign: 'center', borderLeft: '6px solid #3b82f6' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>On Leave</div>
-              <div style={{ fontSize: '2rem', fontWeight: '900', color: '#3b82f6' }}>{summaryData.reduce((acc, curr) => acc + curr.ON_LEAVE, 0)}</div>
+            <div className="premium-card" style={{ textAlign: 'center', borderLeft: '6px solid var(--primary)' }}>
+              <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>On Leave</div>
+              <div style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: '900', color: 'var(--primary)' }}>{summaryData.reduce((acc, curr) => acc + curr.ON_LEAVE, 0)}</div>
             </div>
           </div>
 
           <div className="premium-card" style={{ padding: '0' }}>
             <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-               <h3 style={{ fontSize: '1.125rem', fontWeight: '800' }}>Attendance Matrix</h3>
+               <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: '800' }}>Attendance Matrix</h3>
             </div>
             <div className="table-container" style={{ border: 'none', borderRadius: '0', boxShadow: 'none' }}>
-              <table className="premium-table" style={{ fontSize: '0.75rem' }}>
+              <table className="premium-table" style={{ fontSize: 'var(--font-sm, 12px)' }}>
                 <thead>
                   <tr>
                     <th style={{ padding: '1rem', position: 'sticky', left: 0, background: 'var(--bg)', zIndex: 10, minWidth: '180px', borderRight: '1px solid var(--border)' }}>Employee Name</th>
@@ -233,13 +244,13 @@ const Attendance: React.FC = () => {
                       <th key={d} style={{ padding: '0.5rem', textAlign: 'center', minWidth: '35px', background: 'var(--bg)' }}>{d}</th>
                     ))}
                     <th style={{ padding: '0.5rem', textAlign: 'center', background: 'var(--primary)', color: 'white', fontWeight: '800' }}>P</th>
-                    <th style={{ padding: '0.5rem', textAlign: 'center', background: '#ef4444', color: 'white', fontWeight: '800' }}>A</th>
-                    <th style={{ padding: '0.5rem', textAlign: 'center', background: '#f59e0b', color: 'white', fontWeight: '800' }}>HD</th>
-                    <th style={{ padding: '0.5rem', textAlign: 'center', background: '#3b82f6', color: 'white', fontWeight: '800' }}>L</th>
+                    <th style={{ padding: '0.5rem', textAlign: 'center', background: 'var(--danger)', color: 'white', fontWeight: '800' }}>A</th>
+                    <th style={{ padding: '0.5rem', textAlign: 'center', background: 'var(--warning)', color: 'white', fontWeight: '800' }}>HD</th>
+                    <th style={{ padding: '0.5rem', textAlign: 'center', background: 'var(--primary)', color: 'white', fontWeight: '800' }}>L</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {reportData.map(emp => {
+                  {paginatedReportData.map(emp => {
                     const summary = summaryData.find(s => s.employee_id === emp.id);
                     return (
                       <tr key={emp.id}>
@@ -278,32 +289,40 @@ const Attendance: React.FC = () => {
                             </td>
                           );
                         })}
-                        <td style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: '800' }}>{summary?.PRESENT || 0}</td>
-                        <td style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: '800' }}>{summary?.ABSENT || 0}</td>
-                        <td style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', fontWeight: '800' }}>{summary?.HALF_DAY || 0}</td>
-                        <td style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontWeight: '800' }}>{summary?.ON_LEAVE || 0}</td>
+                        <td style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', fontWeight: '800' }}>{summary?.PRESENT || 0}</td>
+                        <td style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', fontWeight: '800' }}>{summary?.ABSENT || 0}</td>
+                        <td style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)', fontWeight: '800' }}>{summary?.HALF_DAY || 0}</td>
+                        <td style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', fontWeight: '800' }}>{summary?.ON_LEAVE || 0}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
+              
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1rem', borderTop: '1px solid var(--border)' }}>
+                  <button className="btn btn-secondary btn-sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
+                  <span style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-muted)' }}>Page {currentPage} of {totalPages}</span>
+                  <button className="btn btn-secondary btn-sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+                </div>
+              )}
             </div>
-            <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '2rem', fontSize: '0.8rem', fontWeight: '700' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: '#10b981', borderRadius: '3px' }} /> Present</div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: '#ef4444', borderRadius: '3px' }} /> Absent</div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: '#f59e0b', borderRadius: '3px' }} /> Half Day</div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: '#3b82f6', borderRadius: '3px' }} /> On Leave</div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: '#fde68a', borderRadius: '3px', border: '1px solid #f59e0b' }} /> Company Holiday</div>
+            <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.8rem', fontWeight: '700' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: 'var(--success)', borderRadius: '3px' }} /> Present</div>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: 'var(--danger)', borderRadius: '3px' }} /> Absent</div>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: 'var(--warning)', borderRadius: '3px' }} /> Half Day</div>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: 'var(--primary)', borderRadius: '3px' }} /> On Leave</div>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><div style={{ width: '12px', height: '12px', background: '#fde68a', borderRadius: '3px', border: '1px solid var(--warning)' }} /> Company Holiday</div>
             </div>
           </div>
         </>
       ) : (
         <div className="premium-card" style={{ maxWidth: '900px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Batch Attendance Input</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 1.25rem', background: 'var(--bg)', borderRadius: '12px', border: '1.5px solid var(--border)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: 'var(--font-lg, 24px)', fontWeight: '800' }}>Batch Attendance Input</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 1.25rem', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)' }}>
               <Calendar size={18} color="var(--primary)" />
-              <label style={{ fontSize: '0.875rem', fontWeight: '700' }}>Selected Date:</label>
+              <label style={{ fontSize: 'var(--font-base, 14px)', fontWeight: '700' }}>Selected Date:</label>
               <input 
                 type="date" 
                 value={markDate} 
@@ -323,22 +342,22 @@ const Attendance: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {reportData.map(emp => (
+                {paginatedReportData.map(emp => (
                   <tr key={emp.id}>
                     <td style={{ padding: '1.25rem' }}>
                       <div style={{ fontWeight: '700', fontSize: '1rem', color: 'var(--text-main)' }}>{emp.first_name} {emp.last_name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>{emp.employee_code}</div>
+                      <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', fontWeight: '600' }}>{emp.employee_code}</div>
                     </td>
                     <td style={{ padding: '1.25rem' }}>
                       {dailySource[emp.id] === 'EMPLOYEE_SELF' ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontWeight: '700', fontSize: '0.875rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--success)', fontWeight: '700', fontSize: 'var(--font-base, 14px)' }}>
                           ✓ Submitted by Employee
                         </div>
                       ) : (
                         <select 
                           value={dailyAttendance[emp.id] || 'PRESENT'}
                           onChange={(e) => setDailyAttendance({ ...dailyAttendance, [emp.id]: e.target.value })}
-                          style={{ padding: '0.6rem 1rem', width: '180px', borderRadius: '8px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600' }}
+                          style={{ padding: '0.6rem 1rem', width: '180px', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600' }}
                         >
                           <option value="PRESENT">Present (Full Day)</option>
                           <option value="ABSENT">Absent (Unpaid)</option>
@@ -352,12 +371,12 @@ const Attendance: React.FC = () => {
                         display: 'inline-flex', 
                         alignItems: 'center', 
                         gap: '0.5rem', 
-                        fontSize: '0.75rem', 
+                        fontSize: 'var(--font-sm, 12px)', 
                         fontWeight: '800', 
                         color: 'white',
                         background: getStatusColor(dailyAttendance[emp.id] || 'PRESENT'),
                         padding: '0.4rem 1rem',
-                        borderRadius: '20px',
+                        borderRadius: 'var(--radius-lg)',
                         textTransform: 'uppercase'
                       }}>
                         {dailyAttendance[emp.id] === 'PRESENT' && <UserCheck size={14} />}
@@ -371,6 +390,13 @@ const Attendance: React.FC = () => {
                 ))}
               </tbody>
             </table>
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1rem', borderTop: '1px solid var(--border)' }}>
+                <button className="btn btn-secondary btn-sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
+                <span style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-muted)' }}>Page {currentPage} of {totalPages}</span>
+                <button className="btn btn-secondary btn-sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+              </div>
+            )}
           </div>
 
           <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'flex-end', gap: '1.5rem' }}>

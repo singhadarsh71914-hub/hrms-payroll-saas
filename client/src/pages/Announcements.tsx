@@ -104,11 +104,11 @@ const Announcements = () => {
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
             <div className="form-group">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Title</label>
-              <input type="text" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)' }} />
+              <input type="text" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)' }} />
             </div>
             <div className="form-group">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Priority</label>
-              <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)' }}>
+              <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)' }}>
                 <option value="NORMAL">Normal</option>
                 <option value="IMPORTANT">Important</option>
                 <option value="URGENT">Urgent</option>
@@ -116,7 +116,7 @@ const Announcements = () => {
             </div>
             <div className="form-group">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Message Content</label>
-              <textarea required value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', minHeight: '100px' }} />
+              <textarea required value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)', minHeight: '100px' }} />
             </div>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
               <button type="button" className="btn btn-secondary" onClick={() => setShowCreate(false)}>Cancel</button>
@@ -128,10 +128,10 @@ const Announcements = () => {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fill, minmax(350px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
         {announcements.map((a, i) => (
           <div key={a.id || i} className="premium-card" style={{ 
-            borderTop: `6px solid ${a.priority === 'URGENT' ? '#ef4444' : a.priority === 'IMPORTANT' ? '#f59e0b' : '#3b82f6'}`,
+            borderTop: `6px solid ${a.priority === 'URGENT' ? 'var(--danger)' : a.priority === 'IMPORTANT' ? 'var(--warning)' : 'var(--primary)'}`,
             display: 'flex', flexDirection: 'column'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
@@ -139,7 +139,7 @@ const Announcements = () => {
                 {a.priority}
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                <span style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '600', color: 'var(--text-muted)' }}>
                   {new Date(a.created_at).toLocaleDateString()}
                 </span>
                 {isHR && (

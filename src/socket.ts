@@ -31,8 +31,6 @@ export const initSocket = (server: http.Server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log('Socket connected', socket.id);
-    console.log(`User: ${socket.data.user.id}`);
 
     const { id: userId, company_id: companyId } = socket.data.user;
 
@@ -42,7 +40,6 @@ export const initSocket = (server: http.Server) => {
     }
 
     socket.on('disconnect', () => {
-      console.log(`Socket disconnected: ${socket.id}`);
     });
   });
 

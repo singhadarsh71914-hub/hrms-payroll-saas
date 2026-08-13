@@ -29,12 +29,12 @@ const AttendanceCharts = memo(({ attendanceSummary }: AttendanceChartsProps) => 
             contentStyle={{ 
               background: isDark ? '#1f2937' : '#fff', 
               border: 'none', 
-              borderRadius: '8px', 
-              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' 
+              borderRadius: 'var(--radius-md)', 
+              boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))' 
             }} 
           />
-          <Bar dataKey="present" fill="#10b981" radius={[4, 4, 0, 0]} barSize={24} />
-          <Bar dataKey="absent" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={24} />
+          <Bar dataKey="present" fill="var(--success)" radius={[4, 4, 0, 0]} barSize={24} />
+          <Bar dataKey="absent" fill="var(--danger)" radius={[4, 4, 0, 0]} barSize={24} />
         </BarChart>
       </ResponsiveContainer>
     </div>

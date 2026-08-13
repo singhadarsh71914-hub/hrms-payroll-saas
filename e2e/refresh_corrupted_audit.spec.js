@@ -11,11 +11,11 @@ test('audit corrupted states', async ({ page }) => {
       if (msg.type() === 'warning') warnings.push(msg.text());
     });
 
-    await page.goto('http://localhost:5182/login');
+    await page.goto('http://localhost:5173/login');
     await page.evaluate(setup);
     
     console.log(`\n=== TESTING STATE: ${stateName} ===`);
-    await page.goto('http://localhost:5182/analytics');
+    await page.goto('http://localhost:5173/analytics');
     await page.waitForTimeout(3000);
     
     console.log("ERRORS:", errors);

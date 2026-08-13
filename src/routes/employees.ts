@@ -6,6 +6,9 @@ import prisma from '../lib/prisma.ts';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.ts';
 import { AppError } from '../middleware/error.ts';
 import { sendEmail } from '../lib/email.ts';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 import { AttendanceService } from '../services/attendance.service.ts';
 import { AuditService, AuditAction } from '../services/audit.service.ts';
 import { validate } from '../middleware/validate.ts';
@@ -23,8 +26,31 @@ if (!JWT_SECRET) {
 // Apply authentication to all routes
 router.use(authenticate);
 
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = 'uploads/avatars/';
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `avatar-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`);
+  }
+});
+
+const uploadAvatar = multer({ 
+  storage: avatarStorage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|webp/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) return cb(null, true);
+    cb(new Error("Only images (jpeg, jpg, png, webp) are allowed"));
+  }
+});
+
 // GET ALL EMPLOYEES
-router.get('/', async (req: AuthRequest, res: any, next: any) => {
+router.get('/', authorize('ADMIN', 'HR', 'MANAGER'), async (req: AuthRequest, res: any, next: any) => {
   try {
     const includeInactive = req.query.include_inactive === 'true' && req.user?.role === 'ADMIN';
     const whereClause: any = { company_id: req.user?.company_id as string };
@@ -422,7 +448,6 @@ router.delete('/:id', authorize('ADMIN'), async (req: AuthRequest, res: any, nex
 
 // RESTORE
 router.post('/:id/restore', authorize('ADMIN'), async (req: AuthRequest, res: any, next: any) => {
-  console.log('RESTORE HANDLER EXECUTED', req.params.id);
   try {
     const existing = await prisma.employee.findFirst({
       where: {
@@ -459,47 +484,66 @@ router.post('/:id/restore', authorize('ADMIN'), async (req: AuthRequest, res: an
   }
 });
 
-// RESTORE
-router.post('/:id/restore', authorize('ADMIN'), async (req: AuthRequest, res: any, next: any) => {
-  console.log('RESTORE HANDLER EXECUTED', req.params.id);
-  try {
-    const existing = await prisma.employee.findFirst({
-      where: {
-        id: req.params.id as string,
-        company_id: req.user?.company_id as string,
-      }
-    });
 
-    if (!existing) return next(new AppError('Employee not found or unauthorized', 404));
+// UPLOAD AVATAR
+router.post('/:id/avatar', authorize('ADMIN', 'HR', 'EMPLOYEE'), uploadAvatar.single('avatar'), async (req: AuthRequest, res: any, next: any) => {
+  try {
+    if (!req.file) return next(new AppError('No image uploaded', 400));
+    
+    // Ensure permission
+    if (req.user?.role === 'EMPLOYEE' && req.user?.id !== req.params.id) {
+      // Need to find if user's employee matches
+      const emp = await prisma.employee.findFirst({ where: { user_id: req.user.id }});
+      if (emp?.id !== req.params.id) return next(new AppError('Unauthorized', 403));
+    }
+
+    const employee = await prisma.employee.findUnique({ where: { id: req.params.id as string }});
+    if (!employee) return next(new AppError('Employee not found', 404));
+
+    // Delete old avatar
+    if (employee.avatar_url) {
+      const oldPath = path.join(process.cwd(), employee.avatar_url);
+      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    }
+
+    const avatarUrl = req.file.path.replace(/\\/g, '/'); // Normalize path
 
     const updated = await prisma.employee.update({
-      where: { id: req.params.id as string },
-      data: {
-        is_active: true,
-        deleted_at: null
-      }
+      where: { id: employee.id },
+      data: { avatar_url: avatarUrl }
     });
 
-    await AuditService.log({
-      userId: req.user?.id,
-      companyId: req.user?.company_id as string,
-      action: AuditAction.EMPLOYEE_RESTORE,
-      entityType: 'EMPLOYEE',
-      entityId: updated.id,
-      ipAddress: req.ip,
-    });
-
-    res.json({ message: 'Employee restored successfully', employee: updated });
-  } catch (err: any) {
-    if (err.code === 'P2002') {
-      return next(new AppError('Cannot restore: employee code or email conflict', 400));
-    }
+    res.json({ message: 'Avatar updated successfully', avatar_url: avatarUrl });
+  } catch (err) {
     next(err);
   }
 });
 
-console.log('EMPLOYEE ROUTES LOADED');
-console.log('RESTORE ROUTE REGISTERED');
+// DELETE AVATAR
+router.delete('/:id/avatar', authorize('ADMIN', 'HR', 'EMPLOYEE'), async (req: AuthRequest, res: any, next: any) => {
+  try {
+    // Ensure permission
+    if (req.user?.role === 'EMPLOYEE' && req.user?.id !== req.params.id) {
+      const emp = await prisma.employee.findFirst({ where: { user_id: req.user.id }});
+      if (emp?.id !== req.params.id) return next(new AppError('Unauthorized', 403));
+    }
+
+    const employee = await prisma.employee.findUnique({ where: { id: req.params.id as string }});
+    if (!employee || !employee.avatar_url) return res.json({ message: 'No avatar to delete' });
+
+    const oldPath = path.join(process.cwd(), employee.avatar_url);
+    if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+
+    await prisma.employee.update({
+      where: { id: employee.id },
+      data: { avatar_url: null }
+    });
+
+    res.json({ message: 'Avatar removed' });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // ==========================================
 // BONUSES & INCENTIVES

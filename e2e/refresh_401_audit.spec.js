@@ -25,13 +25,13 @@ test('audit refresh crash with 401', async ({ page }) => {
   });
 
   // Login first to set up state
-  await page.goto('http://localhost:5182/login');
+  await page.goto('http://localhost:5173/login');
   await page.fill('input[type="email"]', 'admin@e2e.com');
   await page.fill('input[type="password"]', 'password123');
   await page.click('button[type="submit"]');
   await page.waitForTimeout(2000);
   
-  await page.goto('http://localhost:5182/analytics');
+  await page.goto('http://localhost:5173/analytics');
   await page.waitForTimeout(2000);
 
   // MOCK A 401 BY CORRUPTING THE TOKEN

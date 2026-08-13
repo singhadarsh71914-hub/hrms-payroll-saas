@@ -17,9 +17,9 @@ export function TestChart() {
           <Line 
             type="monotone" 
             dataKey="value" 
-            stroke="#EF4444" 
+            stroke="var(--danger)" 
             strokeWidth={4} 
-            dot={{ r: 5, fill: '#EF4444' }} 
+            dot={{ r: 5, fill: 'var(--danger)' }} 
             isAnimationActive={false}
           />
         </LineChart>

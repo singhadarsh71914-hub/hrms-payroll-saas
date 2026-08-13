@@ -82,8 +82,8 @@ const Holidays: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'NATIONAL': return '#16a34a';
-      case 'REGIONAL': return '#3b82f6';
-      case 'COMPANY': return '#f59e0b';
+      case 'REGIONAL': return 'var(--primary)';
+      case 'COMPANY': return 'var(--warning)';
       default: return 'var(--text-muted)';
     }
   };
@@ -142,12 +142,12 @@ const Holidays: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: showAdd ? '1fr 350px' : '1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 1024 ? '1fr' : showAdd ? '1fr 350px' : '1fr', gap: '2rem' }}>
         <div className="card">
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left', fontSize: 'var(--font-sm, 12px)', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
                   <th style={{ padding: '1rem' }}>Date</th>
                   <th style={{ padding: '1rem' }}>Holiday Name</th>
                   <th style={{ padding: '1rem' }}>Type</th>
@@ -158,10 +158,10 @@ const Holidays: React.FC = () => {
                 {holidays.map(h => (
                   <tr key={h.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                      <div style={{ fontWeight: 600, fontSize: 'var(--font-base, 14px)' }}>
                         {new Date(h.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }}>
                         {new Date(h.date).toLocaleDateString('en-GB', { weekday: 'long' })}
                       </div>
                     </td>
@@ -171,12 +171,12 @@ const Holidays: React.FC = () => {
                         display: 'inline-flex', 
                         alignItems: 'center', 
                         gap: '0.4rem', 
-                        fontSize: '0.75rem', 
+                        fontSize: 'var(--font-sm, 12px)', 
                         fontWeight: 600, 
                         color: getTypeColor(h.type),
                         background: 'var(--bg-light)',
                         padding: '0.25rem 0.75rem',
-                        borderRadius: '12px'
+                        borderRadius: 'var(--radius-md)'
                       }}>
                         {getTypeIcon(h.type)}
                         {h.type}
@@ -184,7 +184,7 @@ const Holidays: React.FC = () => {
                     </td>
                     {isHR && (
                       <td style={{ padding: '1rem', textAlign: 'right' }}>
-                        <button onClick={() => setDeleteHolidayId(h.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>
+                        <button onClick={() => setDeleteHolidayId(h.id)} style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer' }}>
                           <Trash2 size={18} />
                         </button>
                       </td>
@@ -196,7 +196,7 @@ const Holidays: React.FC = () => {
                     <td colSpan={isHR ? 4 : 3} style={{ padding: '4rem', textAlign: 'center' }}>
                       <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
                         <Calendar size={48} className="empty-state-icon" />
-                        <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No holidays found</h3>
+                        <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No holidays found</h3>
                         <p style={{ color: 'var(--text-secondary)' }}>No holidays have been set for {selectedYear}.</p>
                       </div>
                     </td>
@@ -212,7 +212,7 @@ const Holidays: React.FC = () => {
             <h3 style={{ marginBottom: '1.5rem' }}>Add New Holiday</h3>
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Holiday Name</label>
+                <label style={{ display: 'block', fontSize: 'var(--font-base, 14px)', marginBottom: '0.5rem' }}>Holiday Name</label>
                 <input 
                   type="text"
                   value={formData.name}
@@ -224,7 +224,7 @@ const Holidays: React.FC = () => {
                 />
               </div>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Date</label>
+                <label style={{ display: 'block', fontSize: 'var(--font-base, 14px)', marginBottom: '0.5rem' }}>Date</label>
                 <input 
                   type="date"
                   value={formData.date}
@@ -234,7 +234,7 @@ const Holidays: React.FC = () => {
                 />
               </div>
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Type</label>
+                <label style={{ display: 'block', fontSize: 'var(--font-base, 14px)', marginBottom: '0.5rem' }}>Type</label>
                 <select 
                   value={formData.type}
                   onChange={e => setFormData({ ...formData, type: e.target.value })}

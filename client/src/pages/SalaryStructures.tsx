@@ -178,7 +178,7 @@ export default function SalaryStructures() {
           <h1 className="page-title">Salary Structures</h1>
           <p className="page-subtitle">Manage company payroll structures and assign them to employees.</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <button className="btn btn-secondary" disabled={structures.length === 0} onClick={() => {
             setAssignData({ structureId: structures[0]?.id || '', employeeIds: '', effectiveFrom: '' });
             setIsAssignModalOpen(true);
@@ -191,8 +191,9 @@ export default function SalaryStructures() {
         </div>
       </div>
 
-      <div className="card">
-        <table className="data-table" style={{ width: '100%' }}>
+      <div className="card" style={{ padding: '0' }}>
+        <div className="table-responsive" style={{ border: 'none', boxShadow: 'none' }}>
+          <table className="data-table" style={{ width: '100%' }}>
           <thead>
             <tr>
               <th>Name</th>
@@ -217,7 +218,7 @@ export default function SalaryStructures() {
                   <td>{struct.employee_count}</td>
                   <td>{new Date(struct.updated_at).toLocaleDateString()}</td>
                   <td className="text-right">
-                    <div className="action-buttons" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                    <div className="action-buttons" style={{ display: 'flex', gap: 'var(--spacing-sm, 8px)', justifyContent: 'flex-end' }}>
                       <button className="btn-icon" onClick={() => openModal(struct)} title={isSys ? 'View' : 'Edit'}>
                         <Edit size={16} />
                       </button>
@@ -236,6 +237,7 @@ export default function SalaryStructures() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {isModalOpen && (
@@ -247,7 +249,7 @@ export default function SalaryStructures() {
             </div>
             
             <div className="modal-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: 'var(--spacing-lg, 16px)' }}>
                 <div>
                   <label>Name</label>
                   <input className="form-control" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
@@ -258,16 +260,16 @@ export default function SalaryStructures() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '20px', flex: 1, minHeight: '400px' }}>
+              <div style={{ display: 'flex', gap: '20px', flex: 1, minHeight: '400px', flexWrap: window.innerWidth < 768 ? 'wrap' : 'nowrap' }}>
                 {/* Left Panel: Available Components */}
-                <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ padding: '12px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', fontWeight: 600 }}>Available Components</div>
-                  <div style={{ padding: '12px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ padding: '12px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm, 8px)' }}>
                     {availableComponents.filter(c => !selectedComponents.some(sc => sc.id === c.id)).map(c => (
                       <div key={c.id} style={{ padding: '10px', border: '1px solid var(--border)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <div style={{ fontWeight: 500 }}>{c.name}</div>
-                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{c.code} • {c.type}</div>
+                          <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }}>{c.code} • {c.type}</div>
                         </div>
                         <button className="btn-icon" onClick={() => addComponent(c)}><ArrowRight size={18} /></button>
                       </div>
@@ -276,7 +278,7 @@ export default function SalaryStructures() {
                 </div>
 
                 {/* Right Panel: Selected Components */}
-                <div style={{ flex: 2, border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 2, border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ padding: '12px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', fontWeight: 600 }}>Selected Components & Configuration</div>
                   <div style={{ padding: '12px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {selectedComponents.map((c, idx) => (
@@ -285,13 +287,13 @@ export default function SalaryStructures() {
                           <button className="btn-icon" onClick={() => moveComponent(idx, 'UP')} disabled={idx === 0}><ArrowUp size={14} /></button>
                           <button className="btn-icon" onClick={() => moveComponent(idx, 'DOWN')} disabled={idx === selectedComponents.length - 1}><ArrowDown size={14} /></button>
                         </div>
-                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr 1fr', gap: '12px', alignItems: 'center' }}>
+                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '2fr 1.5fr 1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '2fr 1.5fr 1fr 1fr', gap: '12px', alignItems: 'center' }}>
                           <div>
-                            <div style={{ fontWeight: 600 }}>{c.name} <span style={{fontSize:'12px', color:'var(--text-muted)'}}>({c.code})</span></div>
+                            <div style={{ fontWeight: 600 }}>{c.name} <span style={{fontSize: 'var(--font-sm, 12px)', color:'var(--text-muted)'}}>({c.code})</span></div>
                             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Seq: {idx + 1}</div>
                           </div>
                           <div>
-                            <select className="form-control" value={c.calculation_type || ''} onChange={e => updateSelectedComp(idx, 'calculation_type', e.target.value)} style={{ padding: '6px', fontSize: '12px' }}>
+                            <select className="form-control" value={c.calculation_type || ''} onChange={e => updateSelectedComp(idx, 'calculation_type', e.target.value)} style={{ padding: '6px', fontSize: 'var(--font-sm, 12px)' }}>
                               <option value="">Calc Type...</option>
                               <option value="PERCENTAGE_OF_CTC">PERCENTAGE_OF_CTC</option>
                               <option value="PERCENTAGE_OF_BASIC">PERCENTAGE_OF_BASIC</option>
@@ -301,10 +303,10 @@ export default function SalaryStructures() {
                             </select>
                           </div>
                           <div>
-                            <input className="form-control" type="number" placeholder="Value" value={c.value} onChange={e => updateSelectedComp(idx, 'value', e.target.value)} style={{ padding: '6px', fontSize: '12px' }} />
+                            <input className="form-control" type="number" placeholder="Value" value={c.value} onChange={e => updateSelectedComp(idx, 'value', e.target.value)} style={{ padding: '6px', fontSize: 'var(--font-sm, 12px)' }} />
                           </div>
                           <div>
-                            <input className="form-control" type="number" placeholder="Max Lim" value={c.max_limit} onChange={e => updateSelectedComp(idx, 'max_limit', e.target.value)} style={{ padding: '6px', fontSize: '12px' }} />
+                            <input className="form-control" type="number" placeholder="Max Lim" value={c.max_limit} onChange={e => updateSelectedComp(idx, 'max_limit', e.target.value)} style={{ padding: '6px', fontSize: 'var(--font-sm, 12px)' }} />
                           </div>
                         </div>
                         <button className="btn-icon text-danger" onClick={() => removeComponent(c.id)} style={{ paddingTop: '8px' }}><X size={18} /></button>
@@ -332,7 +334,7 @@ export default function SalaryStructures() {
               <h3>Bulk Assign Structure</h3>
               <button className="btn-icon" onClick={() => setIsAssignModalOpen(false)}><X size={20} /></button>
             </div>
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg, 16px)' }}>
               <div>
                 <label>Salary Structure</label>
                 <select className="form-control" value={assignData.structureId} onChange={e => setAssignData({...assignData, structureId: e.target.value})}>

@@ -25,7 +25,8 @@ export class ComplianceController {
   static async getRules(req: Request, res: Response) {
     try {
       const { financial_year, state_code } = req.query;
-      const where: any = {};
+      const company_id = (req as any).user?.company_id;
+      const where: any = { OR: [{ company_id }, { company_id: null }] };
       if (financial_year) where.financial_year = Number(financial_year);
       if (state_code) where.state_code = state_code;
 
@@ -46,9 +47,12 @@ export class ComplianceController {
       const et = new Date(effective_to);
       validateDatesAndPercentages(ef, et, configuration);
 
+      const company_id = (req as any).user?.company_id;
+      
       // Check overlapping
       const overlapping = await prisma.stateComplianceRule.findFirst({
         where: {
+          company_id,
           state_code,
           financial_year,
           rule_type,
@@ -61,13 +65,13 @@ export class ComplianceController {
       if (overlapping) throw new Error('Overlapping effective periods are not allowed.');
 
       const lastVersion = await prisma.stateComplianceRule.findFirst({
-        where: { state_code, financial_year, rule_type },
+        where: { company_id, state_code, financial_year, rule_type },
         orderBy: { version: 'desc' }
       });
       const version = lastVersion ? lastVersion.version + 1 : 1;
 
       const rule = await prisma.stateComplianceRule.create({
-        data: { state_code, financial_year, rule_type, configuration, effective_from: ef, effective_to: et, version }
+        data: { company_id, state_code, financial_year, rule_type, configuration, effective_from: ef, effective_to: et, version }
       });
       res.json(rule);
     } catch (error: any) {
@@ -99,8 +103,10 @@ export class ComplianceController {
       const et = new Date(effective_to);
       validateDatesAndPercentages(ef, et, { employee_rate: rate, employer_rate: cess_percent, max_bonus_percent: surcharge_percent });
 
+      const company_id = (req as any).user?.company_id;
+
       const lastVersion = await prisma.taxSlab.findFirst({
-        where: { regime, financial_year },
+        where: { regime, financial_year }, // NOTE: TaxSlabs might need company_id check if they are tenant specific, but we'll stick to the current schema for now
         orderBy: { version: 'desc' }
       });
       const version = lastVersion ? lastVersion.version + 1 : 1;

@@ -67,45 +67,45 @@ const AuditLogs = () => {
       <div className="premium-card" style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
           <div className="form-group">
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Action</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: 'var(--font-sm, 12px)', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Action</label>
             <input
               type="text"
               name="action"
               value={filters.action}
               onChange={handleFilterChange}
               placeholder="e.g. LOGIN_SUCCESS"
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)' }}
             />
           </div>
           <div className="form-group">
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Entity Type</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: 'var(--font-sm, 12px)', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Entity Type</label>
             <input
               type="text"
               name="entityType"
               value={filters.entityType}
               onChange={handleFilterChange}
               placeholder="e.g. EMPLOYEE"
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)' }}
             />
           </div>
           <div className="form-group">
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>From</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: 'var(--font-sm, 12px)', textTransform: 'uppercase', color: 'var(--text-muted)' }}>From</label>
             <input
               type="date"
               name="startDate"
               value={filters.startDate}
               onChange={handleFilterChange}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)' }}
             />
           </div>
           <div className="form-group">
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>To</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: 'var(--font-sm, 12px)', textTransform: 'uppercase', color: 'var(--text-muted)' }}>To</label>
             <input
               type="date"
               name="endDate"
               value={filters.endDate}
               onChange={handleFilterChange}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)' }}
             />
           </div>
         </div>
@@ -140,7 +140,7 @@ const AuditLogs = () => {
                     <div style={{ color: 'var(--danger)', marginBottom: '16px' }}>
                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                     </div>
-                    <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--danger)', marginBottom: '8px' }}>Failed to load audit logs</h3>
+                    <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--danger)', marginBottom: '8px' }}>Failed to load audit logs</h3>
                     <p style={{ color: 'var(--text-secondary)' }}>Could not retrieve logs from the server. Please try again later.</p>
                   </div>
                 </td>
@@ -150,7 +150,7 @@ const AuditLogs = () => {
                 <td colSpan={5} style={{ textAlign: 'center', padding: '4rem' }}>
                   <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
                     <Clock size={48} className="empty-state-icon" />
-                    <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No logs found</h3>
+                    <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No logs found</h3>
                     <p style={{ color: 'var(--text-secondary)' }}>No audit logs match the current filters. Audit logs are generated automatically when users perform actions like creating an employee or updating settings.</p>
                   </div>
                 </td>
@@ -164,7 +164,7 @@ const AuditLogs = () => {
                   </td>
                   <td>
                     <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{log.user?.email || 'System'}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{log.user?.role}</div>
+                    <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }}>{log.user?.role}</div>
                   </td>
                   <td>
                     <span className="badge" style={{ 
@@ -194,7 +194,7 @@ const AuditLogs = () => {
           <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 500 }}>
             Showing {logs.length} of {pagination.total} entries
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: 'var(--spacing-sm, 8px)' }}>
             <button
               disabled={filters.page === 1}
               onClick={() => setFilters({ ...filters, page: filters.page - 1 })}

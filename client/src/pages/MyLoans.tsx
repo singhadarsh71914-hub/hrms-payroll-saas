@@ -78,7 +78,7 @@ const MyLoans = () => {
           <Skeleton width="300px" height="40px" />
           <Skeleton width="150px" height="40px" borderRadius="8px" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(320px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
           <Skeleton height="200px" borderRadius="12px" />
           <Skeleton height="200px" borderRadius="12px" />
         </div>
@@ -90,7 +90,7 @@ const MyLoans = () => {
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '3rem' }}>
       <div className="page-header">
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>My Loans & Advances</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>My Loans & Advances</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Manage your loan applications and repayment schedules.</p>
         </div>
         <button onClick={() => setShowApplyModal(true)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -101,15 +101,15 @@ const MyLoans = () => {
 
       {loans.length === 0 ? (
         <div className="empty-state">
-          <div style={{ padding: '24px', background: 'rgba(79, 70, 229, 0.1)', borderRadius: '50%', marginBottom: '16px', color: '#4f46e5' }}>
+          <div style={{ padding: 'var(--spacing-xl, 24px)', background: 'rgba(79, 70, 229, 0.1)', borderRadius: 'var(--radius-full, 50%)', marginBottom: '16px', color: '#4f46e5' }}>
             <Plus size={32} />
           </div>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No active loans</h3>
+          <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No active loans</h3>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>You don't have any loan applications or active loans.</p>
           <button onClick={() => setShowApplyModal(true)} className="btn btn-primary">Apply Now</button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(320px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
           {loans.map((loan) => {
             const paidCount = loan.repayments?.filter((r: any) => r.status === 'DEDUCTED').length || 0;
             const totalCount = loan.tenure_months;
@@ -132,13 +132,13 @@ const MyLoans = () => {
                   </span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: 'var(--spacing-lg, 16px)', marginBottom: '24px' }}>
                   <div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Principal</div>
+                    <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Principal</div>
                     <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>₹{Number(loan.principal_amount).toLocaleString()}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>EMI Amount</div>
+                    <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>EMI Amount</div>
                     <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--primary)' }}>₹{Number(loan.emi_amount).toLocaleString()}</div>
                   </div>
                 </div>
@@ -152,9 +152,9 @@ const MyLoans = () => {
                     <div style={{ height: '6px', backgroundColor: 'var(--border)', borderRadius: '3px', marginBottom: '16px', overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${progress}%`, backgroundColor: 'var(--primary)', borderRadius: '3px', transition: 'width 1s ease-in-out' }}></div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-page)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-page)', padding: '12px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
                       <div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Current Balance</div>
+                        <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }}>Current Balance</div>
                         <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>₹{balance.toLocaleString()}</div>
                       </div>
                       <button onClick={() => viewSchedule(loan.id)} className="btn" style={{ fontSize: '13px', color: 'var(--primary)', background: 'none', border: 'none', display: 'flex', alignItems: 'center', padding: 0 }}>
@@ -173,7 +173,7 @@ const MyLoans = () => {
       {showApplyModal && (
         <div className="modal-overlay" onClick={() => setShowApplyModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '500px', padding: '32px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '24px' }}>Apply for New Loan</h2>
+            <h2 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '24px' }}>Apply for New Loan</h2>
             <form onSubmit={handleApply}>
               <div className="form-group">
                 <label>Loan Type</label>
@@ -185,7 +185,7 @@ const MyLoans = () => {
                   <option value="HOME">Home Improvement</option>
                 </select>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: 'var(--spacing-lg, 16px)', marginBottom: '16px' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label>Amount (₹)</label>
                   <input type="number" value={formData.principalAmount} onChange={(e) => setFormData({ ...formData, principalAmount: e.target.value })} required />
@@ -205,9 +205,9 @@ const MyLoans = () => {
                 <label>Interest Rate (% p.a.)</label>
                 <input type="number" value={formData.interestRate} disabled />
               </div>
-              <div style={{ marginBottom: '24px', backgroundColor: 'rgba(37, 99, 235, 0.05)', padding: '16px', borderRadius: '8px', textAlign: 'center', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
+              <div style={{ marginBottom: '24px', backgroundColor: 'rgba(37, 99, 235, 0.05)', padding: 'var(--spacing-lg, 16px)', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
                 <div style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 500, marginBottom: '4px' }}>Estimated Monthly EMI</div>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--primary)' }}>₹{calculateEMI()}</div>
+                <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--primary)' }}>₹{calculateEMI()}</div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                 <button type="button" onClick={() => setShowApplyModal(false)} className="btn btn-secondary">Cancel</button>
@@ -222,7 +222,7 @@ const MyLoans = () => {
       {showScheduleModal && selectedLoan && (
         <div className="modal-overlay" onClick={() => setShowScheduleModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '700px', padding: '32px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '24px' }}>Repayment Schedule</h2>
+            <h2 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '24px' }}>Repayment Schedule</h2>
             <div className="table-container">
               <table className="premium-table">
                 <thead>

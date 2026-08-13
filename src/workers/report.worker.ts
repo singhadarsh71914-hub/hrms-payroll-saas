@@ -45,7 +45,7 @@ const generateStreamingCSV = async (job: Job, companyId: string, reportType: str
   while (hasMore) {
     let batch: any[] = [];
     if (reportType === 'PAYROLL') {
-      batch = await prisma.$queryRaw`SELECT p.id as row_id, p.employee_id, e.employee_code, e.first_name, e.last_name, p.gross_salary, p.net_salary FROM "PayrollPayslip" p JOIN "Employee" e ON p.employee_id = e.id JOIN "PayrollRun" r ON p.payroll_run_id = r.id WHERE r.company_id = ${companyId} AND p.id > ${lastId} ORDER BY p.id ASC LIMIT ${take}`;
+      batch = await prisma.$queryRaw`SELECT p.id as row_id, p.employee_id, e.employee_code, e.first_name, e.last_name, p.gross_salary, p.net_salary FROM "Payslip" p JOIN "Employee" e ON p.employee_id = e.id JOIN "PayrollRun" r ON p.payroll_run_id = r.id WHERE r.company_id = ${companyId} AND p.id > ${lastId} ORDER BY p.id ASC LIMIT ${take}`;
     } else if (reportType === 'DEPARTMENT') {
       batch = await prisma.$queryRaw`SELECT d.id as row_id, d.name as department, count(e.id) as headcount FROM "Department" d JOIN "Employee" e ON e.department_id = d.id WHERE d.company_id = ${companyId} AND d.id > ${lastId} GROUP BY d.id, d.name ORDER BY d.id ASC LIMIT ${take}`;
     } else {

@@ -6,6 +6,8 @@ export const registerSchema = z.object({
     password: z.string().min(6),
     role: z.enum(['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE']).optional(),
     company_name: z.string().min(1),
+    first_name: z.string().min(1).optional(),
+    last_name: z.string().min(1).optional(),
   })
 });
 

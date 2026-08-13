@@ -9,12 +9,10 @@ import { AuditService, AuditAction } from '../services/audit.service.ts';
 import { validate } from '../middleware/validate.ts';
 import { uploadDocumentSchema } from '../schemas/document.schema.ts';
 
-console.log("DOCUMENT ROUTE FILE LOADED");
 
 const router = Router();
 
 router.use((req, res, next) => {
-  console.log("DOC REQUEST:", req.method, req.originalUrl);
   next();
 });
 
@@ -122,7 +120,6 @@ router.get('/', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, nex
 
 // Download document
 router.get('/:id/download', async (req: AuthRequest, res: any, next: any) => {
-  console.log(`EXEC DOWNLOAD - ID: ${req.params.id}`);
   try {
     const doc = await prisma.employeeDocument.findUnique({
       // @ts-ignore
@@ -135,7 +132,6 @@ router.get('/:id/download', async (req: AuthRequest, res: any, next: any) => {
       return res.status(404).json({ error: 'Document not found in database' });
     }
 
-    console.log(`Found doc: ${doc.document_name}, Path in DB: ${doc.file_url}`);
 
     if (doc.company_id !== req.user!.company_id) {
       console.error(`Company mismatch: User ${req.user!.company_id} vs Doc ${doc.company_id}`);
@@ -157,7 +153,6 @@ router.get('/:id/download', async (req: AuthRequest, res: any, next: any) => {
 
     const normalizedPath = doc.file_url.startsWith('/') ? doc.file_url.substring(1) : doc.file_url;
     const filePath = path.resolve(process.cwd(), normalizedPath);
-    console.log(`Resolved full path: ${filePath}`);
 
     if (!fs.existsSync(filePath)) {
       console.error(`DISK: File missing: ${filePath}`);
@@ -183,7 +178,6 @@ router.get('/:id/download', async (req: AuthRequest, res: any, next: any) => {
       ipAddress: req.ip,
     });
 
-    console.log('Streaming started...');
     const stream = fs.createReadStream(filePath);
     stream.on('error', (err) => {
       console.error('STREAM ERROR:', err);
@@ -254,7 +248,6 @@ router.post('/', authorize('ADMIN', 'HR'), uploadMiddleware, async (req: AuthReq
 
 // Delete document
 router.delete('/:id', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, next: any) => {
-  console.log(`EXEC DELETE - ID: ${req.params.id}`);
   try {
     // @ts-ignore
     const doc = await prisma.employeeDocument.findUnique({ where: { id: req.params.id } });
@@ -265,7 +258,6 @@ router.delete('/:id', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: an
     
     // @ts-ignore
     await prisma.employeeDocument.delete({ where: { id: req.params.id } });
-    console.log('Record deleted from DB');
 
     await AuditService.log({
       userId: req.user?.id,
@@ -281,10 +273,8 @@ router.delete('/:id', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: an
     if (doc.file_url) {
       const normalizedPath = doc.file_url.startsWith('/') ? doc.file_url.substring(1) : doc.file_url;
       const filePath = path.resolve(process.cwd(), normalizedPath);
-      console.log(`Deleting file: ${filePath}`);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
-        console.log('File removed from disk');
       } else {
         console.warn('File not found on disk');
       }

@@ -4,10 +4,10 @@ import { Activity } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 const data = [
-  { name: 'GPS Violations', value: 12, color: '#f59e0b' },
-  { name: 'Face Mismatch', value: 5, color: '#ef4444' },
-  { name: 'Multiple Devices', value: 3, color: '#8b5cf6' },
-  { name: 'Late Arrivals', value: 20, color: '#3b82f6' },
+  { name: 'GPS Violations', value: 12, color: 'var(--warning)' },
+  { name: 'Face Mismatch', value: 5, color: 'var(--danger)' },
+  { name: 'Multiple Devices', value: 3, color: 'var(--secondary)' },
+  { name: 'Late Arrivals', value: 20, color: 'var(--primary)' },
   { name: 'Geofence Breaches', value: 8, color: '#ec4899' },
 ];
 
@@ -20,10 +20,10 @@ export default function RiskHeatmap() {
       background: isDark ? 'linear-gradient(145deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%)' : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)', 
       backdropFilter: 'blur(10px)', 
       border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', 
-      boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)', padding: '24px'
+      boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))', padding: 'var(--spacing-xl, 24px)'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <h3 style={{ margin: 0, fontSize: 'var(--font-md, 18px)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}>
           <Activity size={20} color="#ec4899" /> Risk Heatmap
         </h3>
       </div>
@@ -45,10 +45,10 @@ export default function RiskHeatmap() {
               ))}
             </Pie>
             <RechartsTooltip 
-              contentStyle={{ background: isDark ? '#1f2937' : '#fff', border: 'none', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+              contentStyle={{ background: isDark ? '#1f2937' : '#fff', border: 'none', borderRadius: 'var(--radius-md)', boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))' }}
               itemStyle={{ color: 'var(--text-color)' }}
             />
-            <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: 'var(--text-muted)' }} />
+            <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }} />
           </PieChart>
         </ResponsiveContainer>
       </div>

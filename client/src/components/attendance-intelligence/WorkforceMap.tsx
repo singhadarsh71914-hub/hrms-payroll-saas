@@ -58,15 +58,15 @@ const WorkforceMap = React.memo(function WorkforceMap({ locations, companyLocati
     <MapContainer center={mapCenter} zoom={mapCenter[0] === 20.5937 ? 5 : 11} style={{ height: '100%', width: '100%' }} zoomControl={false}>
       <TileLayer url={isDark ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"} />
       <ZoomControl position="bottomright" />
-      <Circle center={mapCenter} radius={geofenceRadius} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.15, weight: 2 }} />
+      <Circle center={mapCenter} radius={geofenceRadius} pathOptions={{ color: 'var(--success)', fillColor: 'var(--success)', fillOpacity: 0.15, weight: 2 }} />
       <LayerGroup>
         {(Array.isArray(locations) ? locations : []).filter(loc => loc && loc.lat != null && loc.lng != null && Number.isFinite(loc.lat) && Number.isFinite(loc.lng)).map(loc => (
           <Marker key={loc.id} position={[loc.lat, loc.lng]} icon={icons[loc.type as keyof typeof icons] || icons.office}>
             <Popup>
               <div style={{ padding: '4px' }}>
-                <strong style={{ display: 'block', marginBottom: '4px', fontSize: '14px' }}>{loc.name}</strong>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Type: <span style={{ textTransform: 'capitalize' }}>{loc.type}</span></div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Trust Score: <span style={{ color: loc.trust > 80 ? '#10b981' : '#ef4444', fontWeight: 600 }}>{loc.trust}%</span></div>
+                <strong style={{ display: 'block', marginBottom: '4px', fontSize: 'var(--font-base, 14px)' }}>{loc.name}</strong>
+                <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }}>Type: <span style={{ textTransform: 'capitalize' }}>{loc.type}</span></div>
+                <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }}>Trust Score: <span style={{ color: loc.trust > 80 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>{loc.trust}%</span></div>
               </div>
             </Popup>
           </Marker>
@@ -77,30 +77,30 @@ const WorkforceMap = React.memo(function WorkforceMap({ locations, companyLocati
   }, [isDark, locations, mapCenter, geofenceRadius]);
 
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }} className="premium-card" style={{ padding: '24px', height: '500px', display: 'flex', flexDirection: 'column', background: isDark ? 'linear-gradient(145deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%)' : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)', backdropFilter: 'blur(10px)', border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
+    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }} className="premium-card" style={{ padding: 'var(--spacing-xl, 24px)', height: '500px', display: 'flex', flexDirection: 'column', background: isDark ? 'linear-gradient(145deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%)' : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)', backdropFilter: 'blur(10px)', border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h3 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
-          <MapPin size={20} color="#3b82f6" /> Global Workforce Map
+        <h3 style={{ margin: 0, fontSize: 'var(--font-md, 18px)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)', fontWeight: 600 }}>
+          <MapPin size={20} color="var(--primary)" /> Global Workforce Map
         </h3>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: isDark ? 'rgba(0,0,0,0.2)' : '#f8fafc', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}>
-            <Users size={16} color="#10b981" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: isDark ? 'rgba(0,0,0,0.2)' : '#f8fafc', padding: '6px 12px', borderRadius: 'var(--radius-md)', fontSize: '13px', fontWeight: 600 }}>
+            <Users size={16} color="var(--success)" />
             <span style={{ color: 'var(--text-color)' }}>{locations.length} Active</span>
           </div>
         </div>
       </div>
       
-      <div style={{ flex: 1, borderRadius: '12px', overflow: 'hidden', border: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', position: 'relative' }}>
+      <div style={{ flex: 1, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', position: 'relative' }}>
         {mapContent}
         
         {/* Map Legend */}
-        <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 400, background: isDark ? 'rgba(30,41,59,0.9)' : 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)' }}>
-          <h4 style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)' }}>Status Legend</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }}/> Office</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }}/> Remote</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#eab308' }}/> Traveling</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }}/> High Risk</div>
+        <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 400, background: isDark ? 'rgba(30,41,59,0.9)' : 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', padding: '12px', borderRadius: 'var(--radius-md)', boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))', border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)' }}>
+          <h4 style={{ margin: '0 0 8px', fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }}>Status Legend</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 'var(--font-sm, 12px)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}><div style={{ width: '10px', height: '10px', borderRadius: 'var(--radius-full, 50%)', background: 'var(--success)' }}/> Office</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}><div style={{ width: '10px', height: '10px', borderRadius: 'var(--radius-full, 50%)', background: 'var(--primary)' }}/> Remote</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}><div style={{ width: '10px', height: '10px', borderRadius: 'var(--radius-full, 50%)', background: '#eab308' }}/> Traveling</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}><div style={{ width: '10px', height: '10px', borderRadius: 'var(--radius-full, 50%)', background: 'var(--danger)' }}/> High Risk</div>
           </div>
         </div>
       </div>

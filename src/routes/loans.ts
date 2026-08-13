@@ -74,7 +74,11 @@ router.get('/:id', async (req: AuthRequest, res: any, next: any) => {
     if (!loan) return next(new AppError('Loan not found', 404));
     
     // Security check: Employee can only see their own loan
+    
+    // @ts-ignore
+    if (loan.employee.company_id !== req.user?.company_id) return next(new AppError('Unauthorized access', 403));
     if (req.user?.role === 'EMPLOYEE' && loan.employee_id !== req.user.employee_id) {
+    
       return next(new AppError('Unauthorized access', 403));
     }
 
@@ -87,8 +91,11 @@ router.get('/:id', async (req: AuthRequest, res: any, next: any) => {
 // APPROVE LOAN (HR/Admin)
 router.put('/:id/approve', authorize('ADMIN', 'HR'), validate(updateLoanStatusSchema), async (req: AuthRequest, res: any, next: any) => {
   try {
-    // @ts-ignore
-    const loan = await LoanService.approveLoan(req.params.id, req.user!.id);
+    
+    const loanDataApprove = await import('../lib/prisma.ts').then(m => m.default.loan.findUnique({ where: { id: req.params.id as string }, include: { employee: true } }));
+    if (!loanDataApprove || loanDataApprove.employee.company_id !== req.user?.company_id) return next(new AppError('Unauthorized', 403));
+    const loan = await LoanService.approveLoan(req.params.id as string, req.user!.id);
+    
     res.json(loan);
   } catch (err) {
     next(err);
@@ -98,8 +105,11 @@ router.put('/:id/approve', authorize('ADMIN', 'HR'), validate(updateLoanStatusSc
 // REJECT LOAN (HR/Admin)
 router.put('/:id/reject', authorize('ADMIN', 'HR'), validate(updateLoanStatusSchema), async (req: AuthRequest, res: any, next: any) => {
   try {
-    // @ts-ignore
-    const loan = await LoanService.rejectLoan(req.params.id, req.user!.id, req.body.remarks);
+    
+    const loanDataReject = await import('../lib/prisma.ts').then(m => m.default.loan.findUnique({ where: { id: req.params.id as string }, include: { employee: true } }));
+    if (!loanDataReject || loanDataReject.employee.company_id !== req.user?.company_id) return next(new AppError('Unauthorized', 403));
+    const loan = await LoanService.rejectLoan(req.params.id as string, req.user!.id, req.body.remarks);
+    
     res.json(loan);
   } catch (err) {
     next(err);

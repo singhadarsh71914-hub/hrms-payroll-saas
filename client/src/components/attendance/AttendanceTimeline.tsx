@@ -15,7 +15,7 @@ const AttendanceTimeline = memo(({ attendanceHistory }: AttendanceTimelineProps)
       background: isDark ? 'linear-gradient(145deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%)' : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)', 
       backdropFilter: 'blur(10px)', 
       border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', 
-      boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' 
+      boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))' 
     }}>
       <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
         <Activity size={20} color="#f43f5e" /> Smart Timeline
@@ -28,24 +28,24 @@ const AttendanceTimeline = memo(({ attendanceHistory }: AttendanceTimelineProps)
             {attendanceHistory.slice(0, 4).map((record: any, idx: number) => (
               <motion.div key={record.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }} style={{ position: 'relative', paddingLeft: '1.5rem' }}>
                 <div style={{ 
-                  position: 'absolute', left: '-1.45rem', top: '0', width: '28px', height: '28px', borderRadius: '50%', 
+                  position: 'absolute', left: '-1.45rem', top: '0', width: '28px', height: '28px', borderRadius: 'var(--radius-full, 50%)', 
                   background: record.status === 'PRESENT' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
-                  border: `2px solid ${record.status === 'PRESENT' ? '#10b981' : '#ef4444'}`, 
+                  border: `2px solid ${record.status === 'PRESENT' ? 'var(--success)' : 'var(--danger)'}`, 
                   display: 'flex', alignItems: 'center', justifyContent: 'center' 
                 }}>
-                  {record.status === 'PRESENT' ? <CheckCircle size={14} color="#10b981" /> : <AlertTriangle size={14} color="#ef4444" />}
+                  {record.status === 'PRESENT' ? <CheckCircle size={14} color="var(--success)" /> : <AlertTriangle size={14} color="var(--danger)" />}
                 </div>
                 <div style={{ 
-                  background: isDark ? 'rgba(0,0,0,0.2)' : '#f8fafc', padding: '1rem', borderRadius: '12px', 
+                  background: isDark ? 'rgba(0,0,0,0.2)' : '#f8fafc', padding: '1rem', borderRadius: 'var(--radius-md)', 
                   border: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' 
                 }}>
                   <div style={{ fontWeight: 'bold', fontSize: '1rem', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     {new Date(record.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                    <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: record.status === 'PRESENT' ? '#10b981' : '#ef4444', color: '#fff' }}>
+                    <span style={{ fontSize: 'var(--font-sm, 12px)', padding: '0.2rem 0.5rem', borderRadius: '4px', background: record.status === 'PRESENT' ? 'var(--success)' : 'var(--danger)', color: '#fff' }}>
                       {record.status}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <div style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                       <Clock size={12}/> IN: {record.check_in ? new Date(record.check_in).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--'}
                     </div>

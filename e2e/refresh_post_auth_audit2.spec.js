@@ -15,7 +15,7 @@ test('audit post-auth refresh crash 2', async ({ page }) => {
   });
 
   // Login
-  await page.goto('http://localhost:5182/login');
+  await page.goto('http://localhost:5173/login');
   await page.fill('input[type="email"]', 'admin@e2e.com');
   await page.fill('input[type="password"]', 'password123');
   await page.click('button[type="submit"]');
@@ -26,7 +26,7 @@ test('audit post-auth refresh crash 2', async ({ page }) => {
   for (const url of urls) {
     errors.length = 0; networkErrors.length = 0;
     console.log(`=== NAVIGATING TO ${url} ===`);
-    await page.goto(`http://localhost:5182${url}`);
+    await page.goto(`http://localhost:5173${url}`);
     await page.waitForTimeout(2000);
     
     console.log(`=== REFRESHING ${url} ===`);

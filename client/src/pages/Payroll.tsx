@@ -84,6 +84,7 @@ const Payroll: React.FC = () => {
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 100);
     } catch (err) {
       console.error('Failed to download payslip', err);
       showToast('Failed to download payslip', 'error');
@@ -151,31 +152,31 @@ const Payroll: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 1024 ? '1fr' : '320px 1fr', gap: '2.5rem', alignItems: 'start' }}>
         
         {/* LEFT COLUMN: Controls & History */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', minWidth: 0 }}>
           
           <div className="premium-card">
             <h3 style={{ marginBottom: '1.5rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                <Play size={20} color="var(--primary)" /> Execute Payroll
             </h3>
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>Financial Year</label>
+              <label style={{ display: 'block', fontSize: 'var(--font-base, 14px)', fontWeight: '700', marginBottom: '0.5rem' }}>Financial Year</label>
               <select 
                 value={year} 
                 onChange={(e) => setYear(Number(e.target.value))}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
               >
                 {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
               </select>
             </div>
             <div style={{ marginBottom: '2rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>Processing Month</label>
+              <label style={{ display: 'block', fontSize: 'var(--font-base, 14px)', fontWeight: '700', marginBottom: '0.5rem' }}>Processing Month</label>
               <select 
                 value={month} 
                 onChange={(e) => setMonth(Number(e.target.value))}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
               >
                 {months.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
               </select>
@@ -215,7 +216,7 @@ const Payroll: React.FC = () => {
                 >
                   <div>
                     <div style={{ fontWeight: '800', fontSize: '1rem', color: selectedRunId === run.id ? 'var(--primary)' : 'var(--text-main)' }}>{months[run.month - 1]} {run.year}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', fontWeight: '600', marginTop: '0.25rem' }}>
                       Processed: {new Date(run.run_date).toLocaleDateString()}
                     </div>
                   </div>
@@ -223,11 +224,11 @@ const Payroll: React.FC = () => {
                 </div>
               ))}
               {error ? (
-                <div style={{ color: 'var(--danger)', textAlign: 'center', padding: '3rem', fontSize: '0.875rem' }}>
+                <div style={{ color: 'var(--danger)', textAlign: 'center', padding: '3rem', fontSize: 'var(--font-base, 14px)' }}>
                   Failed to load batch history.
                 </div>
               ) : runs.length === 0 && (
-                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem', fontSize: '0.875rem' }}>
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem', fontSize: 'var(--font-base, 14px)' }}>
                   No batch history found.
                 </div>
               )}
@@ -238,29 +239,29 @@ const Payroll: React.FC = () => {
         {/* RIGHT COLUMN: Results & Details */}
         <div>
           {selectedRunId ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', minWidth: 0 }}>
                
                {/* Summary Cards */}
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem' }}>
-                  <div className="premium-card" style={{ borderTop: '4px solid #10b981', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
-                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Gross Salary</div>
-                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#10b981' }}>₹{totalGross.toLocaleString()}</div>
+                  <div className="premium-card" style={{ borderTop: '4px solid var(--success)', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Gross Salary</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--success)' }}>₹{totalGross.toLocaleString()}</div>
                   </div>
-                  <div className="premium-card" style={{ borderTop: '4px solid #ef4444', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
-                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Emp Deductions</div>
-                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#ef4444' }}>₹{totalDeductions.toLocaleString()}</div>
+                  <div className="premium-card" style={{ borderTop: '4px solid var(--danger)', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Emp Deductions</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--danger)' }}>₹{totalDeductions.toLocaleString()}</div>
                   </div>
-                  <div className="premium-card" style={{ borderTop: '4px solid #3b82f6', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
-                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Net Salary</div>
-                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#3b82f6' }}>₹{totalPayroll.toLocaleString()}</div>
+                  <div className="premium-card" style={{ borderTop: '4px solid var(--primary)', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Net Salary</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--primary)' }}>₹{totalPayroll.toLocaleString()}</div>
                   </div>
-                  <div className="premium-card" style={{ borderTop: '4px solid #f59e0b', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
-                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Employer Contrib</div>
-                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#f59e0b' }}>₹{totalEmployerContribs.toLocaleString()}</div>
+                  <div className="premium-card" style={{ borderTop: '4px solid var(--warning)', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Employer Contrib</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--warning)' }}>₹{totalEmployerContribs.toLocaleString()}</div>
                   </div>
-                  <div className="premium-card" style={{ borderTop: '4px solid #8b5cf6', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
-                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Company Cost</div>
-                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#8b5cf6' }}>₹{totalCompanyCost.toLocaleString()}</div>
+                  <div className="premium-card" style={{ borderTop: '4px solid var(--secondary)', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+                     <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Company Cost</div>
+                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--secondary)' }}>₹{totalCompanyCost.toLocaleString()}</div>
                   </div>
                </div>
 
@@ -286,13 +287,13 @@ const Payroll: React.FC = () => {
                        placeholder="Search employees..." 
                        value={searchTerm}
                        onChange={e => setSearchTerm(e.target.value)}
-                       style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 3rem', borderRadius: '8px', border: '1.5px solid var(--border)', outline: 'none', background: 'var(--card-bg)' }}
+                       style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 3rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', outline: 'none', background: 'var(--card-bg)' }}
                      />
                    </div>
                    <select 
                      value={deptFilter} 
                      onChange={e => setDeptFilter(e.target.value)}
-                     style={{ padding: '0.75rem 1rem', borderRadius: '8px', border: '1.5px solid var(--border)', outline: 'none', background: 'var(--card-bg)', fontWeight: '600' }}
+                     style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', outline: 'none', background: 'var(--card-bg)', fontWeight: '600' }}
                    >
                       <option value="">All Departments</option>
                       {departments.map(d => <option key={d as string} value={d as string}>{d as string}</option>)}
@@ -318,7 +319,7 @@ const Payroll: React.FC = () => {
                             <div style={{ fontWeight: '700', fontSize: '0.9rem', color: 'var(--text-main)' }}>
                               {slip.employee ? `${slip.employee.first_name} ${slip.employee.last_name}` : 'Unknown Employee'}
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                            <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', fontWeight: '600' }}>
                               {slip.employee?.employee_code || 'N/A'}
                             </div>
                           </td>
@@ -331,7 +332,7 @@ const Payroll: React.FC = () => {
                           <td style={{ fontWeight: '700' }}>
                             ₹{Number(slip.gross_salary).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </td>
-                          <td style={{ color: '#ef4444', fontWeight: '700' }}>
+                          <td style={{ color: 'var(--danger)', fontWeight: '700' }}>
                             ₹{Number(slip.total_deductions).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </td>
                           <td style={{ fontWeight: '900', color: 'var(--primary)', fontSize: '1.05rem' }}>
@@ -354,7 +355,7 @@ const Payroll: React.FC = () => {
                           <td colSpan={6} style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
                              <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
                                 <AlertTriangle size={48} className="empty-state-icon" style={{ color: '#b45309' }} />
-                                <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No salary components configured</h3>
+                                <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No salary components configured</h3>
                                 <p style={{ color: 'var(--text-secondary)' }}>Create or assign a salary structure before processing payroll.</p>
                              </div>
                           </td>
@@ -367,7 +368,7 @@ const Payroll: React.FC = () => {
             </div>
           ) : (
             <div className="premium-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '500px', color: 'var(--text-muted)', border: '2px dashed var(--border)', background: 'transparent', boxShadow: 'none' }}>
-              <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '50%', marginBottom: '1.5rem', boxShadow: 'var(--premium-shadow)' }}>
+              <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: 'var(--radius-full, 50%)', marginBottom: '1.5rem', boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))' }}>
                 <FileText size={48} color="var(--primary)" opacity={0.8} />
               </div>
               <h2 style={{ color: 'var(--text-main)', marginBottom: '0.5rem', fontWeight: '800' }}>No Batch Selected</h2>

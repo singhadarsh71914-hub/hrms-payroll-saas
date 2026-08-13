@@ -15,8 +15,6 @@ export const globalLimiter = rateLimit({
   skip: (req) => process.env.NODE_ENV !== "production"
 });
 
-console.log("NODE_ENV =", process.env.NODE_ENV);
-console.log("Auth limiter enabled:", process.env.NODE_ENV === "production");
 
 /**
  * Strict Auth Rate Limiter
@@ -38,7 +36,6 @@ export const authLimiter = rateLimit({
   // Development-only bypass
   skip: (req) => {
     const isSkip = process.env.NODE_ENV !== "production";
-    console.log("RATE LIMIT SKIP =", isSkip);
     return isSkip;
   }
 });

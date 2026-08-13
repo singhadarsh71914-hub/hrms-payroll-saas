@@ -102,8 +102,8 @@ export const addIntelligenceJob = async (jobName: string, data: any) => {
   });
 };
 
-export const addWorkforceIntelligenceJob = async (companyId: string, employeeId?: string) => {
-  return workforceIntelligenceQueue.add('analyze', { companyId, employeeId }, { removeOnComplete: true });
+export const addWorkforceIntelligenceJob = async (companyId: string, employeeId?: string, type: string = 'ALL') => {
+  return workforceIntelligenceQueue.add('analyze', { companyId, employeeId, type }, { removeOnComplete: true });
 };
 
 export const addWorkforceSnapshotJob = async () => {

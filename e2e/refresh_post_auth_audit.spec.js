@@ -17,7 +17,7 @@ test('audit post-auth refresh crash', async ({ page }) => {
   });
 
   // Login
-  await page.goto('http://localhost:5182/login');
+  await page.goto('http://localhost:5173/login');
   await page.fill('input[type="email"]', 'admin@e2e.com');
   await page.fill('input[type="password"]', 'password123');
   await page.click('button[type="submit"]');
@@ -25,7 +25,7 @@ test('audit post-auth refresh crash', async ({ page }) => {
 
   // Test /attendance/intelligence
   console.log("=== NAVIGATING TO /attendance/intelligence ===");
-  await page.goto('http://localhost:5182/attendance/intelligence');
+  await page.goto('http://localhost:5173/attendance/intelligence');
   await page.waitForTimeout(2000);
   
   console.log("=== REFRESHING /attendance/intelligence ===");
@@ -39,7 +39,7 @@ test('audit post-auth refresh crash', async ({ page }) => {
   errors.length = 0; networkErrors.length = 0;
   
   console.log("=== NAVIGATING TO /analytics ===");
-  await page.goto('http://localhost:5182/analytics');
+  await page.goto('http://localhost:5173/analytics');
   await page.waitForTimeout(2000);
   
   console.log("=== REFRESHING /analytics ===");

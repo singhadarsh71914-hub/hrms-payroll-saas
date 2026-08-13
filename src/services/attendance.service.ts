@@ -141,6 +141,77 @@ export class AttendanceService {
     return R * c;
   }
 
+  
+  static async startBreak(employeeId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existing = await prisma.attendance.findUnique({
+      where: {
+        employee_id_date: {
+          employee_id: employeeId,
+          date: today
+        }
+      },
+      include: { attendance_breaks: true }
+    });
+
+    if (!existing || !existing.check_in) {
+      throw new Error('Cannot start break without checking in');
+    }
+
+    if (existing.check_out) {
+      throw new Error('Cannot start break after check out');
+    }
+
+    const openBreak = existing.attendance_breaks?.find((b: any) => !b.end_time);
+    if (openBreak) {
+      throw new Error('A break is already active');
+    }
+
+    return await prisma.attendanceBreak.create({
+      data: { id: require("crypto").randomUUID(), attendance_id: existing.id,
+        start_time: new Date()
+      }
+    });
+  }
+
+  static async endBreak(employeeId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existing = await prisma.attendance.findUnique({
+      where: {
+        employee_id_date: {
+          employee_id: employeeId,
+          date: today
+        }
+      },
+      include: { attendance_breaks: true }
+    });
+
+    if (!existing || !existing.check_in) {
+      throw new Error('Cannot end break without checking in');
+    }
+
+    const openBreak = existing.attendance_breaks?.find((b: any) => !b.end_time);
+    if (!openBreak) {
+      throw new Error('No active break found');
+    }
+
+    const now = new Date();
+    const durationMs = now.getTime() - openBreak.start_time.getTime();
+    const durationMins = Math.floor(durationMs / 60000);
+
+    return await prisma.attendanceBreak.update({
+      where: { id: openBreak.id },
+      data: {
+        end_time: now,
+        duration: durationMins
+      }
+    });
+  }
+
   static async checkOut(employeeId: string, userId: string, geoData?: any, biometricData?: any) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -231,13 +302,24 @@ export class AttendanceService {
       durationSeconds = Math.floor((new Date().getTime() - checkIn.getTime()) / 1000);
     }
 
+    
+    const existingWithBreaks = await prisma.attendance.findUnique({
+      where: { id: existing.id },
+      include: { attendance_breaks: true }
+    });
+    
+    const activeBreak = existingWithBreaks?.attendance_breaks?.find((b: any) => !b.end_time);
+
     return {
       checkedIn: true,
       checkIn: checkIn,
       checkOut: checkOut,
       durationSeconds: durationSeconds,
-      status: existing.status
+      status: existing.status,
+      onBreak: !!activeBreak,
+      activeBreak: activeBreak
     };
+
   }
 
   static async getMyAttendance(employeeId: string, month?: number, year?: number) {

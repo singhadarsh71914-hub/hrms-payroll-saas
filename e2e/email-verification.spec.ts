@@ -10,7 +10,7 @@ test.describe('Phase 16 - Email Verification', () => {
     await page.click('button[type="submit"]');
 
     // Wait for dashboard load
-    await expect(page.locator('h1')).toContainText('Welcome back', { timeout: 10000 });
+    await expect(page.locator('h1')).toContainText('Operational Command Center', { timeout: 10000 });
 
     // 2. Banner should be visible
     const bannerText = page.locator('text=Please verify your email address to unlock full platform features');

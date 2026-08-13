@@ -96,12 +96,12 @@ export default function AttendanceIntelligence() {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', gridColumn: 'span 2' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 1024 ? '1fr' : 'repeat(3, 1fr)', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', gridColumn: 'span 2', minWidth: 0 }}>
           <WidgetErrorBoundary fallbackMessage="Failed to load map data.">
             <Suspense fallback={<Skeleton />}><WorkforceMap locations={data.liveWorkforce?.locations || []} companyLocation={data.companyLocation} /></Suspense>
           </WidgetErrorBoundary>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 1024 ? '1fr' : '1fr 1fr', gap: '24px' }}>
             <WidgetErrorBoundary>
               <Suspense fallback={<Skeleton />}><RiskHeatmap /></Suspense>
             </WidgetErrorBoundary>
@@ -110,7 +110,7 @@ export default function AttendanceIntelligence() {
             </WidgetErrorBoundary>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
           <WorkforceHealthCard />
           <WidgetErrorBoundary fallbackMessage="Risk analysis unavailable.">
             <Suspense fallback={<Skeleton />}><RiskAnalysisPanel lowTrustFlags={data.lowTrustFlags} /></Suspense>

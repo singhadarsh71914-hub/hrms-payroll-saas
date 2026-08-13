@@ -36,7 +36,12 @@ export class SmtpEmailService implements EmailProvider {
       return; // Do NOT fake email delivery per strict instructions
     }
 
-    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+    const frontendUrl = process.env.FRONTEND_URL;
+    if (!frontendUrl) {
+      logger.error('FRONTEND_URL environment variable is not set. Cannot generate reset link.');
+      throw new Error('FRONTEND_URL is not configured');
+    }
+    const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
 
     const mailOptions = {
       from: `"HRMS Support" <${process.env.EMAIL_USER}>`,

@@ -68,4 +68,5 @@ export const exportReport = async (range: string = '6m', config?: AxiosRequestCo
   document.body.appendChild(link);
   link.click();
   link.parentNode?.removeChild(link);
+  setTimeout(() => window.URL.revokeObjectURL(url), 100);
 };

@@ -25,7 +25,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
 export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({ lines = 3, className = '' }) => {
   return (
-    <div className={`skeleton-text-container ${className}`} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div className={`skeleton-text-container ${className}`} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm, 8px)' }}>
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton 
           key={`skel-line-${i}`} 

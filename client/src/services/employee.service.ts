@@ -114,3 +114,17 @@ export const getDesignations = async () => {
   });
   return response.data;
 };
+
+export const uploadAvatar = async (id: string, file: File) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const response = await api.post(`/employees/${id}/avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+export const deleteAvatar = async (id: string) => {
+  const response = await api.delete(`/employees/${id}/avatar`);
+  return response.data;
+};

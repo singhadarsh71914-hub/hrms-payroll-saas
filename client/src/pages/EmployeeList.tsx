@@ -174,7 +174,7 @@ const EmployeeList: React.FC = () => {
                     <td><Skeleton width="100px" height="16px" /></td>
                     <td><Skeleton width="100px" height="16px" /></td>
                     <td><Skeleton width="80px" height="24px" borderRadius="12px" /></td>
-                    <td><div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><Skeleton width="32px" height="32px" borderRadius="6px" /><Skeleton width="32px" height="32px" borderRadius="6px" /><Skeleton width="32px" height="32px" borderRadius="6px" /></div></td>
+                    <td><div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--spacing-sm, 8px)' }}><Skeleton width="32px" height="32px" borderRadius="6px" /><Skeleton width="32px" height="32px" borderRadius="6px" /><Skeleton width="32px" height="32px" borderRadius="6px" /></div></td>
                   </tr>
                 ))
               ) : filteredEmployees.map(emp => (
@@ -277,8 +277,8 @@ const EmployeeList: React.FC = () => {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: '700', letterSpacing: '0.08em', color: 'var(--primary)', textTransform: 'uppercase', background: 'rgba(var(--primary-rgb, 99,102,241),0.1)', padding: '4px 10px', borderRadius: '20px' }}>Salary Revision</span>
-                <button onClick={() => { setShowRevisionModal(false); setFormData({ ctcAnnual: '', effectiveFrom: '', reason: '' }); }} style={{ background: 'var(--bg-page)', border: '1px solid var(--border)', padding: '6px', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: '700', letterSpacing: '0.08em', color: 'var(--primary)', textTransform: 'uppercase', background: 'rgba(var(--primary-rgb, 99,102,241),0.1)', padding: '4px 10px', borderRadius: 'var(--radius-lg)' }}>Salary Revision</span>
+                <button onClick={() => { setShowRevisionModal(false); setFormData({ ctcAnnual: '', effectiveFrom: '', reason: '' }); }} style={{ background: 'var(--bg-page)', border: '1px solid var(--border)', padding: '6px', borderRadius: 'var(--radius-sm)', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}>
                   <X size={18} />
                 </button>
               </div>
@@ -288,14 +288,14 @@ const EmployeeList: React.FC = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
 
               {/* LEFT — Apply Revision */}
-              <div style={{ padding: '20px 24px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ padding: '20px 24px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg, 16px)' }}>
                 <div>
                   <div style={{ fontSize: '0.68rem', fontWeight: '800', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '2px' }}>Apply Revision</div>
                   <h3 style={{ margin: 0, fontWeight: '800', fontSize: '1rem', color: 'var(--text-main)' }}>Set New Compensation</h3>
                 </div>
 
                 {/* Payroll helper text */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px 14px', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--spacing-sm, 8px)', padding: '10px 14px', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px' }}>
                   <Info size={14} color="#3b82f6" style={{ marginTop: '2px', flexShrink: 0 }} />
                   <span style={{ fontSize: '0.78rem', color: '#3b82f6', fontWeight: '600', lineHeight: 1.5 }}>This revision becomes the active salary used in payroll processing.</span>
                 </div>
@@ -318,7 +318,7 @@ const EmployeeList: React.FC = () => {
                       const monthly = Math.round(annual / 12);
                       const estimated = Math.round(monthly * 0.78); // ~78% after typical deductions
                       return (
-                        <div style={{ marginTop: '10px', padding: '12px 16px', background: 'var(--bg-page)', border: '1.5px solid var(--primary)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ marginTop: '10px', padding: '12px 16px', background: 'var(--bg-page)', border: '1.5px solid var(--primary)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm, 8px)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '600' }}>Annual CTC</span>
                             <span style={{ fontSize: '0.95rem', fontWeight: '800', color: 'var(--text-main)' }}>₹{annual.toLocaleString('en-IN')}</span>
@@ -372,17 +372,17 @@ const EmployeeList: React.FC = () => {
                 </div>
 
                 {revisionHistory.length === 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 16px', border: '1.5px dashed var(--border)', borderRadius: '12px', textAlign: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 16px', border: '1.5px dashed var(--border)', borderRadius: 'var(--radius-md)', textAlign: 'center', gap: 'var(--spacing-sm, 8px)' }}>
                     <span style={{ fontSize: '1.5rem' }}>📝</span>
                     <div style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: '0.875rem' }}>No salary revisions yet</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>First approved revision will appear here.</div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm, 8px)' }}>
                     {revisionHistory.map((rev, idx) => (
                       <div key={rev.id || idx} style={{ padding: '12px 14px', background: 'var(--bg-card)', border: `1.5px solid ${idx === 0 ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '10px', position: 'relative' }}>
                         {idx === 0 && (
-                          <span style={{ position: 'absolute', right: '10px', top: '10px', fontSize: '0.6rem', background: 'rgba(22,163,74,0.12)', color: 'var(--success)', padding: '2px 7px', borderRadius: '20px', fontWeight: '800', letterSpacing: '0.06em' }}>ACTIVE</span>
+                          <span style={{ position: 'absolute', right: '10px', top: '10px', fontSize: '0.6rem', background: 'rgba(22,163,74,0.12)', color: 'var(--success)', padding: '2px 7px', borderRadius: 'var(--radius-lg)', fontWeight: '800', letterSpacing: '0.06em' }}>ACTIVE</span>
                         )}
                         <div style={{ fontWeight: '800', fontSize: '1.05rem', color: 'var(--primary)', letterSpacing: '-0.01em' }}>₹{Number(rev.ctc_annual).toLocaleString('en-IN')}</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '3px 0', fontWeight: '600' }}>

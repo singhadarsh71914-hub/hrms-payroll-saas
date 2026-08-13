@@ -79,7 +79,11 @@ router.patch(
       const { status } = req.body;
       const approvedBy = req.user?.email as string;
 
+      
+      const reqData = await import('../lib/prisma.ts').then(m => m.default.leaveRequest.findUnique({ where: { id: id as string }, include: { employee: true } }));
+      if (!reqData || reqData.employee.company_id !== req.user?.company_id) return next(new AppError('Unauthorized', 403));
       const result = await LeaveService.updateLeaveStatus(id as string, status, approvedBy);
+    
       res.json(result);
     } catch (err: any) {
       next(err);

@@ -37,6 +37,7 @@ const TaxManagement = () => {
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 100);
     } catch (error) {
       showToast('Failed to download Form 16', 'error');
     }
@@ -53,6 +54,7 @@ const TaxManagement = () => {
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 100);
     } catch (error) {
       showToast('Failed to download bulk Form 16', 'error');
     } finally {
@@ -90,32 +92,32 @@ const TaxManagement = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(250px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="card flex items-center gap-4">
-          <div style={{ background: '#dbeafe', color: '#2563eb', padding: '1rem', borderRadius: '12px' }}>
+          <div style={{ background: '#dbeafe', color: 'var(--primary-dark)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
             <Users size={24} />
           </div>
           <div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Employees Processed</p>
-            <h3 style={{ fontSize: '1.5rem', margin: 0 }}>{summary.length}</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-base, 14px)', marginBottom: '0.25rem' }}>Employees Processed</p>
+            <h3 style={{ fontSize: 'var(--font-lg, 24px)', margin: 0 }}>{summary.length}</h3>
           </div>
         </div>
         <div className="card flex items-center gap-4">
-          <div style={{ background: '#fef3c7', color: '#d97706', padding: '1rem', borderRadius: '12px' }}>
+          <div style={{ background: '#fef3c7', color: '#d97706', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
             <PieChart size={24} />
           </div>
           <div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Total Tax Liability</p>
-            <h3 style={{ fontSize: '1.5rem', margin: 0 }}>₹ {totalTaxLiability.toLocaleString()}</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-base, 14px)', marginBottom: '0.25rem' }}>Total Tax Liability</p>
+            <h3 style={{ fontSize: 'var(--font-lg, 24px)', margin: 0 }}>₹ {totalTaxLiability.toLocaleString()}</h3>
           </div>
         </div>
         <div className="card flex items-center gap-4">
-          <div style={{ background: '#dcfce7', color: '#16a34a', padding: '1rem', borderRadius: '12px' }}>
+          <div style={{ background: '#dcfce7', color: '#16a34a', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
             <CheckCircle size={24} />
           </div>
           <div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Total TDS Deducted</p>
-            <h3 style={{ fontSize: '1.5rem', margin: 0 }}>₹ {totalTDS.toLocaleString()}</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-base, 14px)', marginBottom: '0.25rem' }}>Total TDS Deducted</p>
+            <h3 style={{ fontSize: 'var(--font-lg, 24px)', margin: 0 }}>₹ {totalTDS.toLocaleString()}</h3>
           </div>
         </div>
       </div>
@@ -126,6 +128,7 @@ const TaxManagement = () => {
              <Skeleton height="300px" borderRadius="12px" />
           </div>
         ) : (
+          <div className="table-responsive" style={{ border: 'none', boxShadow: 'none' }}>
           <table className="table">
             <thead>
               <tr>
@@ -144,7 +147,7 @@ const TaxManagement = () => {
                 <tr key={emp.employeeId}>
                   <td>
                     <div style={{ fontWeight: '500' }}>{emp.firstName} {emp.lastName}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{emp.employeeCode}</div>
+                    <div style={{ fontSize: 'var(--font-sm, 12px)', color: '#64748b' }}>{emp.employeeCode}</div>
                   </td>
                   <td>{emp.pan}</td>
                   <td>₹{Number(emp.totalGross).toLocaleString()}</td>
@@ -157,7 +160,7 @@ const TaxManagement = () => {
                     <span style={{ 
                       padding: '0.25rem 0.75rem', 
                       borderRadius: '9999px', 
-                      fontSize: '0.75rem', 
+                      fontSize: 'var(--font-sm, 12px)', 
                       fontWeight: '600',
                       backgroundColor: '#dcfce7',
                       color: '#16a34a'
@@ -182,7 +185,7 @@ const TaxManagement = () => {
                   <td colSpan={8} style={{ textAlign: 'center', padding: '4rem' }}>
                     <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
                        <FileText size={48} className="empty-state-icon" />
-                       <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No tax records</h3>
+                       <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No tax records</h3>
                        <p style={{ color: 'var(--text-secondary)' }}>No tax data available for selected financial year.</p>
                     </div>
                   </td>
@@ -190,6 +193,7 @@ const TaxManagement = () => {
               )}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

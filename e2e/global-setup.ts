@@ -24,14 +24,14 @@ async function globalSetup() {
     const uRes = await client.query(`SELECT id FROM "User" WHERE email = $1 LIMIT 1`, [email]);
     const uId = uRes.rows[0].id;
 
-    const eRes = await client.query(`SELECT id FROM "Employee" WHERE employee_code = $1 LIMIT 1`, [code]);
+    const eRes = await client.query(`SELECT id FROM "Employee" WHERE work_email = $1 LIMIT 1`, [email]);
     if (eRes.rows.length === 0) {
       await client.query(`
         INSERT INTO "Employee" (id, user_id, company_id, first_name, last_name, work_email, employee_code, employment_status, date_of_joining, created_at, updated_at, is_active) 
         VALUES ($1, $2, $3, $4, 'User', $5, $6, 'ACTIVE', NOW(), NOW(), NOW(), true)
       `, [empId, uId, companyId, firstName, email, code]);
     } else {
-      await client.query(`UPDATE "Employee" SET is_active = true, deleted_at = null WHERE employee_code = $1`, [code]);
+      await client.query(`UPDATE "Employee" SET is_active = true, deleted_at = null, employee_code = $2 WHERE work_email = $1`, [email, code]);
     }
   }
 

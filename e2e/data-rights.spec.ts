@@ -9,7 +9,7 @@ test.describe('Phase 17 - User Data Rights', () => {
     await page.fill('input#password', 'password123');
     await page.click('button[type="submit"]');
     
-    await expect(page.locator('h1')).toContainText('Welcome back', { timeout: 10000 });
+    await expect(page.locator('h1')).toContainText('Operational Command Center', { timeout: 10000 });
 
     // Since we don't have a UI hooked up for this yet in the prompt constraints, we'll verify the API directly using the session context
     const token = await page.evaluate(() => localStorage.getItem('accessToken'));
@@ -33,7 +33,7 @@ test.describe('Phase 17 - User Data Rights', () => {
     await page.fill('input#password', 'password123');
     await page.click('button[type="submit"]');
     
-    await expect(page.locator('h1')).toContainText('Welcome back', { timeout: 10000 });
+    await expect(page.locator('h1')).toContainText('Operational Command Center', { timeout: 10000 });
     
     // 2. Fire API request for deletion with valid password
     const token = await page.evaluate(() => localStorage.getItem('accessToken'));

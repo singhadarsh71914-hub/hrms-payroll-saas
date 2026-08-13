@@ -28,6 +28,13 @@ const EmployeeForm: React.FC = () => {
     phone: '',
     aadhaar_number: '',
     pan_number: '',
+    uan_number: '',
+    esic_ip_number: '',
+    bank_name: '',
+    bank_account_number: '',
+    bank_ifsc: '',
+    bank_branch: '',
+    bank_account_holder: '',
     address_line1: '',
     address_line2: '',
     city: '',
@@ -71,6 +78,13 @@ const EmployeeForm: React.FC = () => {
             phone: emp.phone || '',
             aadhaar_number: emp.aadhaar_number || '',
             pan_number: emp.pan_number || '',
+            uan_number: emp.uan_number || '',
+            esic_ip_number: emp.esic_ip_number || '',
+            bank_name: emp.bank_name || '',
+            bank_account_number: emp.bank_account_number || '',
+            bank_ifsc: emp.bank_ifsc || '',
+            bank_branch: emp.bank_branch || '',
+            bank_account_holder: emp.bank_account_holder || '',
             address_line1: emp.address_line1 || '',
             address_line2: emp.address_line2 || '',
             city: emp.city || '',
@@ -141,14 +155,14 @@ const EmployeeForm: React.FC = () => {
       <h1 style={{ marginBottom: '2rem' }}>{id ? 'Edit Employee Profile' : 'Add New Employee'}</h1>
       
       <form onSubmit={handleSubmit}>
-        {error && <div style={{ color: 'var(--danger)', marginBottom: '1.5rem', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>{error}</div>}
+        {error && <div style={{ color: 'var(--danger)', marginBottom: '1.5rem', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 'var(--radius-md)' }}>{error}</div>}
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           {/* Professional Information */}
           <div className="premium-card" style={{ padding: '2rem' }}>
             <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Professional Information</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(300px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
               <div className="form-group">
                 <label>Employee Code *</label>
                 <input name="employee_code" value={formData.employee_code} onChange={handleChange} required />
@@ -211,7 +225,7 @@ const EmployeeForm: React.FC = () => {
           {/* Personal Information */}
           <div className="premium-card" style={{ padding: '2rem' }}>
             <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Personal Information</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(300px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
               <div className="form-group">
                 <label>First Name *</label>
                 <input name="first_name" value={formData.first_name} onChange={handleChange} required />
@@ -252,10 +266,61 @@ const EmployeeForm: React.FC = () => {
             </div>
           </div>
 
+          
+          {/* Government IDs */}
+          <div className="premium-card" style={{ padding: '2rem' }}>
+            <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Government IDs</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(300px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+              <div className="form-group">
+                <label>Aadhaar Number</label>
+                <input name="aadhaar_number" value={formData.aadhaar_number} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>PAN Number</label>
+                <input name="pan_number" value={formData.pan_number} onChange={handleChange} style={{ textTransform: 'uppercase' }} />
+              </div>
+              <div className="form-group">
+                <label>UAN Number</label>
+                <input name="uan_number" value={formData.uan_number} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>ESIC IP Number</label>
+                <input name="esic_ip_number" value={formData.esic_ip_number} onChange={handleChange} />
+              </div>
+            </div>
+          </div>
+
+          {/* Bank Details */}
+          <div className="premium-card" style={{ padding: '2rem' }}>
+            <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Bank Details</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(300px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+              <div className="form-group">
+                <label>Bank Name</label>
+                <input name="bank_name" value={formData.bank_name} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Account Number</label>
+                <input name="bank_account_number" value={formData.bank_account_number} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>IFSC Code</label>
+                <input name="bank_ifsc" value={formData.bank_ifsc} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Branch</label>
+                <input name="bank_branch" value={formData.bank_branch} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Account Holder Name</label>
+                <input name="bank_account_holder" value={formData.bank_account_holder} onChange={handleChange} />
+              </div>
+            </div>
+          </div>
+
           {/* Address Information */}
           <div className="premium-card" style={{ padding: '2rem' }}>
             <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Address Information</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(300px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>Address Line 1</label>
                 <input name="address_line1" value={formData.address_line1} onChange={handleChange} />
@@ -286,7 +351,7 @@ const EmployeeForm: React.FC = () => {
           {/* Emergency Contact */}
           <div className="premium-card" style={{ padding: '2rem' }}>
             <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Emergency Contact</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(300px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
               <div className="form-group">
                 <label>Contact Name</label>
                 <input name="emergency_contact_name" value={formData.emergency_contact_name} onChange={handleChange} />

@@ -25,9 +25,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   return (
     <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '400px', padding: '24px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>{title}</h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.5 }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '400px', padding: 'var(--spacing-xl, 24px)' }}>
+        <h2 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 700, marginBottom: '12px' }}>{title}</h2>
+        <p style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.5 }}>
           {message}
         </p>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>

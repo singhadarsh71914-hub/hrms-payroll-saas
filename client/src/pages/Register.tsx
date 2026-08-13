@@ -20,7 +20,13 @@ const Register: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await register(formData);
+      await register({
+        email: formData.email,
+        password: formData.password,
+        company_name: formData.companyName,
+        first_name: formData.firstName,
+        last_name: formData.lastName
+      });
       showToast('Registration successful! Please login.', 'success');
       navigate('/login');
     } catch (err: any) {
@@ -42,23 +48,23 @@ const Register: React.FC = () => {
           <div style={{ 
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center', 
             width: '64px', height: '64px', background: 'white', borderRadius: '16px', color: '#0f172a',
-            marginBottom: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+            marginBottom: '32px', boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))'
           }}>
             <LayoutDashboard size={32} />
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', lineHeight: 1.1, marginBottom: '24px', letterSpacing: '-0.02em', color: 'white' }}>
             Transform your organization today.
           </h1>
-          <p style={{ fontSize: '18px', color: '#94a3b8', lineHeight: 1.6, marginBottom: '48px' }}>
+          <p style={{ fontSize: 'var(--font-md, 18px)', color: '#94a3b8', lineHeight: 1.6, marginBottom: '48px' }}>
             Set up your workspace in minutes. Give your team the ultimate experience in payroll, compliance, and performance management.
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-lg, 16px)' }}>
             <div style={{ display: 'flex' }}>
-               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#3b82f6', border: '2px solid #0f172a', zIndex: 3 }}></div>
-               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#10b981', border: '2px solid #0f172a', marginLeft: '-12px', zIndex: 2 }}></div>
-               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f59e0b', border: '2px solid #0f172a', marginLeft: '-12px', zIndex: 1 }}></div>
+               <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-full, 50%)', background: 'var(--primary)', border: '2px solid #0f172a', zIndex: 3 }}></div>
+               <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-full, 50%)', background: 'var(--success)', border: '2px solid #0f172a', marginLeft: '-12px', zIndex: 2 }}></div>
+               <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-full, 50%)', background: 'var(--warning)', border: '2px solid #0f172a', marginLeft: '-12px', zIndex: 1 }}></div>
             </div>
-            <div style={{ fontSize: '14px', color: '#cbd5e1', fontWeight: 500 }}>
+            <div style={{ fontSize: 'var(--font-base, 14px)', color: '#cbd5e1', fontWeight: 500 }}>
               Join 10,000+ modern enterprises.
             </div>
           </div>
@@ -69,7 +75,7 @@ const Register: React.FC = () => {
       <div className="split-right">
         <div style={{ width: '100%', maxWidth: '420px', padding: '32px' }}>
           <div style={{ marginBottom: '40px' }}>
-            <h2 style={{ fontSize: '32px', fontWeight: '800', margin: 0, letterSpacing: '-0.02em' }}>Create workspace</h2>
+            <h2 style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: '800', margin: 0, letterSpacing: '-0.02em' }}>Create workspace</h2>
             <p style={{ color: 'var(--text-secondary)', marginTop: '8px', fontSize: '15px' }}>Let's get your company set up.</p>
           </div>
           
@@ -91,7 +97,7 @@ const Register: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: 'var(--spacing-lg, 16px)' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>First Name</label>
                 <div style={{ position: 'relative' }}>
@@ -160,7 +166,7 @@ const Register: React.FC = () => {
               disabled={loading}
             >
               {loading ? (
-                <div style={{ width: '20px', height: '20px', border: '3px solid white', borderRightColor: 'transparent', borderRadius: '50%', animation: 'shimmer 1s linear infinite' }} />
+                <div style={{ width: '20px', height: '20px', border: '3px solid white', borderRightColor: 'transparent', borderRadius: 'var(--radius-full, 50%)', animation: 'shimmer 1s linear infinite' }} />
               ) : (
                 <>Create Workspace <ArrowRight size={18} /></>
               )}
@@ -168,7 +174,7 @@ const Register: React.FC = () => {
           </form>
           
           <div style={{ textAlign: 'center', marginTop: '40px' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+            <p style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-secondary)' }}>
               Already have an account? <Link to="/login" style={{ fontWeight: '600' }}>Sign In</Link>
             </p>
           </div>

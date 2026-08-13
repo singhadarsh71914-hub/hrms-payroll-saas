@@ -87,10 +87,10 @@ const Reimbursements = () => {
       {showApply && (
         <div className="premium-card" style={{ marginBottom: '2rem' }}>
           <h3 style={{ marginBottom: '1.5rem', fontWeight: '800' }}>New Expense Claim</h3>
-          <form onSubmit={handleApply} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <form onSubmit={handleApply} style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1.5rem' }}>
             <div className="form-group">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Expense Type</label>
-              <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)' }}>
+              <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)' }}>
                 <option value="TRAVEL">Travel</option>
                 <option value="FOOD">Food & Beverage</option>
                 <option value="MEDICAL">Medical</option>
@@ -100,11 +100,11 @@ const Reimbursements = () => {
             </div>
             <div className="form-group">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Amount (INR)</label>
-              <input type="number" required value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)' }} />
+              <input type="number" required value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)' }} />
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Description & Justification</label>
-              <textarea required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', minHeight: '100px' }} />
+              <textarea required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg)', minHeight: '100px' }} />
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
               <button type="button" className="btn btn-secondary" onClick={() => setShowApply(false)}>Cancel</button>
@@ -133,7 +133,7 @@ const Reimbursements = () => {
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center', padding: '4rem', color: 'var(--danger)' }}>
                     <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
-                       <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Failed to load data</h3>
+                       <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, marginBottom: '8px' }}>Failed to load data</h3>
                        <p>Could not retrieve reimbursements from the server.</p>
                     </div>
                   </td>
@@ -143,7 +143,7 @@ const Reimbursements = () => {
                   <td colSpan={7} style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
                     <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
                        <IndianRupee size={48} className="empty-state-icon" />
-                       <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No claims found</h3>
+                       <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No claims found</h3>
                        <p style={{ color: 'var(--text-secondary)' }}>No reimbursement claims have been submitted yet.</p>
                     </div>
                   </td>
@@ -161,7 +161,7 @@ const Reimbursements = () => {
                     <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.description}</td>
                     <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(c.created_at).toLocaleDateString()}</td>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: '800', color: c.status === 'APPROVED' ? '#10b981' : c.status === 'REJECTED' ? '#ef4444' : '#f59e0b' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: 'var(--font-sm, 12px)', fontWeight: '800', color: c.status === 'APPROVED' ? 'var(--success)' : c.status === 'REJECTED' ? 'var(--danger)' : 'var(--warning)' }}>
                         {c.status === 'APPROVED' && <CheckCircle size={14} />}
                         {c.status === 'REJECTED' && <XCircle size={14} />}
                         {c.status === 'PENDING' && <Clock size={14} />}
@@ -173,7 +173,7 @@ const Reimbursements = () => {
                         {c.status === 'PENDING' && (
                           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                             <button onClick={() => handleStatus(c.id, 'APPROVED')} className="btn btn-primary" style={{ padding: '0.4rem', borderRadius: '6px' }}><CheckCircle size={16} /></button>
-                            <button onClick={() => handleStatus(c.id, 'REJECTED')} className="btn btn-secondary" style={{ padding: '0.4rem', borderRadius: '6px', color: '#ef4444' }}><XCircle size={16} /></button>
+                            <button onClick={() => handleStatus(c.id, 'REJECTED')} className="btn btn-secondary" style={{ padding: '0.4rem', borderRadius: '6px', color: 'var(--danger)' }}><XCircle size={16} /></button>
                           </div>
                         )}
                       </td>

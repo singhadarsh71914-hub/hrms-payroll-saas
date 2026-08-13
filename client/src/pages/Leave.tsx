@@ -93,10 +93,10 @@ const Leave: React.FC = () => {
           <div style={{ marginTop: '0.5rem' }}><Skeleton width="400px" height="20px" /></div>
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: isHR ? '1fr' : '1fr 400px', gap: '2.5rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 1024 ? '1fr' : isHR ? '1fr' : '1fr 400px', gap: '2.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0 }}>
           {!isHR && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(200px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
               <Skeleton height="150px" borderRadius="12px" />
               <Skeleton height="150px" borderRadius="12px" />
               <Skeleton height="150px" borderRadius="12px" />
@@ -122,16 +122,16 @@ const Leave: React.FC = () => {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: isHR && !showApply ? '1fr' : '1fr 400px', gap: '2.5rem', alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 1024 ? '1fr' : isHR && !showApply ? '1fr' : '1fr 400px', gap: '2.5rem', alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0 }}>
           {/* Balances Section for Employees */}
           {!isHR && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(200px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
               {balances.map(b => (
                 <div key={b.id} className="premium-card" style={{ textAlign: 'center', borderTop: '4px solid var(--primary)' }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>{b.leave_type}</div>
+                  <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>{b.leave_type}</div>
                   <div style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', lineHeight: 1 }}>{Number(b.balance_days)}</div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Days Available</div>
+                  <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: '600', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Days Available</div>
                   <div style={{ marginTop: '1.25rem', height: '6px', background: 'var(--bg)', borderRadius: '3px', overflow: 'hidden' }}>
                     <div style={{ 
                       height: '100%', 
@@ -148,7 +148,7 @@ const Leave: React.FC = () => {
           <div className="premium-card" style={{ padding: '0' }}>
             <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                <Calendar size={20} color="var(--primary)" />
-               <h3 style={{ fontSize: '1.125rem', fontWeight: '800' }}>{isHR ? 'Centralized Request Registry' : 'My Leave History'}</h3>
+               <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: '800' }}>{isHR ? 'Centralized Request Registry' : 'My Leave History'}</h3>
             </div>
             <div className="table-container" style={{ border: 'none', boxShadow: 'none' }}>
               <table className="premium-table">
@@ -167,7 +167,7 @@ const Leave: React.FC = () => {
                     <tr key={req.id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                           <div style={{ width: '32px', height: '32px', borderRadius: 'var(--radius-md)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <User size={16} color="var(--text-muted)" />
                            </div>
                            <div>
@@ -202,12 +202,12 @@ const Leave: React.FC = () => {
                           display: 'inline-flex', 
                           alignItems: 'center', 
                           gap: '0.4rem', 
-                          fontSize: '0.75rem', 
+                          fontSize: 'var(--font-sm, 12px)', 
                           fontWeight: '800', 
-                          color: req.status === 'APPROVED' ? '#10b981' : req.status === 'REJECTED' ? '#ef4444' : '#f59e0b',
+                          color: req.status === 'APPROVED' ? 'var(--success)' : req.status === 'REJECTED' ? 'var(--danger)' : 'var(--warning)',
                           background: req.status === 'APPROVED' ? 'rgba(16, 185, 129, 0.1)' : req.status === 'REJECTED' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)',
                           padding: '0.25rem 0.75rem',
-                          borderRadius: '20px'
+                          borderRadius: 'var(--radius-lg)'
                         }}>
                           {req.status === 'APPROVED' && <CheckCircle size={14} />}
                           {req.status === 'REJECTED' && <XCircle size={14} />}
@@ -221,7 +221,7 @@ const Leave: React.FC = () => {
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                               <button 
                                 className="btn btn-secondary" 
-                                style={{ padding: '0.4rem', borderRadius: '6px', color: '#ef4444' }}
+                                style={{ padding: '0.4rem', borderRadius: '6px', color: 'var(--danger)' }}
                                 onClick={() => handleUpdateStatus(req.id, 'REJECTED')}
                                 title="Reject"
                               >
@@ -229,7 +229,7 @@ const Leave: React.FC = () => {
                               </button>
                               <button 
                                 className="btn btn-primary" 
-                                style={{ padding: '0.4rem', borderRadius: '6px', background: '#10b981' }}
+                                style={{ padding: '0.4rem', borderRadius: '6px', background: 'var(--success)' }}
                                 onClick={() => handleUpdateStatus(req.id, 'APPROVED')}
                                 title="Approve"
                               >
@@ -246,7 +246,7 @@ const Leave: React.FC = () => {
                       <td colSpan={isHR ? 6 : 5} style={{ padding: '4rem', textAlign: 'center' }}>
                         <div className="empty-state" style={{ border: 'none', background: 'transparent' }}>
                            <FileText size={48} className="empty-state-icon" />
-                           <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No requests found</h3>
+                           <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No requests found</h3>
                            <p style={{ color: 'var(--text-secondary)' }}>No leave requests awaiting action.</p>
                         </div>
                       </td>
@@ -265,11 +265,11 @@ const Leave: React.FC = () => {
               <form onSubmit={handleApply} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 {isHR && (
                   <div className="form-group">
-                    <label style={{ fontWeight: '700', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Select Employee</label>
+                    <label style={{ fontWeight: '700', fontSize: 'var(--font-base, 14px)', marginBottom: '0.5rem', display: 'block' }}>Select Employee</label>
                     <select 
                       value={formData.employeeId}
                       onChange={e => setFormData({ ...formData, employeeId: e.target.value })}
-                      style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
                       required
                     >
                       <option value="">-- Choose Employee --</option>
@@ -282,11 +282,11 @@ const Leave: React.FC = () => {
                   </div>
                 )}
                 <div className="form-group">
-                  <label style={{ fontWeight: '700', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Leave Category</label>
+                  <label style={{ fontWeight: '700', fontSize: 'var(--font-base, 14px)', marginBottom: '0.5rem', display: 'block' }}>Leave Category</label>
                   <select 
                     value={formData.leaveType}
                     onChange={e => setFormData({ ...formData, leaveType: e.target.value })}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
                     required
                   >
                     <option value="CASUAL">Casual Leave</option>
@@ -294,34 +294,34 @@ const Leave: React.FC = () => {
                     <option value="ANNUAL">Annual / Earned Leave</option>
                   </select>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1rem' }}>
                   <div className="form-group">
-                    <label style={{ fontWeight: '700', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>From</label>
+                    <label style={{ fontWeight: '700', fontSize: 'var(--font-base, 14px)', marginBottom: '0.5rem', display: 'block' }}>From</label>
                     <input 
                       type="date"
                       value={formData.startDate}
                       onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                      style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
                       required
                     />
                   </div>
                   <div className="form-group">
-                    <label style={{ fontWeight: '700', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>To</label>
+                    <label style={{ fontWeight: '700', fontSize: 'var(--font-base, 14px)', marginBottom: '0.5rem', display: 'block' }}>To</label>
                     <input 
                       type="date"
                       value={formData.endDate}
                       onChange={e => setFormData({ ...formData, endDate: e.target.value })}
-                      style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none' }}
                       required
                     />
                   </div>
                 </div>
                 <div className="form-group">
-                  <label style={{ fontWeight: '700', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Justification</label>
+                  <label style={{ fontWeight: '700', fontSize: 'var(--font-base, 14px)', marginBottom: '0.5rem', display: 'block' }}>Justification</label>
                   <textarea 
                     value={formData.reason}
                     onChange={e => setFormData({ ...formData, reason: e.target.value })}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none', minHeight: '100px', resize: 'vertical' }}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)', background: 'var(--bg)', fontWeight: '600', outline: 'none', minHeight: '100px', resize: 'vertical' }}
                     placeholder="Brief reason for time-off..."
                   />
                 </div>
@@ -347,20 +347,20 @@ const Leave: React.FC = () => {
                 <h4 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800' }}>Organization Policy</h4>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                 <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '12px' }}>
+                 <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
                     <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Casual Leave</div>
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>12 days / financial year</div>
                  </div>
-                 <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '12px' }}>
+                 <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
                     <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Sick Leave</div>
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>12 days / financial year</div>
                  </div>
-                 <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '12px' }}>
+                 <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
                     <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Annual Leave</div>
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>15 days / financial year</div>
                  </div>
               </div>
-              <p style={{ marginTop: '1.5rem', fontSize: '0.75rem', opacity: 0.7, fontStyle: 'italic' }}>* Weekend holidays and public holidays are not deducted from your balance.</p>
+              <p style={{ marginTop: '1.5rem', fontSize: 'var(--font-sm, 12px)', opacity: 0.7, fontStyle: 'italic' }}>* Weekend holidays and public holidays are not deducted from your balance.</p>
             </div>
           )}
         </div>

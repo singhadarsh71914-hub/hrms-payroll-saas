@@ -73,6 +73,7 @@ import notificationRoutes from './routes/notifications.ts';
 import companyRoutes from './routes/company.ts';
 import healthRoutes from './routes/health.ts';
 import complianceRoutes from './routes/compliance.ts';
+import intelligenceRoutes from './routes/intelligence.ts';
 import { errorHandler } from './middleware/error.ts';
 import pinoHttp from 'pino-http';
 import { logger } from './utils/logger.ts';
@@ -96,16 +97,20 @@ app.use(helmet({
 }));
 
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-        'http://localhost:5174',
-        'http://127.0.0.1:5174',
-        'http://localhost:4173',
-        'http://127.0.0.1:4173',
-        'http://localhost:5182',
-        'http://127.0.0.1:5182'
-    ],
+    origin: process.env.FRONTEND_URL 
+      ? [process.env.FRONTEND_URL]
+      : [
+          'http://localhost:5173',
+          'http://127.0.0.1:5173',
+          'http://localhost:5174',
+          'http://127.0.0.1:5174',
+          'http://localhost:5175',
+          'http://127.0.0.1:5175',
+          'http://localhost:4173',
+          'http://127.0.0.1:4173',
+          'http://localhost:5182',
+          'http://127.0.0.1:5182'
+      ],
     credentials: true,
     methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
     allowedHeaders: [
@@ -163,7 +168,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/compliance', complianceRoutes);
-console.log('Compliance routes mounted');
+app.use('/api/intelligence', intelligenceRoutes);
 
 app.use('/health', healthRoutes);
 
@@ -198,22 +203,17 @@ server.on('error', (error: any) => {
 });
 
 const gracefulShutdown = async (signal: string) => {
-  console.log(`\n[${signal}] Initiating graceful shutdown...`);
   
   io.close(() => {
-    console.log('Socket.io server closed.');
   });
   
   server.close(async () => {
-    console.log('HTTP server closed.');
     try {
       await prisma.$disconnect();
-      console.log('Prisma connections closed.');
     } catch (err) {
       console.error('Error disconnecting Prisma:', err);
     }
     // We do not hold a permanent SMTP connection, so we don't need to close it.
-    console.log('Shutdown complete.');
     process.exit(0);
   });
   
@@ -227,32 +227,19 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 server.listen(PORT, async () => {
-  console.log(`\n=== STARTUP DIAGNOSTICS ===`);
-  console.log(`PID: ${process.pid}`);
-  console.log(`PORT: ${PORT}`);
-  console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
   
   try {
     await prisma.$queryRaw`SELECT 1`;
-    console.log('Database Connection: OK');
   } catch (err) {
     console.error('Database Connection: FAILED', err);
   }
   
-  console.log('Socket.io Initialization: OK');
-  console.log('SMTP Config: Checked (On-Demand)');
-  console.log('Health Routes: Registered (/health, /ready, /metrics)');
-  console.log(`Port Binding: Confirmed on port ${PORT}`);
-  console.log('=== STARTUP COMPLETE ===\n');
   
-  console.log('--- REGISTERED ROUTES ---');
   const endpoints = expressListEndpoints(app);
   endpoints.forEach(route => {
     route.methods.forEach(method => {
-      console.log(`${method} ${route.path}`);
     });
   });
-  console.log('-------------------------');
 });
 
 export default app;

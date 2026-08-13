@@ -27,12 +27,12 @@ test.describe('Phase 15 - Password Recovery Tests', () => {
 
   test('Reset Password screen invalid token protection', async ({ page }) => {
     // Missing token
-    await page.goto('/reset-password');
+    await page.goto('/reset-password', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('h2')).toContainText('Invalid Request');
     await expect(page.locator('text=Request New Link')).toBeVisible();
 
     // Invalid/expired token
-    await page.goto('/reset-password?token=invalid_or_expired_token_123');
+    await page.goto('/reset-password?token=invalid_or_expired_token_123', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('h2')).toContainText('Create New Password');
     
     await page.fill('input#password', 'NewSecurePass123!');

@@ -58,7 +58,7 @@ export default function ExecutiveDashboard() {
     { name: 'Female', value: kpis?.genderDistribution?.female || 0 },
     { name: 'Other', value: kpis?.genderDistribution?.other || 0 },
   ];
-  const COLORS = ['#3b82f6', '#ec4899', '#8b5cf6'];
+  const COLORS = ['var(--primary)', '#ec4899', 'var(--secondary)'];
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto text-white bg-slate-950 min-h-screen font-sans">
@@ -121,17 +121,17 @@ export default function ExecutiveDashboard() {
                 <AreaChart data={payrollTrends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorGross" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                   <XAxis dataKey="period" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `₹${(val/1000000).toFixed(1)}M`} />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: 'var(--radius-md)' }} />
                   <Legend />
-                  <Area type="monotone" dataKey="gross" stroke="#3b82f6" fillOpacity={1} fill="url(#colorGross)" name="Gross Payroll" strokeWidth={3} />
-                  <Area type="monotone" dataKey="contributions" stroke="#10b981" fill="#10b981" fillOpacity={0.1} name="Employer Liab" strokeWidth={3} />
+                  <Area type="monotone" dataKey="gross" stroke="var(--primary)" fillOpacity={1} fill="url(#colorGross)" name="Gross Payroll" strokeWidth={3} />
+                  <Area type="monotone" dataKey="contributions" stroke="var(--success)" fill="var(--success)" fillOpacity={0.1} name="Employer Liab" strokeWidth={3} />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -149,9 +149,9 @@ export default function ExecutiveDashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={true} vertical={false} />
                   <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `₹${(val/100000).toFixed(0)}L`} />
                   <YAxis dataKey="department" type="category" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} width={100} />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: 'var(--radius-md)' }} />
                   <Legend />
-                  <Bar dataKey="cost" fill="#8b5cf6" name="Payroll Cost" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="cost" fill="var(--secondary)" name="Payroll Cost" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -170,7 +170,7 @@ export default function ExecutiveDashboard() {
                     <Cell key={entry.name || `cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }} />
+                <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: 'var(--radius-md)' }} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -188,8 +188,8 @@ export default function ExecutiveDashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                   <XAxis dataKey="department" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }} />
-                  <Bar dataKey="exits" fill="#ef4444" name="Exits" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: 'var(--radius-md)' }} />
+                  <Bar dataKey="exits" fill="var(--danger)" name="Exits" radius={[4, 4, 0, 0]} maxBarSize={60} />
                 </BarChart>
               </ResponsiveContainer>
             )}

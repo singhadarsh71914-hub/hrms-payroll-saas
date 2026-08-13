@@ -44,7 +44,7 @@ export const BonusesTab = ({ employeeId }: { employeeId: string }) => {
 
   const fetchBonuses = async () => {
     try {
-      const res = await api.get(`/api/employees/${employeeId}/bonuses`);
+      const res = await api.get(`/employees/${employeeId}/bonuses`);
       setBonuses(res.data);
     } catch (err) {
       console.error(err);
@@ -59,9 +59,9 @@ export const BonusesTab = ({ employeeId }: { employeeId: string }) => {
     try {
       const payload = { ...data, category: mapTypeToCategory(data.type) };
       if (editingId) {
-        await api.put(`/api/employees/${employeeId}/bonuses/${editingId}`, payload);
+        await api.put(`/employees/${employeeId}/bonuses/${editingId}`, payload);
       } else {
-        await api.post(`/api/employees/${employeeId}/bonuses`, payload);
+        await api.post(`/employees/${employeeId}/bonuses`, payload);
       }
       setIsModalOpen(false);
       reset();
@@ -92,7 +92,7 @@ export const BonusesTab = ({ employeeId }: { employeeId: string }) => {
   const handleArchive = async (id: string) => {
     if (window.confirm('Are you sure you want to archive this bonus?')) {
       try {
-        await api.delete(`/api/employees/${employeeId}/bonuses/${id}`);
+        await api.delete(`/employees/${employeeId}/bonuses/${id}`);
         fetchBonuses();
       } catch (err) {
         console.error(err);
@@ -132,7 +132,7 @@ export const BonusesTab = ({ employeeId }: { employeeId: string }) => {
                   <div style={{ color: '#f1f5f9', fontWeight: '600' }}>{b.name}</div>
                   <div style={{ color: '#64748b', fontSize: '0.85rem' }}>{b.type.replace('_', ' ')}</div>
                 </td>
-                <td style={{ padding: '1rem 1.5rem', color: '#10b981', fontWeight: '700' }}>₹{Number(b.amount).toLocaleString()}</td>
+                <td style={{ padding: '1rem 1.5rem', color: 'var(--success)', fontWeight: '700' }}>₹{Number(b.amount).toLocaleString()}</td>
                 <td style={{ padding: '1rem 1.5rem', color: '#cbd5e1', fontSize: '0.9rem' }}>
                   {b.recurring ? (
                     <span>Recurring<br/><span style={{ color: '#64748b', fontSize: '0.8rem' }}>From {new Date(b.start_date).toLocaleDateString()}</span></span>
@@ -148,7 +148,7 @@ export const BonusesTab = ({ employeeId }: { employeeId: string }) => {
                 <td style={{ padding: '1rem 1.5rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button className="btn btn-secondary btn-sm" disabled={b.category === 'FIXED_BONUS' && b.status === 'APPROVED'} onClick={() => handleEdit(b)}><Edit2 size={14} /></button>
-                    <button className="btn btn-secondary btn-sm" style={{ color: '#ef4444' }} onClick={() => handleArchive(b.id)}><Trash2 size={14} /></button>
+                    <button className="btn btn-secondary btn-sm" style={{ color: 'var(--danger)' }} onClick={() => handleArchive(b.id)}><Trash2 size={14} /></button>
                   </div>
                 </td>
               </tr>
@@ -162,7 +162,7 @@ export const BonusesTab = ({ employeeId }: { employeeId: string }) => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h3 style={{ color: '#f8fafc', fontSize: '1.1rem', fontWeight: '600' }}>Bonuses & Incentives</h3>
+        <h3 style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: '600' }}>Bonuses & Incentives</h3>
         <button className="btn btn-primary btn-sm" onClick={openNew} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <Plus size={16} /> Add Bonus
         </button>

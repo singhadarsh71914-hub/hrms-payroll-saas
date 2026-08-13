@@ -12,7 +12,7 @@ test('validate registered routes', async ({ page }) => {
   });
 
   // Login first
-  await page.goto('http://localhost:5182/login');
+  await page.goto('http://localhost:5173/login');
   await page.fill('input[type="email"]', 'admin@e2e.com');
   await page.fill('input[type="password"]', 'password123');
   await page.click('button[type="submit"]');
@@ -27,7 +27,7 @@ test('validate registered routes', async ({ page }) => {
   const results = {};
 
   for (const route of routes) {
-    await page.goto(`http://localhost:5182${route}`);
+    await page.goto(`http://localhost:5173${route}`);
     await page.waitForTimeout(2000); // allow time to render
     
     const h1s = await page.evaluate(() => {

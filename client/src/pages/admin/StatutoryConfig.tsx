@@ -136,6 +136,10 @@ export default function StatutoryConfig() {
               <option value="2025">2025-26</option>
               <option value="2026">2026-27</option>
             </select>
+            <button onClick={handleCreateRule} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold shadow-lg shadow-blue-500/20 transition-all ml-4">
+              <PlusCircle size={20} />
+              Create Rule
+            </button>
           </div>
         </div>
 

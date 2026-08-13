@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('headcount deep audit', async ({ page }) => {
   // Login first
-  await page.goto('http://localhost:5182/login');
+  await page.goto('http://localhost:5173/login');
   await page.fill('input[type="email"]', 'admin@e2e.com');
   await page.fill('input[type="password"]', 'password123');
   await page.click('button[type="submit"]');
@@ -13,7 +13,7 @@ test('headcount deep audit', async ({ page }) => {
     response.url().includes('/api/analytics/headcount') && response.status() === 200
   );
 
-  await page.goto('http://localhost:5182/analytics');
+  await page.goto('http://localhost:5173/analytics');
   
   await responsePromise;
   

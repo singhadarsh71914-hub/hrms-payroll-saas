@@ -17,7 +17,9 @@ import {
   uploadEmployeeDocument,
   markEmployeeAttendance,
   applyEmployeeLeave,
-  applyEmployeeLoan
+  applyEmployeeLoan,
+  uploadAvatar,
+  deleteAvatar
 } from '../services/employee.service';
 import { BonusesTab } from './BonusesTab';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -56,6 +58,9 @@ const EmployeeDetails: React.FC = () => {
   });
   const [tabLoading, setTabLoading] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
   const fetchEmployee = useCallback(async () => {
     if (!id) return;
     try {
@@ -69,6 +74,42 @@ const EmployeeDetails: React.FC = () => {
       setLoading(false);
     }
   }, [id]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size exceeds 2MB limit');
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+      await uploadAvatar(id, file);
+      fetchEmployee();
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload avatar');
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAvatarDelete = async () => {
+    if (!id) return;
+    if (!confirm('Are you sure you want to delete the profile photo?')) return;
+    
+    try {
+      setUploadingAvatar(true);
+      await deleteAvatar(id);
+      fetchEmployee();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete avatar');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   useEffect(() => {
     fetchEmployee();
@@ -170,23 +211,43 @@ const EmployeeDetails: React.FC = () => {
           <div style={{ height: '120px', background: 'linear-gradient(135deg, var(--primary) 0%, #4338ca 100%)' }}></div>
           <div style={{ padding: '0 2rem 1.5rem', position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1.5rem', marginTop: '-40px', flexWrap: 'wrap' }}>
-              <div style={{ 
-                width: '100px', 
-                height: '100px', 
-                borderRadius: '20px', 
-                backgroundColor: '#1e293b', 
-                border: '4px solid #0f172a', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                color: 'var(--primary)',
-                boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
-                flexShrink: 0
-              }}>
-                <User size={50} />
+              <div 
+                style={{ 
+                  width: '100px', 
+                  height: '100px', 
+                  borderRadius: 'var(--radius-lg)', 
+                  backgroundColor: '#1e293b', 
+                  border: '4px solid #0f172a', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: 'var(--primary)',
+                  boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))',
+                  flexShrink: 0,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  cursor: 'pointer'
+                }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {employee.avatar_url ? (
+                  <img src={employee.avatar_url.startsWith('http') ? employee.avatar_url : `${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.split('/api')[0] : 'http://localhost:3000'}${employee.avatar_url}`} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <User size={50} />
+                )}
+                
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.5)', padding: '4px', textAlign: 'center', opacity: uploadingAvatar ? 1 : 0, transition: 'opacity 0.2s', ...(!uploadingAvatar && { ':hover': { opacity: 1 } }) }}>
+                  <span style={{ fontSize: '10px', color: '#fff' }}>{uploadingAvatar ? 'UPLOADING...' : 'CHANGE'}</span>
+                </div>
+                
+                <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/*" style={{ display: 'none' }} />
               </div>
+              
+              {employee.avatar_url && (
+                <button type="button" onClick={(e) => { e.stopPropagation(); handleAvatarDelete(); }} style={{ position: 'absolute', top: '-10px', right: '-10px', background: 'var(--danger)', color: 'white', border: 'none', borderRadius: 'var(--radius-full, 50%)', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>×</button>
+              )}
               <div style={{ paddingBottom: '0.25rem', flex: 1, minWidth: '250px' }}>
-                <h1 style={{ fontSize: '1.75rem', fontWeight: '700', color: '#f8fafc', marginBottom: '0.25rem' }}>
+                <h1 style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
                   {employee.first_name} {employee.last_name}
                 </h1>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: '#94a3b8', fontSize: '0.9rem', flexWrap: 'wrap' }}>
@@ -258,10 +319,10 @@ const SectionTitle = ({ icon, title }: { icon: React.ReactNode, title: string })
 
 // TAB: PROFILE
 const ProfileTab = ({ employee }: { employee: any }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
+  <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(350px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
     <div className="premium-card" style={{ padding: '1.5rem' }}>
       <SectionTitle icon={<Briefcase size={20} />} title="Professional Details" />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1.5rem' }}>
         <InfoRow label="Department" value={employee.department?.name || 'N/A'} />
         <InfoRow label="Designation" value={employee.designation?.name || 'N/A'} />
         <InfoRow label="Join Date" value={new Date(employee.date_of_joining).toLocaleDateString()} />
@@ -273,7 +334,7 @@ const ProfileTab = ({ employee }: { employee: any }) => (
 
     <div className="premium-card" style={{ padding: '1.5rem' }}>
       <SectionTitle icon={<User size={20} />} title="Personal & Contact" />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1.5rem' }}>
         <InfoRow label="Personal Email" value={employee.personal_email || 'N/A'} />
         <InfoRow label="Phone Number" value={employee.phone || 'N/A'} />
         <InfoRow label="Date of Birth" value={employee.date_of_birth ? new Date(employee.date_of_birth).toLocaleDateString() : 'N/A'} />
@@ -287,7 +348,7 @@ const ProfileTab = ({ employee }: { employee: any }) => (
       <SectionTitle icon={<MapPin size={20} />} title="Address Information" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <InfoRow label="Permanent Address" value={`${employee.address_line1 || ''} ${employee.address_line2 || ''}`} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(3, 1fr)'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '1rem' }}>
            <InfoRow label="City" value={employee.city || 'N/A'} />
            <InfoRow label="State" value={employee.state || 'N/A'} />
            <InfoRow label="Pincode" value={employee.pincode || 'N/A'} />
@@ -297,7 +358,7 @@ const ProfileTab = ({ employee }: { employee: any }) => (
 
     <div className="premium-card" style={{ padding: '1.5rem' }}>
       <SectionTitle icon={<Phone size={20} />} title="Emergency Contact" />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1.5rem' }}>
         <InfoRow label="Contact Name" value={employee.emergency_contact_name || 'N/A'} />
         <InfoRow label="Relationship" value={employee.emergency_contact_relationship || 'N/A'} />
         <InfoRow label="Contact Phone" value={employee.emergency_contact_phone || 'N/A'} />
@@ -343,11 +404,11 @@ const AttendanceTab = ({ data, employeeId, onRefresh }: any) => {
         <EmptyState label="No attendance records found" actionLabel="Add Record" onAction={() => setIsModalOpen(true)} />
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-            <StatCard label="Present Days" value={stats.PRESENT} color="#10b981" />
-            <StatCard label="Absent Days" value={stats.ABSENT} color="#ef4444" />
-            <StatCard label="Half Days" value={stats.HALF_DAY} color="#f59e0b" />
-            <StatCard label="Attendance %" value={`${attendanceRate}%`} color="#3b82f6" />
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(200px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <StatCard label="Present Days" value={stats.PRESENT} color="var(--success)" />
+            <StatCard label="Absent Days" value={stats.ABSENT} color="var(--danger)" />
+            <StatCard label="Half Days" value={stats.HALF_DAY} color="var(--warning)" />
+            <StatCard label="Attendance %" value={`${attendanceRate}%`} color="var(--primary)" />
           </div>
 
           <div className="premium-card" style={{ padding: 0, overflowX: 'auto' }}>
@@ -385,7 +446,7 @@ const AttendanceTab = ({ data, employeeId, onRefresh }: any) => {
             <label>Date *</label>
             <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <label>Check In Time</label>
               <input type="time" value={formData.checkIn} onChange={e => setFormData({...formData, checkIn: e.target.value})} />
@@ -486,7 +547,7 @@ const LeavesTab = ({ data, employeeId, onRefresh }: any) => {
               <option value="UNPAID">Unpaid Leave</option>
             </select>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <label>Start Date *</label>
               <input type="date" required value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} />
@@ -518,7 +579,7 @@ const PayrollTab = ({ data, employeeId }: { data: any, employeeId: string }) => 
       <BonusesTab employeeId={employeeId} />
 
       <div>
-        <h3 style={{ color: '#f8fafc', fontSize: '1.1rem', fontWeight: '600', marginBottom: '1.5rem' }}>Payslips</h3>
+        <h3 style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: '600', marginBottom: '1.5rem' }}>Payslips</h3>
         {!hasData ? (
           <EmptyState label="No payroll records found" />
         ) : (
@@ -539,9 +600,9 @@ const PayrollTab = ({ data, employeeId }: { data: any, employeeId: string }) => 
                 <tr key={p.id} style={{ borderBottom: '1px solid #1e293b' }}>
                   <td style={{ padding: '1rem 1.5rem', color: '#f1f5f9', fontWeight: '600' }}>{months[p.month-1]} {p.year}</td>
                   <td style={{ padding: '1rem 1.5rem', color: '#cbd5e1' }}>₹{Number(p.gross_salary).toLocaleString()}</td>
-                  <td style={{ padding: '1rem 1.5rem', color: '#ef4444' }}>₹{Number(p.total_deductions).toLocaleString()}</td>
-                  <td style={{ padding: '1rem 1.5rem', color: '#10b981', fontWeight: '700' }}>₹{Number(p.net_salary).toLocaleString()}</td>
-                  <td style={{ padding: '1rem 1.5rem', color: '#8b5cf6', fontWeight: '700' }}>₹{Number(p.total_company_cost || 0).toLocaleString()}</td>
+                  <td style={{ padding: '1rem 1.5rem', color: 'var(--danger)' }}>₹{Number(p.total_deductions).toLocaleString()}</td>
+                  <td style={{ padding: '1rem 1.5rem', color: 'var(--success)', fontWeight: '700' }}>₹{Number(p.net_salary).toLocaleString()}</td>
+                  <td style={{ padding: '1rem 1.5rem', color: 'var(--secondary)', fontWeight: '700' }}>₹{Number(p.total_company_cost || 0).toLocaleString()}</td>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <button className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                       <Eye size={14} /> View
@@ -652,21 +713,21 @@ const DocumentsTab = ({ data, employeeId, onRefresh }: any) => {
       {!hasData ? (
         <EmptyState label="No documents uploaded yet" actionLabel="Upload First Document" onAction={() => setIsModalOpen(true)} />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fill, minmax(280px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {data.map((doc: any) => (
             <div key={doc.id} className="premium-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ padding: '1rem', background: 'rgba(59,130,246,0.1)', borderRadius: '12px', color: 'var(--primary)' }}>
+              <div style={{ padding: '1rem', background: 'rgba(59,130,246,0.1)', borderRadius: 'var(--radius-md)', color: 'var(--primary)' }}>
                 <FileText size={24} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: '600', color: '#f1f5f9', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.document_name}</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem' }}>{doc.document_type} • {new Date(doc.uploaded_at).toLocaleDateString()}</div>
+                <div style={{ fontSize: 'var(--font-sm, 12px)', color: '#64748b', marginTop: '0.2rem' }}>{doc.document_type} • {new Date(doc.uploaded_at).toLocaleDateString()}</div>
               </div>
               <div style={{ display: 'flex', gap: '0.4rem' }}>
                 <button onClick={() => handleDownload(doc)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }} title="Download">
                   <Download size={16} />
                 </button>
-                <button onClick={() => setConfirmDeleteDocId(doc.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }} title="Delete">
+                <button onClick={() => setConfirmDeleteDocId(doc.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '4px' }} title="Delete">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -755,9 +816,9 @@ const LoansTab = ({ data, employeeId, onRefresh }: any) => {
         <EmptyState label="No loan records found" actionLabel="Create First Loan" onAction={() => setIsModalOpen(true)} />
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-            <StatCard label="Total Outstanding" value={`₹${totalOutstanding.toLocaleString()}`} color="#ef4444" />
-            <StatCard label="Active Loans" value={data.filter((l: any) => l.status === 'ACTIVE').length} color="#3b82f6" />
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(200px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <StatCard label="Total Outstanding" value={`₹${totalOutstanding.toLocaleString()}`} color="var(--danger)" />
+            <StatCard label="Active Loans" value={data.filter((l: any) => l.status === 'ACTIVE').length} color="var(--primary)" />
             <StatCard label="Total Loans" value={data.length} color="#94a3b8" />
           </div>
 
@@ -802,7 +863,7 @@ const LoansTab = ({ data, employeeId, onRefresh }: any) => {
               <option value="HOME">Home</option>
             </select>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <label>Principal Amount (₹) *</label>
               <input type="number" required min="1" value={formData.principalAmount} onChange={e => setFormData({...formData, principalAmount: e.target.value})} />
@@ -812,7 +873,7 @@ const LoansTab = ({ data, employeeId, onRefresh }: any) => {
               <input type="number" required min="1" value={formData.tenureMonths} onChange={e => setFormData({...formData, tenureMonths: e.target.value})} />
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <label>Interest Rate (%) *</label>
               <input type="number" required min="0" step="0.1" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} />
@@ -833,7 +894,7 @@ const LoansTab = ({ data, employeeId, onRefresh }: any) => {
 
 const InfoRow = ({ label, value }: { label: string, value: string }) => (
   <div>
-    <div style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>{label}</div>
+    <div style={{ fontSize: 'var(--font-sm, 12px)', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>{label}</div>
     <div style={{ fontSize: '0.95rem', fontWeight: '500', color: '#e2e8f0', wordBreak: 'break-word' }}>{value}</div>
   </div>
 );
@@ -841,14 +902,14 @@ const InfoRow = ({ label, value }: { label: string, value: string }) => (
 const StatCard = ({ label, value, color }: { label: string, value: string | number, color: string }) => (
   <div className="premium-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', borderLeft: `4px solid ${color}` }}>
     <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '600' }}>{label}</div>
-    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#f8fafc' }}>{value}</div>
+    <div style={{ fontSize: 'var(--font-lg, 24px)', fontWeight: '700', color: 'var(--text-primary)' }}>{value}</div>
   </div>
 );
 
 const EmptyState = ({ label, actionLabel, onAction }: { label: string, actionLabel?: string, onAction?: () => void }) => (
   <div className="empty-state premium-card" style={{ padding: '4rem 2rem' }}>
     <Info size={40} className="empty-state-icon" />
-    <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No Data Available</h3>
+    <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No Data Available</h3>
     <p style={{ color: 'var(--text-secondary)', marginBottom: actionLabel ? '1.5rem' : 0 }}>{label}</p>
     {actionLabel && onAction && (
       <button className="btn btn-primary mx-auto" onClick={onAction}>

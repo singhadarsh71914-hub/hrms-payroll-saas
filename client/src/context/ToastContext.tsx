@@ -32,8 +32,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((t) => (
           <div key={t.id} style={{
             background: t.type === 'success' ? '#16a34a' : '#dc2626',
-            color: 'white', padding: '1rem 1.5rem', borderRadius: '8px',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.2)', fontWeight: 600,
+            color: 'white', padding: '1rem 1.5rem', borderRadius: 'var(--radius-md)',
+            boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))', fontWeight: 600,
             animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
             display: 'flex', alignItems: 'center', gap: '0.75rem'
           }}>

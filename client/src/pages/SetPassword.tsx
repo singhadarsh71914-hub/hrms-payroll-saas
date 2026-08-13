@@ -43,15 +43,15 @@ const SetPassword = () => {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f3f4f6' }}>
-      <div style={{ maxWidth: '400px', width: '100%', padding: '2rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'center' }}>Set Your Password</h2>
+      <div style={{ maxWidth: '400px', width: '100%', padding: '2rem', backgroundColor: 'white', borderRadius: 'var(--radius-md)', boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))' }}>
+        <h2 style={{ fontSize: 'var(--font-lg, 24px)', fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'center' }}>Set Your Password</h2>
         
         {error && <div style={{ backgroundColor: '#fee2e2', color: '#dc2626', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem' }}>{error}</div>}
         {success && <div style={{ backgroundColor: '#dcfce7', color: '#16a34a', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem' }}>{success}</div>}
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.25rem' }}>New Password</label>
+            <label style={{ display: 'block', fontSize: 'var(--font-base, 14px)', fontWeight: '500', marginBottom: '0.25rem' }}>New Password</label>
             <input
               type="password"
               value={password}
@@ -61,7 +61,7 @@ const SetPassword = () => {
             />
           </div>
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.25rem' }}>Confirm Password</label>
+            <label style={{ display: 'block', fontSize: 'var(--font-base, 14px)', fontWeight: '500', marginBottom: '0.25rem' }}>Confirm Password</label>
             <input
               type="password"
               value={confirmPassword}

@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
 test('measure headcount growth graph', async ({ page }) => {
-  await page.goto('http://localhost:5182/login');
+  await page.goto('http://localhost:5173/login');
   await page.fill('input[type="email"]', 'admin@e2e.com');
   await page.fill('input[type="password"]', 'password123');
   await page.click('button[type="submit"]');
   await page.waitForTimeout(2000);
 
-  await page.goto('http://localhost:5182/analytics');
+  await page.goto('http://localhost:5173/analytics');
   await page.waitForTimeout(2000);
 
   const measurements = await page.evaluate(() => {

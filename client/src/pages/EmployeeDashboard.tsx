@@ -318,7 +318,7 @@ const EmployeeDashboard = () => {
   if (loading) return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
       <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: '800' }}>My Dashboard</h1>
+        <h1 style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: '800' }}>My Dashboard</h1>
         <p style={{ color: 'var(--text-muted)' }}>Loading your secure workspace...</p>
       </header>
       <Suspense fallback={<div>Loading...</div>}>
@@ -326,7 +326,7 @@ const EmployeeDashboard = () => {
       </Suspense>
     </div>
   );
-  if (error) return <div style={{ padding: '2rem', color: '#ef4444' }}>{error}</div>;
+  if (error) return <div style={{ padding: '2rem', color: 'var(--danger)' }}>{error}</div>;
   if (!data) return <div style={{ padding: '2rem' }}>Error loading data.</div>;
 
   const { latestPayslip, attendanceSummary } = data;
@@ -334,22 +334,22 @@ const EmployeeDashboard = () => {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '3rem' }}>
       <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: '800' }}>My Dashboard</h1>
+        <h1 style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: '800' }}>My Dashboard</h1>
         <p style={{ color: 'var(--text-muted)' }}>Welcome back! Here's your summary.</p>
       </header>
 
       {/* ANNOUNCEMENTS WIDGET */}
       {announcements.length > 0 && (
-        <div className="premium-card" style={{ marginBottom: '2rem', borderLeft: '4px solid #f59e0b' }}>
-          <div className="card-title"><Bell size={20} color="#f59e0b" /> Company Announcements</div>
+        <div className="premium-card" style={{ marginBottom: '2rem', borderLeft: '4px solid var(--warning)' }}>
+          <div className="card-title"><Bell size={20} color="var(--warning)" /> Company Announcements</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
             {announcements.slice(0, 3).map((a: any, i: number) => (
-              <div key={a.id || `action-${i}`} style={{ padding: '1rem', background: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc', borderRadius: '8px', borderLeft: `3px solid ${a.priority === 'URGENT' ? '#ef4444' : a.priority === 'IMPORTANT' ? '#f59e0b' : '#3b82f6'}` }}>
+              <div key={a.id || `action-${i}`} style={{ padding: '1rem', background: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc', borderRadius: 'var(--radius-md)', borderLeft: `3px solid ${a.priority === 'URGENT' ? 'var(--danger)' : a.priority === 'IMPORTANT' ? 'var(--warning)' : 'var(--primary)'}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <h4 style={{ margin: 0, fontWeight: 700 }}>{a.title}</h4>
                   <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)' }}>{new Date(a.created_at).toLocaleDateString()}</span>
                 </div>
-                <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)' }}>{a.content}</p>
+                <p style={{ margin: 0, fontSize: 'var(--font-base, 14px)', color: 'var(--text-muted)' }}>{a.content}</p>
               </div>
             ))}
           </div>
@@ -360,15 +360,15 @@ const EmployeeDashboard = () => {
         {/* Latest Payslip */}
         <div className="premium-card">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase' }}>Latest Net Salary</span>
-            <div style={{ backgroundColor: isDark ? '#1e3a8a' : '#eef2ff', padding: '0.5rem', borderRadius: '8px', color: '#3b82f6' }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-base, 14px)', fontWeight: '600', textTransform: 'uppercase' }}>Latest Net Salary</span>
+            <div style={{ backgroundColor: isDark ? '#1e3a8a' : '#eef2ff', padding: '0.5rem', borderRadius: 'var(--radius-md)', color: 'var(--primary)' }}>
               <CreditCard size={20} />
             </div>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: '800' }}>
+          <div style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: '800' }}>
             {latestPayslip ? `₹${Number(latestPayslip.net_salary).toLocaleString()}` : 'N/A'}
           </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+          <p style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
             {latestPayslip ? `${new Date(0, latestPayslip.month - 1).toLocaleString('default', { month: 'long' })} ${latestPayslip.year}` : 'No payslips generated yet'}
           </p>
         </div>
@@ -376,13 +376,13 @@ const EmployeeDashboard = () => {
         {/* Attendance Summary */}
         <div className="premium-card">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase' }}>Attendance (This Month)</span>
-            <div style={{ backgroundColor: isDark ? '#064e3b' : '#f0fdf4', padding: '0.5rem', borderRadius: '8px', color: '#10b981' }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-base, 14px)', fontWeight: '600', textTransform: 'uppercase' }}>Attendance (This Month)</span>
+            <div style={{ backgroundColor: isDark ? '#064e3b' : '#f0fdf4', padding: '0.5rem', borderRadius: 'var(--radius-md)', color: 'var(--success)' }}>
               <Clock size={20} />
             </div>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: '800' }}>{attendanceSummary.PRESENT} Days</div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+          <div style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: '800' }}>{attendanceSummary.PRESENT} Days</div>
+          <p style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
             Present: {attendanceSummary.PRESENT} | Absent: {attendanceSummary.ABSENT} | Leave: {attendanceSummary.ON_LEAVE}
           </p>
         </div>
@@ -405,7 +405,7 @@ const EmployeeDashboard = () => {
           <AuthenticityScore todayAttendance={todayAttendance} />
 
           {/* SECTION 3 & 4: BIOMETRIC & LOCATION INTELLIGENCE */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 0 }}>
             <FaceIdCard 
               employee={data?.employee} 
               setEnrollmentMode={setEnrollmentMode} 
@@ -430,21 +430,21 @@ const EmployeeDashboard = () => {
           backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', 
           alignItems: 'center', justifyContent: 'center', zIndex: 9999
         }}>
-          <div className="premium-card" style={{ padding: '24px', background: isDark ? '#1f2937' : '#ffffff', width: '400px', textAlign: 'center' }}>
-            <h2 style={{ margin: '0 0 16px', fontSize: '18px' }}>
+          <div className="premium-card" style={{ padding: 'var(--spacing-xl, 24px)', background: isDark ? '#1f2937' : '#ffffff', width: '400px', textAlign: 'center' }}>
+            <h2 style={{ margin: '0 0 16px', fontSize: 'var(--font-md, 18px)' }}>
               {enrollmentMode ? 'Face ID Enrollment' : 'Face Verification required'}
             </h2>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+            <p style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-muted)', marginBottom: '16px' }}>
               {enrollmentMode 
                 ? 'Position your face clearly in the frame to register your biometric identity.' 
                 : challenge ? `Liveness Challenge: Please ${challenge.replace('_', ' ')}` : 'Please look directly at the camera to verify your identity.'}
             </p>
             {challenge && !enrollmentMode && (
-              <div style={{ padding: '0.5rem', background: '#eef2ff', color: '#3b82f6', borderRadius: '8px', marginBottom: '1rem', fontWeight: 'bold' }}>
+              <div style={{ padding: '0.5rem', background: '#eef2ff', color: 'var(--primary)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontWeight: 'bold' }}>
                 ACTION REQUIRED: {challenge.replace('_', ' ')}
               </div>
             )}
-            <div style={{ borderRadius: '8px', overflow: 'hidden', marginBottom: '16px', background: '#000', position: 'relative' }}>
+            <div style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '16px', background: '#000', position: 'relative' }}>
               <Webcam
                 audio={false}
                 ref={webcamRef}
@@ -454,8 +454,8 @@ const EmployeeDashboard = () => {
               />
               {verifying && (
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexDirection: 'column' }}>
-                  <div className="spinner" style={{ width: '30px', height: '30px', border: '3px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                  <p style={{ marginTop: '8px', fontSize: '12px' }}>
+                  <div className="spinner" style={{ width: '30px', height: '30px', border: '3px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: 'var(--radius-full, 50%)', animation: 'spin 1s linear infinite' }}></div>
+                  <p style={{ marginTop: '8px', fontSize: 'var(--font-sm, 12px)' }}>
                     {enrollmentMode ? 'Processing Biometrics...' : 'Analyzing Liveness & Face Match...'}
                   </p>
                 </div>

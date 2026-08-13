@@ -56,7 +56,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
           reset_password_token: hashedToken,
           reset_password_expires_at: expiresAt,
           password_reset_requested_at: new Date(),
-          password_reset_attempts: { increment: 1 }
         }
       });
 

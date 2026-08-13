@@ -77,32 +77,32 @@ const LoanManagement = () => {
       </div>
 
       {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(240px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="premium-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ backgroundColor: 'rgba(37, 99, 235, 0.1)', padding: '0.75rem', borderRadius: '12px', color: 'var(--primary)' }}>
+          <div style={{ backgroundColor: 'rgba(37, 99, 235, 0.1)', padding: '0.75rem', borderRadius: 'var(--radius-md)', color: 'var(--primary)' }}>
             <IndianRupee size={24} />
           </div>
           <div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontWeight: '600' }}>Outstanding</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '800' }}>₹{Number(stats?.totalOutstanding || 0).toLocaleString()}</div>
+            <div style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-muted)', fontWeight: '600' }}>Outstanding</div>
+            <div style={{ fontSize: 'var(--font-lg, 24px)', fontWeight: '800' }}>₹{Number(stats?.totalOutstanding || 0).toLocaleString()}</div>
           </div>
         </div>
         <div className="premium-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '0.75rem', borderRadius: '12px', color: 'var(--success)' }}>
+          <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '0.75rem', borderRadius: 'var(--radius-md)', color: 'var(--success)' }}>
             <CheckCircle size={24} />
           </div>
           <div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontWeight: '600' }}>Active Loans</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '800' }}>{stats?.activeLoansCount || 0}</div>
+            <div style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-muted)', fontWeight: '600' }}>Active Loans</div>
+            <div style={{ fontSize: 'var(--font-lg, 24px)', fontWeight: '800' }}>{stats?.activeLoansCount || 0}</div>
           </div>
         </div>
         <div className="premium-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: '0.75rem', borderRadius: '12px', color: 'var(--warning)' }}>
+          <div style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: '0.75rem', borderRadius: 'var(--radius-md)', color: 'var(--warning)' }}>
             <Clock size={24} />
           </div>
           <div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontWeight: '600' }}>Pending</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '800' }}>{stats?.pendingApprovalCount || 0}</div>
+            <div style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-muted)', fontWeight: '600' }}>Pending</div>
+            <div style={{ fontSize: 'var(--font-lg, 24px)', fontWeight: '800' }}>{stats?.pendingApprovalCount || 0}</div>
           </div>
         </div>
       </div>
@@ -110,10 +110,10 @@ const LoanManagement = () => {
       {/* Filter & Table */}
       <div className="premium-card" style={{ padding: '0' }}>
         <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: '800' }}>Loan Applications</h2>
+          <h2 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: '800' }}>Loan Applications</h2>
           <select 
             className="form-input" 
-            style={{ width: 'auto', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}
+            style={{ width: 'auto', padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -144,7 +144,7 @@ const LoanManagement = () => {
                 <tr key={loan.id}>
                   <td>
                     <div style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{loan.employee.first_name} {loan.employee.last_name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{loan.employee.employee_code}</div>
+                    <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)' }}>{loan.employee.employee_code}</div>
                   </td>
                   <td style={{ fontWeight: '600' }}>{loan.loan_type}</td>
                   <td style={{ fontWeight: '700', color: 'var(--primary)' }}>₹{Number(loan.principal_amount).toLocaleString()}</td>
@@ -192,33 +192,33 @@ const LoanManagement = () => {
             <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-page)' }}>
               <div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Loan Details & Repayment Schedule</h2>
-                <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 'var(--font-base, 14px)', color: 'var(--text-muted)' }}>
                   Employee: {selectedLoan.employee.first_name} {selectedLoan.employee.last_name} ({selectedLoan.employee.employee_code})
                 </div>
               </div>
-              <button onClick={() => setShowModal(false)} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', cursor: 'pointer', color: 'var(--text-primary)', padding: '0.5rem', borderRadius: '8px' }}>
+              <button onClick={() => setShowModal(false)} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', cursor: 'pointer', color: 'var(--text-primary)', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>
                 <X size={20} />
               </button>
             </div>
 
             <div style={{ padding: '1.5rem', overflowY: 'auto' }}>
               {/* Loan Summary */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem', backgroundColor: 'var(--bg-page)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && 'repeat(auto-fit, minmax(150px, 1fr))'.includes('repeat(4') ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem', backgroundColor: 'var(--bg-page)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Loan Amount</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>₹{Number(selectedLoan.principal_amount).toLocaleString()}</div>
+                  <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Loan Amount</div>
+                  <div style={{ fontWeight: 'bold', fontSize: 'var(--font-md, 18px)' }}>₹{Number(selectedLoan.principal_amount).toLocaleString()}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Tenure</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>{selectedLoan.tenure_months} Months</div>
+                  <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Tenure</div>
+                  <div style={{ fontWeight: 'bold', fontSize: 'var(--font-md, 18px)' }}>{selectedLoan.tenure_months} Months</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Interest Rate</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>{Number(selectedLoan.interest_rate)}% p.a.</div>
+                  <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Interest Rate</div>
+                  <div style={{ fontWeight: 'bold', fontSize: 'var(--font-md, 18px)' }}>{Number(selectedLoan.interest_rate)}% p.a.</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Monthly EMI</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--primary)' }}>₹{Number(selectedLoan.emi_amount).toLocaleString()}</div>
+                  <div style={{ fontSize: 'var(--font-sm, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Monthly EMI</div>
+                  <div style={{ fontWeight: 'bold', fontSize: 'var(--font-md, 18px)', color: 'var(--primary)' }}>₹{Number(selectedLoan.emi_amount).toLocaleString()}</div>
                 </div>
               </div>
 

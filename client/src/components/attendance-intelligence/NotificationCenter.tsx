@@ -20,7 +20,6 @@ const NotificationCenter = React.memo(function NotificationCenter({ recentEvents
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    console.log('NotificationCenter mounted');
     return () => console.log('NotificationCenter unmounted');
   }, []);
 
@@ -67,11 +66,11 @@ const NotificationCenter = React.memo(function NotificationCenter({ recentEvents
 
   const getIcon = (cat: string) => {
     switch (cat) {
-      case 'Attendance': return <Activity size={16} color="#3b82f6" />;
-      case 'GPS': return <MapPin size={16} color="#f59e0b" />;
-      case 'Face Verification': return <Fingerprint size={16} color="#8b5cf6" />;
-      case 'Risk Alerts': return <ShieldAlert size={16} color="#ef4444" />;
-      default: return <Terminal size={16} color="#10b981" />;
+      case 'Attendance': return <Activity size={16} color="var(--primary)" />;
+      case 'GPS': return <MapPin size={16} color="var(--warning)" />;
+      case 'Face Verification': return <Fingerprint size={16} color="var(--secondary)" />;
+      case 'Risk Alerts': return <ShieldAlert size={16} color="var(--danger)" />;
+      default: return <Terminal size={16} color="var(--success)" />;
     }
   };
 
@@ -81,29 +80,29 @@ const NotificationCenter = React.memo(function NotificationCenter({ recentEvents
       background: isDark ? 'linear-gradient(145deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%)' : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)', 
       backdropFilter: 'blur(10px)', 
       border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', 
-      boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)'
+      boxShadow: 'var(--card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06))'
     }}>
       <div style={{ padding: '20px 24px', borderBottom: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0, fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Bell size={18} color="#3b82f6" /> Notification Center
+        <h3 style={{ margin: 0, fontSize: '16px', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}>
+          <Bell size={18} color="var(--primary)" /> Notification Center
           {unreadCount > 0 && (
-            <span style={{ background: '#ef4444', color: '#fff', fontSize: '11px', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>
+            <span style={{ background: 'var(--danger)', color: '#fff', fontSize: '11px', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>
               {unreadCount} New
             </span>
           )}
         </h3>
         {notifications.length > 0 && (
-          <button onClick={markAllRead} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button onClick={markAllRead} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 'var(--font-sm, 12px)', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Check size={14} /> Mark all read
           </button>
         )}
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--spacing-lg, 16px)' }}>
         {notifications.length === 0 ? (
           <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
             <Bell size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
-            <p style={{ margin: 0, fontSize: '14px' }}>All caught up!</p>
+            <p style={{ margin: 0, fontSize: 'var(--font-base, 14px)' }}>All caught up!</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -117,7 +116,7 @@ const NotificationCenter = React.memo(function NotificationCenter({ recentEvents
                   onClick={() => markRead(notif.id)}
                   style={{ 
                     padding: '12px 16px', 
-                    borderRadius: '8px', 
+                    borderRadius: 'var(--radius-md)', 
                     background: notif.read ? 'transparent' : (isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)'),
                     border: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
                     cursor: 'pointer',
@@ -127,7 +126,7 @@ const NotificationCenter = React.memo(function NotificationCenter({ recentEvents
                   <div style={{ marginTop: '2px' }}>{getIcon(notif.category)}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>{notif.category}</span>
+                      <span style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: 600, color: 'var(--text-muted)' }}>{notif.category}</span>
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                         {(() => {
                           const d = new Date(notif.time);
@@ -139,7 +138,7 @@ const NotificationCenter = React.memo(function NotificationCenter({ recentEvents
                       {notif.message}
                     </p>
                   </div>
-                  {!notif.read && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6', marginTop: '6px' }} />}
+                  {!notif.read && <div style={{ width: '8px', height: '8px', borderRadius: 'var(--radius-full, 50%)', background: 'var(--primary)', marginTop: '6px' }} />}
                 </motion.div>
               ))}
             </AnimatePresence>

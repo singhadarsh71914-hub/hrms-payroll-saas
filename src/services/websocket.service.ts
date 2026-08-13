@@ -6,7 +6,6 @@ export const WebSocketService = {
   init(server: any) {
     wss = new WebSocketServer({ server });
     wss.on('connection', (ws) => {
-      console.log('Client connected for progress tracking');
     });
   },
   broadcastProgress(jobId: string, progress: number, stats: any) {

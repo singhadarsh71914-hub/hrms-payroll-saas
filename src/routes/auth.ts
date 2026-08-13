@@ -83,7 +83,7 @@ router.post(
   validate(registerSchema),
   async (req: any, res: any, next: any) => {
     try {
-      const { email, password, role, company_name } = req.body;
+      const { email, password, role, company_name, first_name, last_name } = req.body;
 
       if (!email) {
         return next(new AppError('Email is required', 400));
@@ -113,15 +113,15 @@ router.post(
           },
         });
 
-        const [firstName, ...lastNames] = email.split('@')[0].split('.');
-        const lastName = lastNames.length > 0 ? lastNames.join(' ') : 'User';
+        const [derivedFirstName, ...derivedLastNames] = email.split('@')[0].split('.');
+        const derivedLastName = derivedLastNames.length > 0 ? derivedLastNames.join(' ') : 'User';
 
         await tx.employee.create({
           data: {
             company_id: company.id,
             user_id: user.id,
-            first_name: firstName.charAt(0).toUpperCase() + firstName.slice(1),
-            last_name: lastName.charAt(0).toUpperCase() + lastName.slice(1),
+            first_name: first_name || (derivedFirstName.charAt(0).toUpperCase() + derivedFirstName.slice(1)),
+            last_name: last_name || (derivedLastName.charAt(0).toUpperCase() + derivedLastName.slice(1)),
             work_email: email,
             employee_code: 'EMP-001',
             date_of_joining: new Date(),

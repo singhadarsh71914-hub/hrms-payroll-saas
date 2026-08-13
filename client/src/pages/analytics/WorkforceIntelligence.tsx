@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { Loader2, BrainCircuit, Activity, AlertTriangle, TrendingUp, TrendingDown, Users, History, Lightbulb, BarChart } from 'lucide-react';
 const Card = ({children, className}: any) => <div className={className || "bg-white p-4 rounded-xl shadow border border-slate-100"}>{children}</div>;
 const CardHeader = ({children, className}: any) => <div className={className || "mb-4 border-b pb-2"}>{children}</div>;
@@ -23,8 +23,8 @@ export default function WorkforceIntelligence() {
     const fetchData = async () => {
       try {
         const [dashRes, compRes] = await Promise.all([
-            axios.get('/api/intelligence/dashboard', { withCredentials: true }),
-            axios.get('/api/intelligence/company', { withCredentials: true })
+            api.get('/intelligence/dashboard'),
+            api.get('/intelligence/company')
         ]);
         setData(dashRes.data.data);
         setCompanyData(compRes.data.data);
@@ -38,7 +38,7 @@ export default function WorkforceIntelligence() {
   }, []);
 
   const triggerAnalysis = async () => {
-    await axios.post('/api/intelligence/calculate', { type: 'ALL' }, { withCredentials: true });
+    await api.post('/intelligence/calculate', { type: 'ALL' });
     alert("Background analysis triggered!");
   };
 

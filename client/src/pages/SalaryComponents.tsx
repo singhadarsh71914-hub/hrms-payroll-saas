@@ -180,8 +180,8 @@ export default function SalaryComponents() {
           <h1 className="page-title">Salary Components</h1>
           <p className="page-subtitle">Configure EARNING, DEDUCTION, and EMPLOYER_CONTRIBUTION components.</p>
         </div>
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+        <div style={{ display: 'flex', gap: 'var(--spacing-lg, 16px)', alignItems: 'center', flexWrap: 'wrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)', fontSize: 'var(--font-base, 14px)' }}>
             <input 
               type="checkbox" 
               checked={showArchived} 
@@ -195,8 +195,9 @@ export default function SalaryComponents() {
         </div>
       </div>
 
-      <div className="card">
-        <table className="data-table" style={{ width: '100%' }}>
+      <div className="card" style={{ padding: '0' }}>
+        <div className="table-responsive" style={{ border: 'none', boxShadow: 'none' }}>
+          <table className="data-table" style={{ width: '100%' }}>
           <thead>
             <tr>
               <th>Name</th>
@@ -223,7 +224,7 @@ export default function SalaryComponents() {
                   <td>{comp.value !== null ? comp.value : '-'}</td>
                   <td>{comp.is_active ? 'Yes' : 'No'}</td>
                   <td className="text-right">
-                    <div className="action-buttons" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                    <div className="action-buttons" style={{ display: 'flex', gap: 'var(--spacing-sm, 8px)', justifyContent: 'flex-end' }}>
                       <button className="btn-icon" onClick={() => openModal(comp)} title="Edit">
                         <Edit size={16} />
                       </button>
@@ -247,6 +248,7 @@ export default function SalaryComponents() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {isModalOpen && (
@@ -259,13 +261,13 @@ export default function SalaryComponents() {
             
             <form onSubmit={handleSubmit(onSubmit)} className="modal-body">
               <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <h4 style={{ fontSize: '14px', marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>General</h4>
+                <h4 style={{ fontSize: 'var(--font-base, 14px)', marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>General</h4>
                 {isTdsComponent && (
-                  <div style={{ padding: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '4px', marginBottom: '1rem', fontSize: '14px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                  <div style={{ padding: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '4px', marginBottom: '1rem', fontSize: 'var(--font-base, 14px)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
                     TDS is calculated automatically according to tax rules.
                   </div>
                 )}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label>Name</label>
                     <input {...register('name')} className="form-control" disabled={isTdsComponent} />
@@ -284,8 +286,8 @@ export default function SalaryComponents() {
               </div>
 
               <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <h4 style={{ fontSize: '14px', marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Type & Calculation</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <h4 style={{ fontSize: 'var(--font-base, 14px)', marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Type & Calculation</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label>Type</label>
                     <select {...register('type')} className="form-control" disabled={isTdsComponent}>
@@ -316,7 +318,7 @@ export default function SalaryComponents() {
                           const formula = watch('formula');
                           if (!formula) return;
                           try {
-                            const res = await api.post('/api/salary-components/validate-formula', { formula });
+                            const res = await api.post('/salary-components/validate-formula', { formula });
                             if (res.data.valid) setFormulaStatus({ valid: true, message: 'Valid' });
                           } catch (err: any) {
                             setFormulaStatus({ valid: false, message: err.response?.data?.error || 'Invalid formula' });
@@ -324,7 +326,7 @@ export default function SalaryComponents() {
                         }}>Validate Formula</button>
                       </div>
                       {formulaStatus && (
-                        <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: formulaStatus.valid ? '#10b981' : '#ef4444' }}>
+                        <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: formulaStatus.valid ? 'var(--success)' : 'var(--danger)' }}>
                           {formulaStatus.valid ? `✓ ${formulaStatus.message}` : `✗ ${formulaStatus.message}`}
                         </div>
                       )}
@@ -345,8 +347,8 @@ export default function SalaryComponents() {
               </div>
 
               <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <h4 style={{ fontSize: '14px', marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Configuration</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <h4 style={{ fontSize: 'var(--font-base, 14px)', marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Configuration</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label>Display Order</label>
                     <input type="number" {...register('display_order', { valueAsNumber: true })} className="form-control" disabled={isTdsComponent} />
@@ -362,17 +364,17 @@ export default function SalaryComponents() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 1024 && '1fr 1fr'.includes('repeat(4') ? 'repeat(2, 1fr)' : '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}>
                     <input type="checkbox" {...register('is_taxable')} disabled={isTdsComponent} /> Taxable
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}>
                     <input type="checkbox" {...register('is_active')} disabled={isTdsComponent} /> Active
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}>
                     <input type="checkbox" {...register('pf_applicable')} disabled={isTdsComponent} /> PF Applicable
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}>
                     <input type="checkbox" {...register('esi_applicable')} disabled={isTdsComponent} /> ESI Applicable
                   </label>
                 </div>

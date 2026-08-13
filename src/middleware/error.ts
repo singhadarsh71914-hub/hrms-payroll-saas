@@ -17,7 +17,7 @@ export const errorHandler = (err: any, req: express.Request, res: express.Respon
   }
 
   if (statusCode === 500 && !(err instanceof AppError)) {
-    message = 'Internal Server Error';
+    message = err.message || 'Internal Server Error';
   }
   console.error(`[Error] ${statusCode} - ${message}`);
   if (err.stack) console.error(err.stack);

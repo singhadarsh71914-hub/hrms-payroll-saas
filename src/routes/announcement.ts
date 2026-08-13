@@ -10,7 +10,6 @@ router.use(authenticate);
 
 // Get announcements
 router.get('/', async (req: AuthRequest, res: any, next: any) => {
-  console.log('GET /api/announcements');
   try {
     const announcements = await prisma.announcement.findMany({
       where: { company_id: req.user!.company_id! },
@@ -24,7 +23,6 @@ router.get('/', async (req: AuthRequest, res: any, next: any) => {
 
 // Create announcement
 router.post('/', authorize('ADMIN', 'HR'), validate(createAnnouncementSchema), async (req: AuthRequest, res: any, next: any) => {
-  console.log('POST /api/announcements');
   try {
     const { title, content, priority } = req.body;
     const announcement = await prisma.announcement.create({
@@ -60,7 +58,6 @@ router.post('/', authorize('ADMIN', 'HR'), validate(createAnnouncementSchema), a
 
 // Update announcement
 router.put('/:id', authorize('ADMIN', 'HR'), validate(updateAnnouncementSchema), async (req: AuthRequest, res: any, next: any) => {
-  console.log(`PUT /api/announcements/${req.params.id}`);
   try {
     const { title, content, priority } = req.body;
     const announcement = await prisma.announcement.update({
@@ -76,7 +73,6 @@ router.put('/:id', authorize('ADMIN', 'HR'), validate(updateAnnouncementSchema),
 
 // Delete announcement
 router.delete('/:id', authorize('ADMIN', 'HR'), async (req: AuthRequest, res: any, next: any) => {
-  console.log(`DELETE /api/announcements/${req.params.id}`);
   try {
     // @ts-ignore
     await prisma.announcement.delete({ where: { id: req.params.id } });

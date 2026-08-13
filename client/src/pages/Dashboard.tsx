@@ -19,8 +19,8 @@ const KPI = ({ title, value, sub, icon: Icon, color, isWarning, warningText }: a
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
       border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: '20px',
-      padding: '24px',
+      borderRadius: 'var(--radius-lg)',
+      padding: 'var(--spacing-xl, 24px)',
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
@@ -40,7 +40,7 @@ const KPI = ({ title, value, sub, icon: Icon, color, isWarning, warningText }: a
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ 
-            width: '40px', height: '40px', borderRadius: '12px', 
+            width: '40px', height: '40px', borderRadius: 'var(--radius-md)', 
             background: `linear-gradient(135deg, rgba(${color}, 0.2), rgba(${color}, 0.05))`,
             border: `1px solid rgba(${color}, 0.2)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center', color: `rgb(${color})`
@@ -57,11 +57,11 @@ const KPI = ({ title, value, sub, icon: Icon, color, isWarning, warningText }: a
 
       <div style={{ marginTop: 'auto' }}>
         {isWarning ? (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '6px 10px', borderRadius: '8px', color: '#FCD34D', fontSize: '13px', fontWeight: 600 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '6px 10px', borderRadius: 'var(--radius-sm)', color: '#FCD34D', fontSize: '13px', fontWeight: 600 }}>
             <AlertTriangle size={14} /> {warningText}
           </div>
         ) : (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: `rgba(${color}, 0.15)`, border: `1px solid rgba(${color}, 0.3)`, padding: '6px 10px', borderRadius: '8px', color: `rgb(${color})`, fontSize: '13px', fontWeight: 600 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: `rgba(${color}, 0.15)`, border: `1px solid rgba(${color}, 0.3)`, padding: '6px 10px', borderRadius: 'var(--radius-sm)', color: `rgb(${color})`, fontSize: '13px', fontWeight: 600 }}>
             <Sparkles size={14} /> {sub}
           </div>
         )}
@@ -106,7 +106,7 @@ export default function Dashboard() {
       <div style={{ marginBottom: '32px' }}>
         <Skeleton width="300px" height="40px" />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--spacing-xl, 24px)', marginBottom: '24px' }}>
         <Skeleton height="200px" borderRadius="20px" />
         <Skeleton height="200px" borderRadius="20px" />
         <Skeleton height="200px" borderRadius="20px" />
@@ -115,9 +115,14 @@ export default function Dashboard() {
     </div>
   );
 
-  const todayStr = new Date().getDate().toString();
-  const todayAtt = attendance?.daily?.find((d: any) => d.name === todayStr) || { present: 0, absent: 0, onLeave: 0, halfDay: 0 };
-  const totalAtt = todayAtt.present + todayAtt.absent + todayAtt.onLeave + todayAtt.halfDay;
+  // attendance-stats returns flat: { presentToday, absentToday, attendanceRate, pendingApprovals }
+  const todayAtt = {
+    present: attendance?.presentToday ?? 0,
+    absent: attendance?.absentToday ?? 0,
+    onLeave: 0,   // Not separately tracked in this endpoint
+    halfDay: 0,   // Not separately tracked in this endpoint
+  };
+  const totalAtt = todayAtt.present + todayAtt.absent;
   
   const pendingActions = (overview?.pendingLeaves || 0) + (overview?.pendingLoans || 0);
   const formatK = (val: any) => `₹${(Number(val || 0)/1000).toFixed(1)}k`;
@@ -134,10 +139,10 @@ export default function Dashboard() {
   ];
 
   return (
-    <div style={{ maxWidth: '1800px', margin: '0 auto', paddingBottom: '60px', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ maxWidth: '1800px', margin: '0 auto', padding: '0 16px', paddingBottom: '60px', fontFamily: "'Inter', sans-serif" }}>
       
       {/* HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
         <div>
           <h1 style={{ fontSize: '36px', fontWeight: 800, color: '#fff', marginBottom: '8px', letterSpacing: '-0.03em' }}>
             Operational Command Center
@@ -146,18 +151,18 @@ export default function Dashboard() {
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} — Hello, {user?.first_name || 'Admin'}.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '16px' }}>
+        <div style={{ display: 'flex', gap: 'var(--spacing-lg, 16px)', flexWrap: 'wrap' }}>
           <button onClick={() => navigate('/attendance/intelligence')} style={{
             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-            padding: '10px 20px', borderRadius: '12px', color: '#fff', fontSize: '14px', fontWeight: 600,
-            display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'background 0.2s'
+            padding: '10px 20px', borderRadius: 'var(--radius-md)', color: '#fff', fontSize: 'var(--font-base, 14px)', fontWeight: 600,
+            display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)', cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'background 0.2s'
           }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
             <MapPin size={18} /> Live Map
           </button>
           <button onClick={() => navigate('/analytics')} style={{
             background: '#3B82F6', border: '1px solid #2563EB',
-            padding: '10px 20px', borderRadius: '12px', color: '#fff', fontSize: '14px', fontWeight: 600,
-            display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', transition: 'transform 0.2s'
+            padding: '10px 20px', borderRadius: 'var(--radius-md)', color: '#fff', fontSize: 'var(--font-base, 14px)', fontWeight: 600,
+            display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)', cursor: 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', transition: 'transform 0.2s'
           }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
             <Activity size={18} /> View Analytics
           </button>
@@ -165,7 +170,7 @@ export default function Dashboard() {
       </div>
 
       {/* ROW 1: KPI CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--spacing-xl, 24px)', marginBottom: '24px' }}>
         <KPI 
           title="Total Employees" 
           value={overview?.activeEmployees || 0} 
@@ -200,14 +205,14 @@ export default function Dashboard() {
       </div>
 
       {/* ROW 2 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: 'var(--spacing-xl, 24px)', marginBottom: '24px' }}>
         
         {/* Needs Attention */}
         <div style={{
-          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '32px',
+          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-xl, 24px)',
           display: 'flex', flexDirection: 'column'
         }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <AlertTriangle size={20} color="#F59E0B" /> Needs Attention
           </h3>
           
@@ -220,32 +225,32 @@ export default function Dashboard() {
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px' }}>There are no pending operational tasks requiring your approval.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg, 16px)' }}>
               {overview?.pendingLeaves > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '16px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '10px' }}><CalendarDays size={20} color="#EF4444" /></div>
-                    <span style={{ fontWeight: 600, fontSize: '16px', color: '#fff' }}>Pending Leave Requests</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', padding: '16px 20px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '16px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '10px', flexShrink: 0 }}><CalendarDays size={20} color="#EF4444" /></div>
+                    <span style={{ fontWeight: 600, fontSize: '15px', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Pending Leave Requests</span>
                   </div>
-                  <button onClick={() => navigate('/leave')} style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#FCA5A5', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Review {overview.pendingLeaves}</button>
+                  <button onClick={() => navigate('/leave')} style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#FCA5A5', border: 'none', padding: '8px 16px', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: 'var(--font-base, 14px)', cursor: 'pointer' }}>Review {overview.pendingLeaves}</button>
                 </div>
               )}
               {overview?.pendingLoans > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '16px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '10px' }}><IndianRupee size={20} color="#EF4444" /></div>
-                    <span style={{ fontWeight: 600, fontSize: '16px', color: '#fff' }}>Pending Loan Requests</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', padding: '16px 20px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '16px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '10px', flexShrink: 0 }}><IndianRupee size={20} color="#EF4444" /></div>
+                    <span style={{ fontWeight: 600, fontSize: '15px', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Pending Loan Requests</span>
                   </div>
-                  <button onClick={() => navigate('/loans')} style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#FCA5A5', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Review {overview.pendingLoans}</button>
+                  <button onClick={() => navigate('/loans')} style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#FCA5A5', border: 'none', padding: '8px 16px', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: 'var(--font-base, 14px)', cursor: 'pointer' }}>Review {overview.pendingLoans}</button>
                 </div>
               )}
               {isPayrollZero && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'rgba(245, 158, 11, 0.05)', borderRadius: '16px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '10px', borderRadius: '10px' }}><AlertTriangle size={20} color="#F59E0B" /></div>
-                    <span style={{ fontWeight: 600, fontSize: '16px', color: '#fff' }}>Missing Salary Structures</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', padding: '16px 20px', background: 'rgba(245, 158, 11, 0.05)', borderRadius: '16px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                    <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '10px', borderRadius: '10px', flexShrink: 0 }}><AlertTriangle size={20} color="#F59E0B" /></div>
+                    <span style={{ fontWeight: 600, fontSize: '15px', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Missing Salary Structures</span>
                   </div>
-                  <button onClick={() => navigate('/employees')} style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#FCD34D', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Configure</button>
+                  <button onClick={() => navigate('/employees')} style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#FCD34D', border: 'none', padding: '8px 16px', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: 'var(--font-base, 14px)', cursor: 'pointer' }}>Configure</button>
                 </div>
               )}
             </div>
@@ -254,10 +259,10 @@ export default function Dashboard() {
 
         {/* Upcoming Events */}
         <div style={{
-          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '32px',
+          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-xl, 24px)',
           display: 'flex', flexDirection: 'column'
         }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Calendar size={20} color="#8B5CF6" /> Upcoming Events
           </h3>
           {upcomingHolidays.length === 0 ? (
@@ -266,16 +271,16 @@ export default function Dashboard() {
                 <CalendarDays size={28} color="#8B5CF6" opacity={0.8} />
               </div>
               <h4 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginBottom: '4px' }}>No Upcoming Events</h4>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>No holidays configured.</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 'var(--font-base, 14px)' }}>No holidays configured.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg, 16px)' }}>
               {upcomingHolidays.map((holiday: any, idx: number) => {
                 const date = new Date(holiday.date);
                 return (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
-                    <div style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'white', padding: '10px 16px', borderRadius: '12px', textAlign: 'center', minWidth: '60px', boxShadow: '0 4px 12px rgba(139,92,246,0.3)' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', opacity: 0.9 }}>{date.toLocaleString('default', { month: 'short' })}</div>
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-lg, 16px)', background: 'rgba(255,255,255,0.03)', padding: 'var(--spacing-lg, 16px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
+                    <div style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'white', padding: '10px 16px', borderRadius: 'var(--radius-md)', textAlign: 'center', minWidth: '60px', boxShadow: '0 4px 12px rgba(139,92,246,0.3)' }}>
+                      <div style={{ fontSize: 'var(--font-sm, 12px)', fontWeight: 700, textTransform: 'uppercase', opacity: 0.9 }}>{date.toLocaleString('default', { month: 'short' })}</div>
                       <div style={{ fontSize: '22px', fontWeight: 800, lineHeight: 1, marginTop: '2px' }}>{date.getDate()}</div>
                     </div>
                     <div>
@@ -291,14 +296,14 @@ export default function Dashboard() {
       </div>
 
       {/* ROW 3 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: 'var(--spacing-xl, 24px)', marginBottom: '24px' }}>
         
         {/* Today's Attendance Overview */}
         <div style={{
-          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '32px',
+          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-xl, 24px)',
           display: 'flex', flexDirection: 'column'
         }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Clock size={20} color="#10B981" /> Today's Attendance Overview
           </h3>
           
@@ -309,23 +314,23 @@ export default function Dashboard() {
               </div>
               <h4 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>No Attendance Submitted</h4>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', marginBottom: '24px' }}>Employees have not yet marked attendance today.</p>
-              <button onClick={() => navigate('/attendance')} style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 24px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>View Attendance</button>
+              <button onClick={() => navigate('/attendance')} style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 24px', borderRadius: 'var(--radius-md)', fontWeight: 600, fontSize: 'var(--font-base, 14px)', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>View Attendance</button>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', height: '100%' }}>
-              <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))', borderRadius: '16px', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 'var(--spacing-lg, 16px)', height: '100%' }}>
+              <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))', borderRadius: '16px', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--spacing-xl, 24px)' }}>
                 <div style={{ fontSize: '48px', fontWeight: 800, color: '#34D399', lineHeight: 1, marginBottom: '8px' }}>{todayAtt.present}</div>
                 <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>Present</div>
               </div>
-              <div style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05))', borderRadius: '16px', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+              <div style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05))', borderRadius: '16px', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--spacing-xl, 24px)' }}>
                 <div style={{ fontSize: '48px', fontWeight: 800, color: '#F87171', lineHeight: 1, marginBottom: '8px' }}>{todayAtt.absent}</div>
                 <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>Absent</div>
               </div>
-              <div style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))', borderRadius: '16px', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+              <div style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))', borderRadius: '16px', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--spacing-xl, 24px)' }}>
                 <div style={{ fontSize: '48px', fontWeight: 800, color: '#FBBF24', lineHeight: 1, marginBottom: '8px' }}>{todayAtt.halfDay}</div>
                 <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>Half Day</div>
               </div>
-              <div style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.05))', borderRadius: '16px', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+              <div style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.05))', borderRadius: '16px', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--spacing-xl, 24px)' }}>
                 <div style={{ fontSize: '48px', fontWeight: 800, color: '#60A5FA', lineHeight: 1, marginBottom: '8px' }}>{todayAtt.onLeave}</div>
                 <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>On Leave</div>
               </div>
@@ -335,10 +340,10 @@ export default function Dashboard() {
 
         {/* Recent Activity Feed */}
         <div style={{
-          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '32px',
+          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-xl, 24px)',
           display: 'flex', flexDirection: 'column'
         }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Activity size={20} color="#3B82F6" /> Recent Activity Feed
           </h3>
           
@@ -370,7 +375,7 @@ export default function Dashboard() {
                     }}>
                       <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: dotColor }} />
                     </div>
-                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', padding: 'var(--spacing-lg, 16px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.03)' }}>
                       <div style={{ fontSize: '15px', color: '#fff', fontWeight: 500, marginBottom: '6px' }}>
                         <span style={{ fontWeight: 700 }}>{log.user?.email || 'System'}</span> performed <span style={{ color: dotColor, fontWeight: 700 }}>{log.action}</span> on {log.entity_type}
                       </div>
@@ -387,14 +392,14 @@ export default function Dashboard() {
       </div>
 
       {/* ROW 4 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: 'var(--spacing-xl, 24px)' }}>
         
         {/* Department Distribution Donut Chart Replacement */}
         <div style={{
-          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '32px',
+          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-xl, 24px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
         }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '32px', alignSelf: 'flex-start' }}>
+          <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: '#fff', marginBottom: '32px', alignSelf: 'flex-start' }}>
             Department Distribution
           </h3>
           <div style={{ position: 'relative', width: '240px', height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -407,15 +412,15 @@ export default function Dashboard() {
               <circle cx="50" cy="50" r="40" fill="transparent" stroke="#F59E0B" strokeWidth="12" strokeDasharray="50 200" strokeDashoffset="-200" style={{ transition: 'all 1s' }} />
             </svg>
             <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <span style={{ fontSize: '32px', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{overview?.activeEmployees || 30}</span>
-              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontWeight: 600, textTransform: 'uppercase', marginTop: '4px' }}>Employees</span>
+              <span style={{ fontSize: 'var(--font-xl, 32px)', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{overview?.activeEmployees || 30}</span>
+              <span style={{ fontSize: 'var(--font-sm, 12px)', color: 'rgba(255,255,255,0.5)', fontWeight: 600, textTransform: 'uppercase', marginTop: '4px' }}>Employees</span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '32px' }}>
+          <div style={{ display: 'flex', gap: 'var(--spacing-lg, 16px)', flexWrap: 'wrap', justifyContent: 'center', marginTop: '32px' }}>
             {deptData.map(d => (
-              <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm, 8px)' }}>
                 <div style={{ width: '12px', height: '12px', borderRadius: '4px', background: d.color }} />
-                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', fontWeight: 500 }}>{d.name}</span>
+                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'var(--font-base, 14px)', fontWeight: 500 }}>{d.name}</span>
               </div>
             ))}
           </div>
@@ -423,44 +428,44 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div style={{
-          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '32px',
+          background: 'rgba(17,24,39,0.65)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-xl, 24px)',
           display: 'flex', flexDirection: 'column'
         }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '24px' }}>
+          <h3 style={{ fontSize: 'var(--font-md, 18px)', fontWeight: 600, color: '#fff', marginBottom: '24px' }}>
             Quick Actions
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 'var(--spacing-lg, 16px)' }}>
             
             <button onClick={() => navigate('/employees/add')} style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'all 0.2s'
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: 'var(--spacing-xl, 24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'all 0.2s'
             }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }} onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))'; e.currentTarget.style.transform = 'translateY(0)' }}>
-              <div style={{ background: 'rgba(59,130,246,0.2)', padding: '12px', borderRadius: '12px', color: '#60A5FA' }}><UserPlus size={24} /></div>
+              <div style={{ background: 'rgba(59,130,246,0.2)', padding: '12px', borderRadius: 'var(--radius-md)', color: '#60A5FA' }}><UserPlus size={24} /></div>
               <span style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>Add Employee</span>
             </button>
             
             <button onClick={() => navigate('/attendance')} style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'all 0.2s'
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: 'var(--spacing-xl, 24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'all 0.2s'
             }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }} onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))'; e.currentTarget.style.transform = 'translateY(0)' }}>
-              <div style={{ background: 'rgba(16,185,129,0.2)', padding: '12px', borderRadius: '12px', color: '#34D399' }}><Fingerprint size={24} /></div>
+              <div style={{ background: 'rgba(16,185,129,0.2)', padding: '12px', borderRadius: 'var(--radius-md)', color: '#34D399' }}><Fingerprint size={24} /></div>
               <span style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>Mark Attendance</span>
             </button>
             
             <button onClick={() => navigate('/leave')} style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'all 0.2s'
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: 'var(--spacing-xl, 24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'all 0.2s'
             }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }} onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))'; e.currentTarget.style.transform = 'translateY(0)' }}>
-              <div style={{ background: 'rgba(245,158,11,0.2)', padding: '12px', borderRadius: '12px', color: '#FBBF24' }}><Plane size={24} /></div>
+              <div style={{ background: 'rgba(245,158,11,0.2)', padding: '12px', borderRadius: 'var(--radius-md)', color: '#FBBF24' }}><Plane size={24} /></div>
               <span style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>Request Leave</span>
             </button>
             
             <button onClick={() => navigate('/payroll')} style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'all 0.2s'
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: 'var(--spacing-xl, 24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'all 0.2s'
             }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }} onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))'; e.currentTarget.style.transform = 'translateY(0)' }}>
-              <div style={{ background: 'rgba(139,92,246,0.2)', padding: '12px', borderRadius: '12px', color: '#A78BFA' }}><IndianRupee size={24} /></div>
+              <div style={{ background: 'rgba(139,92,246,0.2)', padding: '12px', borderRadius: 'var(--radius-md)', color: '#A78BFA' }}><IndianRupee size={24} /></div>
               <span style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>Run Payroll</span>
             </button>
 
             <button onClick={() => navigate('/analytics')} style={{
-              gridColumn: '1 / -1', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.2s'
+              gridColumn: '1 / -1', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: 'var(--spacing-lg, 16px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.2s'
             }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }} onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))'; e.currentTarget.style.transform = 'translateY(0)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '10px', color: '#fff' }}><FileText size={20} /></div>
