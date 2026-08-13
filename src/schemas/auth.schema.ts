@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const registerSchema = z.object({
   body: z.object({
-    email: z.string().email(),
+    email: z.string().email().toLowerCase(),
     password: z.string().min(6),
     role: z.enum(['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE']).optional(),
     company_name: z.string().min(1),
@@ -13,7 +13,7 @@ export const registerSchema = z.object({
 
 export const loginSchema = z.object({
   body: z.object({
-    email: z.string().email(),
+    email: z.string().email().toLowerCase(),
     password: z.string().min(1),
   })
 });

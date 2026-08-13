@@ -90,7 +90,7 @@ const Leave: React.FC = () => {
       <div className="page-header">
         <div>
           <Skeleton width="300px" height="32px" />
-          <div style={{ marginTop: '0.5rem' }}><Skeleton width="400px" height="20px" /></div>
+          <div style={{ marginTop: '0.5rem' }}><Skeleton width="min(400px, 100%)" height="20px" /></div>
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 1024 ? '1fr' : isHR ? '1fr' : '1fr 400px', gap: '2.5rem' }}>

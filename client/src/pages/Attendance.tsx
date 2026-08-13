@@ -149,7 +149,7 @@ const Attendance: React.FC = () => {
       <div className="page-header">
         <div>
           <Skeleton width="300px" height="32px" />
-          <div style={{ marginTop: '0.5rem' }}><Skeleton width="400px" height="20px" /></div>
+          <div style={{ marginTop: '0.5rem' }}><Skeleton width="min(400px, 100%)" height="20px" /></div>
         </div>
       </div>
       <Skeleton height="80px" borderRadius="12px" />
